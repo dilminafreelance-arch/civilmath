@@ -57,9 +57,11 @@ app.get("/api/health", (req, res) => {
 // Admin Authentication (Server-Side Only - Node Crypto & Env)
 // ─────────────────────────────────────────────────────────────
 function getAdminCredentials() {
+  const emailRaw = process.env.ADMIN_EMAIL || process.env.ADMIN_USER || process.env.ADMIN_USERNAME || "";
+  const passRaw = process.env.ADMIN_PASSWORD || process.env.ADMIN_PASS || "";
   return {
-    email: (process.env.ADMIN_EMAIL || "").trim().toLowerCase().replace(/^["']|["']$/g, ""),
-    password: (process.env.ADMIN_PASSWORD || "").trim(),
+    email: emailRaw.trim().toLowerCase().replace(/^["']|["']$/g, ""),
+    password: passRaw.trim().replace(/^["']|["']$/g, ""),
   };
 }
 

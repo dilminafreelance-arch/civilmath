@@ -64,7 +64,14 @@ function AdminLoginForm() {
           {errorMessage && (
             <div className="mb-6 p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 flex items-start gap-3 text-red-700 dark:text-red-400 text-xs animate-shake">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
-              <div className="leading-relaxed font-medium">{errorMessage}</div>
+              <div className="leading-relaxed font-medium">
+                <div>{errorMessage}</div>
+                {errorMessage.includes('not configured') && (
+                  <div className="mt-2 pt-2 border-t border-red-200 dark:border-red-900/50 text-[11px] text-red-600 dark:text-red-300 font-normal">
+                    To fix this, add <strong className="font-semibold">ADMIN_EMAIL</strong> and <strong className="font-semibold">ADMIN_PASSWORD</strong> in your hosting environment variables (e.g. Vercel Project Settings &rarr; Environment Variables) or local <code className="px-1 py-0.5 rounded bg-red-100 dark:bg-red-900/50">.env</code> file, then redeploy or restart the server.
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
