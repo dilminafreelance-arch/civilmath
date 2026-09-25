@@ -36,7 +36,6 @@ export default defineConfig(() => {
             react: ['react', 'react-dom'],
             motion: ['motion'],
             export: ['jspdf', 'xlsx', 'xlsx-js-style'],
-            icons: ['lucide-react'],
           },
         },
       },

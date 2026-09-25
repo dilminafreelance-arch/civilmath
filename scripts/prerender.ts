@@ -2,7 +2,7 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { chromium } from 'playwright';
-import { ALL_ROUTES_SEO } from '../src/utils/seo';
+import { ALL_ROUTES_SEO } from '../src/utils/seoRoutes';
 
 const MIME_TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',

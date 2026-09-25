@@ -5,6 +5,9 @@ import {
   ArrowLeftRight, FileText, BookOpen, Bookmark,
   ExternalLink, Star, Copy, MoreVertical, X
 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
+import { CALCULATORS_LIST } from '../data/calculatorsData';
+import { CATEGORY_PATH_MAP, getCalculatorSlug } from '../utils/seo';
 
 interface RecentCalc {
   id: string;

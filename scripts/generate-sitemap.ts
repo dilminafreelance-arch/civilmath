@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { ALL_ROUTES_SEO, SITE_URL } from '../src/utils/seo';
+import { ALL_ROUTES_SEO, SITE_URL } from '../src/utils/seoRoutes';
 
 function generateSitemap() {
   const today = new Date().toISOString().split('T')[0];

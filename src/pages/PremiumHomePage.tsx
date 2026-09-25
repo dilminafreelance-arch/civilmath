@@ -4,7 +4,8 @@ import {
   Layers, Grid, GitCommit, Compass, RefreshCw,
   HardHat, BookOpen, Calculator, ArrowRight, ShieldCheck,
   CheckCircle2, Box, Sparkles, Scale, ExternalLink, FileSpreadsheet, FileText,
-  Search, Star, Clock, ChevronRight, Lightbulb
+  Search, Star, Clock, ChevronRight, Lightbulb,
+  FlaskConical, Award, Zap
 } from 'lucide-react';
 import { CALCULATORS_LIST } from '../data/calculatorsData';
 import { CATEGORY_PATH_MAP, getCalculatorSlug } from '../utils/seo';
