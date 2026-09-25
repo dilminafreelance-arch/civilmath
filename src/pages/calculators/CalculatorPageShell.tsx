@@ -10,6 +10,7 @@ import { BookOpen, ThumbsUp, ThumbsDown, ChevronRight } from 'lucide-react';
 import { CATEGORY_PATH_MAP, getCalculatorSlug } from '../../utils/seo';
 import { trackEvent } from '../../utils/analytics';
 import { motion } from 'motion/react';
+import { Card } from '../../components/ui';
 
 export interface CalculatorPageConfig {
   calculatorId: string;
@@ -159,22 +160,22 @@ const TOPICAL_RELATED_MAP: Record<string, RelatedLink[]> = {
       {formulaRef && (
         <section className="mt-8 max-w-4xl">
           <div className="flex items-center gap-2 mb-4">
-            <BookOpen className="w-4 h-4 text-[#f97316]" />
-            <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200">Engineering Formula & Calculation Steps</h2>
+            <BookOpen className="w-4 h-4 text-brand" />
+            <h2 className="text-sm font-bold text-ink">Engineering Formula &amp; Calculation Steps</h2>
           </div>
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4 shadow-xs">
-            <p className="text-[11px] font-mono text-slate-600 dark:text-slate-300 leading-relaxed">
+          <Card elevation="raised" className="p-5 space-y-4 shadow-xs">
+            <p className="text-[11px] font-mono text-ink-secondary leading-relaxed">
               {formulaRef.explanation}
             </p>
             <div className="space-y-2">
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">Calculation Steps</h3>
+              <h3 className="text-[10px] font-bold font-mono uppercase tracking-widest text-ink-muted">Calculation Steps</h3>
               <ol className="space-y-1.5 list-decimal list-inside">
                 {formulaRef.steps.map((step, i) => (
-                  <li key={i} className="text-[10px] font-mono text-slate-500 dark:text-slate-400 leading-relaxed">{step}</li>
+                  <li key={i} className="text-[10px] font-mono text-ink-secondary leading-relaxed">{step}</li>
                 ))}
               </ol>
             </div>
-          </div>
+          </Card>
         </section>
       )}
 
@@ -182,58 +183,62 @@ const TOPICAL_RELATED_MAP: Record<string, RelatedLink[]> = {
       <ArticleSection calculatorId={calculatorId} />
 
       <section className="mt-8 max-w-4xl" aria-label="Related learning resources">
-        <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-3">Related Learning Resources</h2>
+        <h2 className="text-sm font-bold text-ink mb-3">Related Learning Resources</h2>
         <div className="flex flex-wrap gap-2">
-          <Link to="/guides" className="rounded-xl border border-slate-200 dark:border-slate-800 px-3 py-2 text-xs font-semibold text-[#f97316] hover:bg-[#f97316]/5 no-underline transition-colors">Calculation guides</Link>
-          <Link to="/formulas" className="rounded-xl border border-slate-200 dark:border-slate-800 px-3 py-2 text-xs font-semibold text-[#f97316] hover:bg-[#f97316]/5 no-underline transition-colors">Formula library</Link>
-          <Link to="/tables" className="rounded-xl border border-slate-200 dark:border-slate-800 px-3 py-2 text-xs font-semibold text-[#f97316] hover:bg-[#f97316]/5 no-underline transition-colors">Reference tables</Link>
+          <Link to="/guides" className="rounded-xl border border-border-subtle bg-surface-1 px-3 py-2 text-xs font-semibold text-brand hover:bg-brand/10 no-underline transition-colors">Calculation guides</Link>
+          <Link to="/formulas" className="rounded-xl border border-border-subtle bg-surface-1 px-3 py-2 text-xs font-semibold text-brand hover:bg-brand/10 no-underline transition-colors">Formula library</Link>
+          <Link to="/tables" className="rounded-xl border border-border-subtle bg-surface-1 px-3 py-2 text-xs font-semibold text-brand hover:bg-brand/10 no-underline transition-colors">Reference tables</Link>
         </div>
       </section>
 
       {/* Feedback Widget */}
       <section className="mt-8 max-w-4xl">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-xs">
+        <Card elevation="raised" className="p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Was this calculator helpful?</span>
+            <span className="text-xs font-semibold text-ink-secondary">Was this calculator helpful?</span>
             <div className="flex items-center gap-3">
               <button onClick={() => handleFeedback('up')}
-                className={`p-2 rounded-xl transition-all cursor-pointer ${feedback === 'up' ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'}`}>
+                aria-label="Thumbs up"
+                className={`p-2 rounded-xl transition-all cursor-pointer ${feedback === 'up' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-surface-2 text-ink-muted hover:text-emerald-600 hover:bg-emerald-500/10'}`}>
                 <ThumbsUp className="w-4 h-4" />
               </button>
               <button onClick={() => handleFeedback('down')}
-                className={`p-2 rounded-xl transition-all cursor-pointer ${feedback === 'down' ? 'bg-red-100 dark:bg-red-900/30 text-red-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20'}`}>
+                aria-label="Thumbs down"
+                className={`p-2 rounded-xl transition-all cursor-pointer ${feedback === 'down' ? 'bg-red-500/15 text-red-600 dark:text-red-400' : 'bg-surface-2 text-ink-muted hover:text-red-600 hover:bg-red-500/10'}`}>
                 <ThumbsDown className="w-4 h-4" />
               </button>
             </div>
           </div>
           {feedback && (
-            <p className="mt-2 text-[10px] font-mono text-slate-400 dark:text-slate-500">Thank you for your feedback!</p>
+            <p className="mt-2 text-[10px] font-mono text-ink-muted">Thank you for your feedback!</p>
           )}
-        </div>
+        </Card>
       </section>
 
       {/* Related Calculators */}
       {relatedCalculators.length > 0 && (
         <section className="mt-8 max-w-4xl">
           <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200">Related Calculators</h2>
+            <h2 className="text-sm font-bold text-ink">Related Calculators</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {relatedCalculators.map((calc, idx) => (
-              <motion.div key={calc.id} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }} transition={{ delay: idx * 0.05 }}>
+              <motion.div key={calc.id} initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: idx * 0.05, duration: 0.3, ease: 'easeOut' }}>
                 <Link
                   to={calc.path}
                   onClick={() => {
                     trackEvent('related_calculator_click', { from: calculatorId, to: calc.id });
                   }}
-                  className="group block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl hover:border-[#f97316]/50 shadow-xs hover:shadow-md transition-all no-underline text-left">
-                  <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100 group-hover:text-[#f97316] transition-colors">{calc.name}</h3>
-                  <p className="mt-1 text-[10px] font-mono text-slate-500 dark:text-slate-400 line-clamp-2">{calc.description}</p>
-                  <div className="mt-3 flex items-center text-[9px] font-mono text-[#f97316]">
-                    <span>Open Calculator</span>
-                    <ChevronRight className="w-3 h-3 ml-0.5 group-hover:translate-x-0.5 transition-transform" />
-                  </div>
+                  className="block no-underline text-left group">
+                  <Card elevation="interactive" className="p-4">
+                    <h3 className="text-xs font-bold text-ink group-hover:text-brand transition-colors">{calc.name}</h3>
+                    <p className="mt-1 text-[10px] text-ink-muted line-clamp-2 leading-relaxed">{calc.description}</p>
+                    <div className="mt-3 flex items-center text-[9px] font-mono text-brand font-semibold">
+                      <span>Open Calculator</span>
+                      <ChevronRight className="w-3 h-3 ml-0.5 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                  </Card>
                 </Link>
               </motion.div>
             ))}

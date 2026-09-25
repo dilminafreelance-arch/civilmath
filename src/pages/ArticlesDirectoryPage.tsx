@@ -23,14 +23,14 @@ const CATEGORIES = [
 ];
 
 const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  concrete: { bg: 'bg-[#657565]/12 dark:bg-[#657565]/20', text: 'text-[#475747] dark:text-[#A8BBA8]', border: 'border-[#657565]/30' },
-  structural: { bg: 'bg-blue-500/10 dark:bg-blue-500/20', text: 'text-blue-700 dark:text-blue-300', border: 'border-blue-500/30' },
-  bbs: { bg: 'bg-amber-500/10 dark:bg-amber-500/20', text: 'text-amber-800 dark:text-amber-300', border: 'border-amber-500/30' },
-  survey: { bg: 'bg-cyan-500/10 dark:bg-cyan-500/20', text: 'text-cyan-800 dark:text-cyan-300', border: 'border-cyan-500/30' },
-  geotech: { bg: 'bg-stone-500/12 dark:bg-stone-500/20', text: 'text-stone-700 dark:text-stone-300', border: 'border-stone-500/30' },
-  utility: { bg: 'bg-purple-500/10 dark:bg-purple-500/20', text: 'text-purple-800 dark:text-purple-300', border: 'border-purple-500/30' },
-  construction: { bg: 'bg-emerald-500/10 dark:bg-emerald-500/20', text: 'text-emerald-800 dark:text-emerald-300', border: 'border-emerald-500/30' },
-  general: { bg: 'bg-slate-500/10 dark:bg-slate-500/20', text: 'text-slate-700 dark:text-slate-300', border: 'border-slate-500/30' },
+  concrete:     { bg: 'bg-brand/8 dark:bg-brand/15',  text: 'text-[#245745] dark:text-[#8CA0F0]',  border: 'border-brand/25' },
+  structural:   { bg: 'bg-[#7A8981]/10 dark:bg-[#7A8981]/15',  text: 'text-[#4A5578] dark:text-[#7A8981]',  border: 'border-[#7A8981]/30' },
+  bbs:          { bg: 'bg-[#D9B96E]/10 dark:bg-[#D9B96E]/15',  text: 'text-[#7B6022] dark:text-[#D9B96E]',  border: 'border-[#D9B96E]/30' },
+  survey:       { bg: 'bg-[#9CB5C4]/10 dark:bg-[#9CB5C4]/15',  text: 'text-[#4B6E82] dark:text-[#9CB5C4]',  border: 'border-[#9CB5C4]/30' },
+  geotech:      { bg: 'bg-[#B56F50]/10 dark:bg-[#B56F50]/15',  text: 'text-[#7A3E28] dark:text-[#D4926E]',  border: 'border-[#B56F50]/30' },
+  utility:      { bg: 'bg-[#7A8981]/8 dark:bg-[#7A8981]/12',   text: 'text-brand dark:text-[#8CA0F0]',  border: 'border-brand/20' },
+  construction: { bg: 'bg-[#22C55E]/8 dark:bg-[#22C55E]/12',   text: 'text-[#166534] dark:text-[#4ADE80]',  border: 'border-[#22C55E]/25' },
+  general:      { bg: 'bg-[#7A8981]/8 dark:bg-[#7A8981]/12',   text: 'text-[#7A8981] dark:text-[#7A8981]',  border: 'border-[#7A8981]/25' },
 };
 
 export default function ArticlesDirectoryPage() {

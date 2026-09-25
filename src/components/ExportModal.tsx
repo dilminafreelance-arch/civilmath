@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, FileText, Check, Copy, Share2, Printer, Building2, ShieldCheck } from 'lucide-react';
+import { X, FileText, Check, Copy, Share2 } from 'lucide-react';
 import { copyShareLinkToClipboard } from '../utils/shareUrl';
 
 export interface ExportModalProps {
@@ -70,7 +70,7 @@ export function ExportModal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-black/50 backdrop-blur-xs"
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs"
         />
 
         {/* Modal Window */}
@@ -78,26 +78,26 @@ export function ExportModal({
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative w-full max-w-lg bg-white dark:bg-[#0B0D16] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden z-10 text-left"
+          className="relative w-full max-w-lg bg-white dark:bg-[#131715] rounded-2xl border border-[#E2E6E2] dark:border-[#1A211D] shadow-2xl overflow-hidden z-10 text-left"
         >
           {/* Header */}
-          <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/40">
+          <div className="p-5 border-b border-[#E2E6E2] dark:border-[#1A211D] flex items-center justify-between bg-[#F2F5F3]/70 dark:bg-[#090B0A]/40">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-orange-500/10 text-[#f97316] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center">
                 <FileText className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                <h3 className="text-sm font-bold text-[#141A16] dark:text-[#ECF2EE]">
                   Client-Ready Calculation Export
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] text-[#7A8981]">
                   {calculatorTitle}
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              className="p-2 rounded-xl text-[#7A8981] hover:text-[#141A16] dark:hover:text-white hover:bg-[#ECF2EE]/60 dark:hover:bg-[#181E1A] cursor-pointer transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -107,7 +107,7 @@ export function ExportModal({
           <div className="p-5 space-y-3.5 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
+                <label className="block text-[10px] font-bold font-mono uppercase tracking-wider text-[#7A8981] mb-1">
                   Project Title
                 </label>
                 <input
@@ -115,11 +115,11 @@ export function ExportModal({
                   value={projectName}
                   onChange={e => setProjectName(e.target.value)}
                   placeholder="e.g. Skyline Residence Tower"
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none focus:border-[#f97316]"
+                  className="w-full px-3 py-2 bg-[#F2F5F3] dark:bg-[#090B0A] border border-[#E2E6E2] dark:border-[#1A211D] rounded-xl text-xs text-[#141A16] dark:text-[#ECF2EE] outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
+                <label className="block text-[10px] font-bold font-mono uppercase tracking-wider text-[#7A8981] mb-1">
                   Prepared By (Engineer)
                 </label>
                 <input
@@ -127,14 +127,14 @@ export function ExportModal({
                   value={engineerName}
                   onChange={e => setEngineerName(e.target.value)}
                   placeholder="e.g. Eng. Alexander Smith"
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none focus:border-[#f97316]"
+                  className="w-full px-3 py-2 bg-[#F2F5F3] dark:bg-[#090B0A] border border-[#E2E6E2] dark:border-[#1A211D] rounded-xl text-xs text-[#141A16] dark:text-[#ECF2EE] outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
+                <label className="block text-[10px] font-bold font-mono uppercase tracking-wider text-[#7A8981] mb-1">
                   Company / Engineering Firm
                 </label>
                 <input
@@ -142,11 +142,11 @@ export function ExportModal({
                   value={companyName}
                   onChange={e => setCompanyName(e.target.value)}
                   placeholder="e.g. CivilMath Engineering"
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none focus:border-[#f97316]"
+                  className="w-full px-3 py-2 bg-[#F2F5F3] dark:bg-[#090B0A] border border-[#E2E6E2] dark:border-[#1A211D] rounded-xl text-xs text-[#141A16] dark:text-[#ECF2EE] outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
+                <label className="block text-[10px] font-bold font-mono uppercase tracking-wider text-[#7A8981] mb-1">
                   Client / Contractor
                 </label>
                 <input
@@ -154,28 +154,28 @@ export function ExportModal({
                   value={clientName}
                   onChange={e => setClientName(e.target.value)}
                   placeholder="e.g. Apex Builders Corp"
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none focus:border-[#f97316]"
+                  className="w-full px-3 py-2 bg-[#F2F5F3] dark:bg-[#090B0A] border border-[#E2E6E2] dark:border-[#1A211D] rounded-xl text-xs text-[#141A16] dark:text-[#ECF2EE] outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
+              <label className="block text-[10px] font-bold font-mono uppercase tracking-wider text-[#7A8981] mb-1">
                 Engineering Notes & Assumptions
               </label>
               <textarea
                 rows={2}
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none focus:border-[#f97316] resize-none"
+                className="w-full px-3 py-2 bg-[#F2F5F3] dark:bg-[#090B0A] border border-[#E2E6E2] dark:border-[#1A211D] rounded-xl text-xs text-[#141A16] dark:text-[#ECF2EE] outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 resize-none transition-all"
               />
             </div>
 
             {/* Quick Share Link Box */}
-            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 dark:bg-slate-900/60 p-3 rounded-2xl">
+            <div className="pt-2 border-t border-[#E2E6E2] dark:border-[#1A211D] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F2F5F3]/70 dark:bg-[#090B0A]/60 p-3 rounded-xl border border-[#E2E6E2]/80 dark:border-[#1A211D]/80">
               <div className="flex items-center gap-2">
-                <Share2 className="w-4 h-4 text-[#f97316] shrink-0" />
-                <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                <Share2 className="w-4 h-4 text-brand shrink-0" />
+                <span className="text-[11px] font-semibold text-[#141A16] dark:text-[#ECF2EE]">
                   Share calculation with colleague:
                 </span>
               </div>
@@ -183,8 +183,8 @@ export function ExportModal({
                 onClick={handleCopyLink}
                 className={`w-full sm:w-auto px-3 py-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   copied
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-[#f97316]'
+                    ? 'bg-[#22C55E] text-white'
+                    : 'bg-white dark:bg-[#181E1A] border border-[#E2E6E2] dark:border-[#1A211D] text-[#141A16] dark:text-[#ECF2EE] hover:border-brand'
                 }`}
               >
                 {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -194,16 +194,16 @@ export function ExportModal({
           </div>
 
           {/* Footer Actions */}
-          <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2">
+          <div className="p-4 border-t border-[#E2E6E2] dark:border-[#1A211D] bg-[#F2F5F3]/70 dark:bg-[#090B0A]/30 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2">
             <button
               onClick={onClose}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer text-center"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-[#7A8981] hover:text-[#141A16] dark:hover:text-white hover:bg-[#ECF2EE]/60 dark:hover:bg-[#181E1A] cursor-pointer text-center transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleGenerate}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm shadow-orange-500/25"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-brand hover:bg-primary-dark text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs hover:shadow-sm"
             >
               <FileText className="w-4 h-4" />
               <span>Generate Official PDF</span>

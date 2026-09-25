@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Bell, X, Sparkles, Clock, CheckCircle, AlertCircle, BookOpen } from 'lucide-react';
+import { Bell, X, Sparkles, Clock, CheckCircle, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { CALCULATORS_LIST } from '../data/calculatorsData';
@@ -27,7 +27,7 @@ const STATIC_NOTIFICATIONS: NotificationItem[] = [
     link: '/bbs',
     icon: Sparkles,
     iconColor: '#D9B96E',
-    iconBg: 'rgba(217,185,110,0.15)',
+    iconBg: 'rgba(217, 185, 110, 0.15)',
   },
   {
     id: 'n2',
@@ -37,8 +37,8 @@ const STATIC_NOTIFICATIONS: NotificationItem[] = [
     time: '3 days ago',
     link: '/boq-builder',
     icon: CheckCircle,
-    iconColor: '#657565',
-    iconBg: 'rgba(101,117,101,0.14)',
+    iconColor: '#22C55E',
+    iconBg: 'rgba(34, 197, 94, 0.14)',
   },
   {
     id: 'n3',
@@ -47,8 +47,8 @@ const STATIC_NOTIFICATIONS: NotificationItem[] = [
     body: 'Use Ctrl+K to quickly search across all 50+ calculators from anywhere on the site.',
     time: '1 week ago',
     icon: BookOpen,
-    iconColor: '#9CB5C4',
-    iconBg: 'rgba(156,181,196,0.18)',
+    iconColor: '#2E6B56',
+    iconBg: 'rgba(46, 107, 86, 0.14)',
   },
 ];
 
@@ -93,8 +93,8 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
       time: ts ? timeAgo(ts) : 'recently',
       link: calc ? `/${calc.category}` : undefined,
       icon: Clock,
-      iconColor: '#7B8978',
-      iconBg: 'rgba(123,137,120,0.14)',
+      iconColor: '#7A8981',
+      iconBg: 'rgba(124, 136, 184, 0.14)',
     };
   });
 
@@ -109,28 +109,28 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: 12, scale: 0.97 }}
           transition={{ duration: 0.18 }}
-          className="absolute right-0 top-full mt-2 w-80 bg-[#FAF9F6] dark:bg-[#1E221E] border border-[#D8D0C2] dark:border-[#384238] rounded-2xl shadow-xl z-50 overflow-hidden"
+          className="absolute right-0 top-full mt-2 w-80 backdrop-blur-xl backdrop-saturate-150 bg-[#F2F5F3]/95 dark:bg-[#131715]/95 border border-[#E2E6E2] dark:border-[#1A211D] rounded-2xl shadow-xl z-50 overflow-hidden text-left"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#D8D0C2] dark:border-[#333C33]">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#E2E6E2] dark:border-[#1A211D]">
             <div className="flex items-center gap-2">
-              <Bell className="w-4 h-4 text-[#657565]" />
-              <h3 className="text-xs font-bold text-[#20231F] dark:text-[#EAE7E0]">Notifications</h3>
+              <Bell className="w-4 h-4 text-brand" />
+              <h3 className="text-xs font-bold text-[#141A16] dark:text-[#ECF2EE]">Notifications</h3>
             </div>
             <button
               onClick={onClose}
-              className="p-1 rounded-lg text-[#94A094] hover:text-[#20231F] dark:hover:text-white hover:bg-[#EAE7E0] dark:hover:bg-[#2A312A] cursor-pointer transition-colors"
+              className="p-1 rounded-lg text-[#7A8981] hover:text-[#141A16] dark:hover:text-white hover:bg-[#ECF2EE]/60 dark:hover:bg-[#181E1A] cursor-pointer transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
 
           {/* Notification List */}
-          <div className="max-h-[420px] overflow-y-auto divide-y divide-[#D8D0C2]/40 dark:divide-[#333C33]/60">
+          <div className="max-h-[420px] overflow-y-auto divide-y divide-[#E2E6E2]/60 dark:divide-[#1A211D]/60">
             {allNotifications.map(n => {
               const Icon = n.icon;
               const content = (
-                <div className="flex items-start gap-3 px-4 py-3 hover:bg-[#F3F1EC] dark:hover:bg-[#242A24] transition-colors">
+                <div className="flex items-start gap-3 px-4 py-3 hover:bg-[#ECF2EE]/60 dark:hover:bg-[#181E1A] transition-colors">
                   <div
                     className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
                     style={{ backgroundColor: n.iconBg, color: n.iconColor }}
@@ -138,9 +138,9 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
                     <Icon className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11.5px] font-bold text-[#20231F] dark:text-[#EAE7E0] leading-tight">{n.title}</p>
-                    <p className="text-[10.5px] text-[#7B8978] dark:text-[#8E9A8E] leading-relaxed mt-0.5">{n.body}</p>
-                    <p className="text-[9.5px] font-mono text-[#94A094] mt-1">{n.time}</p>
+                    <p className="text-[11.5px] font-bold text-[#141A16] dark:text-[#ECF2EE] leading-tight">{n.title}</p>
+                    <p className="text-[10.5px] text-[#7A8981] dark:text-[#7A8981] leading-relaxed mt-0.5">{n.body}</p>
+                    <p className="text-[9.5px] font-mono text-[#7A8981] mt-1">{n.time}</p>
                   </div>
                 </div>
               );
@@ -153,11 +153,11 @@ export default function NotificationsPanel({ open, onClose }: NotificationsPanel
           </div>
 
           {/* Footer */}
-          <div className="px-4 py-2.5 border-t border-[#D8D0C2] dark:border-[#333C33]">
+          <div className="px-4 py-2.5 border-t border-[#E2E6E2] dark:border-[#1A211D] bg-[#F2F5F3]/70 dark:bg-[#090B0A]/40">
             <Link
               to="/dashboard"
               onClick={onClose}
-              className="text-[10px] font-semibold text-[#657565] hover:underline no-underline"
+              className="text-[10px] font-semibold text-brand hover:underline no-underline"
             >
               View all activity in Dashboard →
             </Link>

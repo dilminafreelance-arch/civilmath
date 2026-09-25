@@ -3,7 +3,7 @@ import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Sun, Moon, Menu, X, Bell,
-  Home, Calculator, Search as SearchIcon, Wrench, Keyboard,
+  Home, Calculator, Search as SearchIcon, Keyboard,
   BookOpen
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
@@ -15,6 +15,7 @@ import ProfileDropdown from './ProfileDropdown';
 import NotificationsPanel from './NotificationsPanel';
 import ShortcutHelpModal from './ShortcutHelpModal';
 import SiteFooter from './SiteFooter';
+import { Button } from './ui';
 
 export default function AppLayout() {
   const { theme, toggleTheme, activeCalcId, unitSystem, notificationCount } = useApp();
@@ -63,7 +64,7 @@ export default function AppLayout() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen text-[#161A2C] dark:text-[#E7EAF7] flex font-sans transition-colors duration-300">
+    <div className="min-h-screen text-ink flex font-sans transition-colors duration-300">
       {/* 1. Left Sidebar (Desktop Persistent) */}
       <LeftSidebar className="hidden xl:flex sticky top-0 h-screen" />
 
@@ -87,7 +88,7 @@ export default function AppLayout() {
             >
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="absolute top-4 right-4 p-2 rounded-xl bg-[#141830] text-[#7C88B8] shadow-xs cursor-pointer"
+                className="absolute top-4 right-4 p-2 rounded-xl bg-surface-2 dark:bg-surface-3 text-ink-muted hover:text-ink shadow-xs cursor-pointer"
                 aria-label="Close navigation"
               >
                 <X className="w-4 h-4" />
@@ -101,12 +102,12 @@ export default function AppLayout() {
       {/* 2. Center Column + Header */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Floating Top Header */}
-        <header className="sticky top-0 z-30 bg-white/60 dark:bg-[#0B0D16]/70 backdrop-blur-xl px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-3 border-b border-white/60 dark:border-[#232A3D]">
+        <header className="sticky top-0 z-30 bg-surface-1/80 dark:bg-canvas-dark/80 backdrop-blur-xl px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-3 border-b border-border-subtle transition-colors">
           <div className="flex items-center gap-3">
             {/* Mobile Hamburger Button */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="xl:hidden p-2 rounded-xl border border-[#DCE3F5] dark:border-[#2A3350] backdrop-blur-xl backdrop-saturate-150 bg-[#F7F9FF]/70 dark:bg-[#141826]/70 text-[#161A2C] dark:text-[#E7EAF7] hover:border-[#7C88B8] transition-colors cursor-pointer shadow-2xs"
+              className="xl:hidden p-2 rounded-lg border border-border-subtle bg-surface-1 dark:bg-surface-2 text-ink dark:text-ink-dark hover:border-brand/50 transition-colors cursor-pointer shadow-2xs"
               aria-label="Open navigation menu"
             >
               <Menu className="w-4 h-4" />
@@ -117,11 +118,11 @@ export default function AppLayout() {
           </div>
 
           {/* Right Header Controls */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             {/* Shortcut Help Button */}
             <button
               onClick={() => setShortcutHelpOpen(true)}
-              className="hidden sm:flex p-2 rounded-xl border border-[#D8D0C2] dark:border-[#384238] bg-[#FAF8F5] dark:bg-[#242A24] text-[#7B8978] hover:text-[#20231F] dark:hover:text-white transition-colors cursor-pointer shadow-2xs"
+              className="hidden sm:flex p-2 rounded-lg border border-border-subtle bg-surface-1 dark:bg-surface-2 text-ink-muted dark:text-ink-muted-dark hover:text-ink dark:hover:text-ink-dark hover:border-brand/50 transition-colors cursor-pointer shadow-2xs"
               title="Keyboard shortcuts (?)"
               aria-label="Keyboard shortcuts"
             >
@@ -131,35 +132,30 @@ export default function AppLayout() {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-xl border border-[#DCE3F5] dark:border-[#2A3350] backdrop-blur-xl backdrop-saturate-150 bg-[#F7F9FF]/70 dark:bg-[#141826]/70 text-[#7C88B8] hover:text-[#161A2C] dark:hover:text-white transition-colors cursor-pointer shadow-2xs"
-              title={theme === 'light' ? 'Switch to Warm Studio Mode' : 'Switch to Warm Light Mode'}
+              className="p-2 rounded-lg border border-border-subtle bg-surface-1 dark:bg-surface-2 text-ink-muted dark:text-ink-muted-dark hover:text-ink dark:hover:text-ink-dark hover:border-brand/50 transition-colors cursor-pointer shadow-2xs"
+              title={theme === 'light' ? 'Switch to Obsidian Dark Mode' : 'Switch to Architectural Chalk Light Mode'}
               aria-label="Toggle theme"
             >
-              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-[#D9B96E]" />}
+              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-[#F59E0B]" />}
             </button>
 
             {/* Notifications Bell */}
-            <button
-              className="relative p-2 rounded-xl border border-[#DCE3F5] dark:border-[#2A3350] backdrop-blur-xl backdrop-saturate-150 bg-[#F7F9FF]/70 dark:bg-[#141826]/70 text-[#7C88B8] hover:text-[#161A2C] dark:hover:text-white transition-colors cursor-pointer shadow-2xs"
-              title="Notifications"
-              aria-label="Notifications"
-            >
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#B56F50] rounded-full" />
-            </button>
-
-            {/* User Profile Pill */}
-            <div className="flex items-center gap-2 pl-1 sm:pl-2">
-              <div className="w-8 h-8 rounded-full bg-[#4C5FE0] text-white flex items-center justify-center font-bold text-xs shadow-2xs">
-                E
-              </div>
-              <div className="hidden md:flex flex-col text-left leading-tight">
-                <span className="text-[10px] text-[#7C88B8] font-medium">Good to see you!</span>
-                <span className="text-xs font-bold text-[#161A2C] dark:text-[#E7EAF7]">Engineer</span>
-              </div>
+            <div className="relative">
+              <button
+                onClick={() => setNotifOpen(prev => !prev)}
+                className="relative p-2 rounded-lg border border-border-subtle bg-surface-1 dark:bg-surface-2 text-ink-muted dark:text-ink-muted-dark hover:text-ink dark:hover:text-ink-dark hover:border-brand/50 transition-colors cursor-pointer shadow-2xs"
+                title="Notifications"
+                aria-label="Notifications"
+              >
+                <Bell className="w-4 h-4" />
+                {notificationCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-brand rounded-full" />
+                )}
+              </button>
+              <NotificationsPanel open={notifOpen} onClose={() => setNotifOpen(false)} />
             </div>
 
-            {/* User Profile Pill — now functional */}
+            {/* User Profile Pill */}
             <ProfileDropdown />
           </div>
         </header>
@@ -177,11 +173,11 @@ export default function AppLayout() {
       <RightUtilityPanel className="hidden 2xl:flex sticky top-0 h-screen" />
 
       {/* Floating Bottom Mobile Navigation Bar */}
-      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 xl:hidden flex items-center gap-1 px-3 py-2 bg-white/90 dark:bg-[#11141F]/90 backdrop-blur-xl border border-[#DCE3F5] dark:border-[#2A3350] rounded-2xl shadow-xl">
+      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 xl:hidden flex items-center gap-1 px-3 py-1.5 bg-surface-1/90 dark:bg-surface-2/95 backdrop-blur-xl border border-border-subtle rounded-2xl shadow-xl">
         <Link
           to="/"
           className={`flex flex-col items-center px-3 py-1 rounded-xl text-[10px] font-bold no-underline transition-colors ${
-            location.pathname === '/' ? 'text-[#4C5FE0] bg-[#E7EAF7]/60 dark:bg-[#1D2438]' : 'text-[#7C88B8]'
+            location.pathname === '/' ? 'text-brand dark:text-brand-light bg-brand/10' : 'text-ink-muted dark:text-ink-muted-dark'
           }`}
         >
           <Home className="w-4 h-4 mb-0.5" />
@@ -190,7 +186,7 @@ export default function AppLayout() {
         <Link
           to="/calculators"
           className={`flex flex-col items-center px-3 py-1 rounded-xl text-[10px] font-bold no-underline transition-colors ${
-            location.pathname.startsWith('/calculators') || location.pathname.startsWith('/concrete') ? 'text-[#4C5FE0] bg-[#E7EAF7]/60 dark:bg-[#1D2438]' : 'text-[#7C88B8]'
+            isCalculatorsActive ? 'text-brand dark:text-brand-light bg-brand/10' : 'text-ink-muted dark:text-ink-muted-dark'
           }`}
         >
           <Calculator className="w-4 h-4 mb-0.5" />
@@ -200,7 +196,7 @@ export default function AppLayout() {
           onClick={() => {
             window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
           }}
-          className="flex flex-col items-center px-3 py-1 rounded-xl text-[10px] font-bold text-[#7C88B8] transition-colors cursor-pointer"
+          className="flex flex-col items-center px-3 py-1 rounded-xl text-[10px] font-bold text-ink-muted dark:text-ink-muted-dark transition-colors cursor-pointer"
         >
           <SearchIcon className="w-4 h-4 mb-0.5" />
           <span>Search</span>
@@ -208,19 +204,12 @@ export default function AppLayout() {
         <Link
           to="/articles"
           className={`flex flex-col items-center px-3 py-1 rounded-xl text-[10px] font-bold no-underline transition-colors ${
-            location.pathname.startsWith('/construction') ? 'text-[#4C5FE0] bg-[#E7EAF7]/60 dark:bg-[#1D2438]' : 'text-[#7C88B8]'
+            isArticlesActive ? 'text-brand dark:text-brand-light bg-brand/10' : 'text-ink-muted dark:text-ink-muted-dark'
           }`}
         >
-          <Wrench className="w-4 h-4 mb-0.5" />
-          <span>Tools</span>
+          <BookOpen className="w-4 h-4 mb-0.5" />
+          <span>Articles</span>
         </Link>
-        <button
-          onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
-          className="flex flex-col items-center px-3 py-1 rounded-xl text-[10px] font-bold text-[#7B8978] transition-colors cursor-pointer"
-        >
-          <SearchIcon className="w-4 h-4 mb-0.5" />
-          <span>Search</span>
-        </button>
       </div>
 
       {/* Floating ChatBot Assistant */}

@@ -189,32 +189,32 @@ export function ProjectBOQDrawer() {
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 26, stiffness: 280 }}
-          className="relative w-full max-w-xl bg-white dark:bg-[#0B0D16] border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col h-full z-10"
+          className="relative w-full max-w-xl bg-white dark:bg-[#131715] border-l border-[#E2E6E2] dark:border-[#1A211D] shadow-2xl flex flex-col h-full z-10 text-left"
         >
           {/* Drawer Header */}
-          <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
+          <div className="p-4 sm:p-5 border-b border-[#E2E6E2] dark:border-[#1A211D] flex items-center justify-between bg-[#F2F5F3]/70 dark:bg-[#090B0A]/40">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-[#f97316] flex items-center justify-center font-bold">
+              <div className="w-9 h-9 rounded-xl bg-brand/10 text-brand flex items-center justify-center font-bold">
                 <Building2 className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-slate-800 dark:text-white leading-tight flex items-center gap-2">
+                <h2 className="text-sm font-bold text-[#141A16] dark:text-[#ECF2EE] leading-tight flex items-center gap-2">
                   <span>{project.name}</span>
                   <button
                     onClick={() => setIsEditingHeader(!isEditingHeader)}
-                    className="text-[10px] text-[#f97316] hover:underline cursor-pointer font-normal"
+                    className="text-[10px] text-brand hover:underline cursor-pointer font-normal"
                   >
                     {isEditingHeader ? 'Done' : 'Edit'}
                   </button>
                 </h2>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                <p className="text-[10px] text-[#7A8981]">
                   {project.items.length} structural element{project.items.length === 1 ? '' : 's'} in project
                 </p>
               </div>
             </div>
             <button
               onClick={() => setIsBOQDrawerOpen(false)}
-              className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white cursor-pointer"
+              className="p-2 rounded-xl hover:bg-[#ECF2EE]/60 dark:hover:bg-[#181E1A] text-[#7A8981] hover:text-[#141A16] dark:hover:text-white cursor-pointer transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -222,33 +222,33 @@ export function ProjectBOQDrawer() {
 
           {/* Inline Edit Form */}
           {isEditingHeader && (
-            <div className="p-4 bg-orange-50/50 dark:bg-orange-950/20 border-b border-orange-200/50 dark:border-orange-800/40 space-y-2 text-xs">
+            <div className="p-4 bg-brand/5 dark:bg-brand/10 border-b border-brand/20 dark:border-brand/30 space-y-2 text-xs">
               <div>
-                <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Project Name</label>
+                <label className="block text-[10px] font-bold font-mono uppercase tracking-wider text-[#7A8981] mb-1">Project Name</label>
                 <input
                   type="text"
                   value={project.name}
                   onChange={e => updateProjectDetails({ name: e.target.value })}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                  className="w-full px-3 py-1.5 bg-white dark:bg-[#090B0A] border border-[#E2E6E2] dark:border-[#1A211D] rounded-xl text-xs text-[#141A16] dark:text-[#ECF2EE] outline-none focus:border-brand"
                 />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Client Name</label>
+                  <label className="block text-[10px] font-bold font-mono uppercase tracking-wider text-[#7A8981] mb-1">Client Name</label>
                   <input
                     type="text"
                     value={project.clientName || ''}
                     onChange={e => updateProjectDetails({ clientName: e.target.value })}
-                    className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                    className="w-full px-3 py-1.5 bg-white dark:bg-[#090B0A] border border-[#E2E6E2] dark:border-[#1A211D] rounded-xl text-xs text-[#141A16] dark:text-[#ECF2EE] outline-none focus:border-brand"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Engineer / In-Charge</label>
+                  <label className="block text-[10px] font-bold font-mono uppercase tracking-wider text-[#7A8981] mb-1">Engineer / In-Charge</label>
                   <input
                     type="text"
                     value={project.engineerName || ''}
                     onChange={e => updateProjectDetails({ engineerName: e.target.value })}
-                    className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                    className="w-full px-3 py-1.5 bg-white dark:bg-[#090B0A] border border-[#E2E6E2] dark:border-[#1A211D] rounded-xl text-xs text-[#141A16] dark:text-[#ECF2EE] outline-none focus:border-brand"
                   />
                 </div>
               </div>
@@ -256,22 +256,22 @@ export function ProjectBOQDrawer() {
           )}
 
           {/* Project Summary Metrics Strip */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 text-center">
-            <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-              <span className="text-[9px] font-semibold text-slate-400 uppercase block">Total Concrete</span>
-              <span className="text-xs font-bold text-slate-800 dark:text-white">{totals.totalConcreteM3} m³</span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-4 bg-[#F2F5F3]/70 dark:bg-[#090B0A]/50 border-b border-[#E2E6E2] dark:border-[#1A211D] text-center">
+            <div className="p-2.5 rounded-xl bg-white dark:bg-[#131715] border border-[#E2E6E2]/80 dark:border-[#1A211D] shadow-2xs">
+              <span className="text-[9px] font-semibold text-[#7A8981] uppercase block">Total Concrete</span>
+              <span className="text-xs font-bold text-[#141A16] dark:text-[#ECF2EE]">{totals.totalConcreteM3} m³</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-              <span className="text-[9px] font-semibold text-slate-400 uppercase block">Total Steel</span>
-              <span className="text-xs font-bold text-[#f97316]">{totals.totalSteelKg} kg</span>
+            <div className="p-2.5 rounded-xl bg-white dark:bg-[#131715] border border-[#E2E6E2]/80 dark:border-[#1A211D] shadow-2xs">
+              <span className="text-[9px] font-semibold text-[#7A8981] uppercase block">Total Steel</span>
+              <span className="text-xs font-bold text-brand">{totals.totalSteelKg} kg</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-              <span className="text-[9px] font-semibold text-slate-400 uppercase block">Total Bricks</span>
-              <span className="text-xs font-bold text-slate-800 dark:text-white">{totals.totalBricks.toLocaleString()}</span>
+            <div className="p-2.5 rounded-xl bg-white dark:bg-[#131715] border border-[#E2E6E2]/80 dark:border-[#1A211D] shadow-2xs">
+              <span className="text-[9px] font-semibold text-[#7A8981] uppercase block">Total Bricks</span>
+              <span className="text-xs font-bold text-[#141A16] dark:text-[#ECF2EE]">{totals.totalBricks.toLocaleString()}</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-              <span className="text-[9px] font-semibold text-slate-400 uppercase block">Budget Total</span>
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{totals.totalCost > 0 ? `${totals.totalCost.toLocaleString()}` : '-'}</span>
+            <div className="p-2.5 rounded-xl bg-white dark:bg-[#131715] border border-[#E2E6E2]/80 dark:border-[#1A211D] shadow-2xs">
+              <span className="text-[9px] font-semibold text-[#7A8981] uppercase block">Budget Total</span>
+              <span className="text-xs font-bold text-[#22C55E]">{totals.totalCost > 0 ? `${totals.totalCost.toLocaleString()}` : '-'}</span>
             </div>
           </div>
 
@@ -279,11 +279,11 @@ export function ProjectBOQDrawer() {
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {project.items.length === 0 ? (
               <div className="text-center py-16 px-4">
-                <div className="w-12 h-12 rounded-2xl bg-orange-500/10 text-[#f97316] flex items-center justify-center mx-auto mb-3">
+                <div className="w-12 h-12 rounded-2xl bg-brand/10 text-brand flex items-center justify-center mx-auto mb-3">
                   <HardHat className="w-6 h-6" />
                 </div>
-                <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">No Elements in Project Yet</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
+                <h3 className="text-sm font-bold text-[#141A16] dark:text-[#ECF2EE] mb-1">No Elements in Project Yet</h3>
+                <p className="text-xs text-[#7A8981] max-w-sm mx-auto leading-relaxed">
                   This project bill of quantities is empty.
                 </p>
               </div>
@@ -291,15 +291,15 @@ export function ProjectBOQDrawer() {
               project.items.map((item, idx) => (
                 <div
                   key={item.id}
-                  className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs flex items-center justify-between gap-3"
+                  className="p-3.5 rounded-2xl border border-[#E2E6E2] dark:border-[#1A211D] bg-white dark:bg-[#131715] shadow-2xs flex items-center justify-between gap-3"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                    <span className="w-6 h-6 rounded-lg bg-[#ECF2EE] dark:bg-[#181E1A] flex items-center justify-center text-[10px] font-bold text-[#7A8981]">
                       {idx + 1}
                     </span>
                     <div>
-                      <div className="text-xs font-bold text-slate-800 dark:text-slate-100">{item.title}</div>
-                      <div className="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
+                      <div className="text-xs font-bold text-[#141A16] dark:text-[#ECF2EE]">{item.title}</div>
+                      <div className="text-[10px] text-[#7A8981] flex items-center gap-2 mt-0.5">
                         <span className="uppercase font-semibold">{item.category}</span>
                         {item.metrics.concreteM3 ? <span>• {item.metrics.concreteM3} m³</span> : null}
                         {item.metrics.steelKg ? <span>• {item.metrics.steelKg} kg</span> : null}
@@ -310,20 +310,20 @@ export function ProjectBOQDrawer() {
 
                   {/* Multiplier & Delete */}
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-800">
-                      <span className="px-2 text-[10px] font-bold text-slate-400">×</span>
+                    <div className="flex items-center border border-[#E2E6E2] dark:border-[#1A211D] rounded-lg overflow-hidden bg-[#F2F5F3] dark:bg-[#090B0A]">
+                      <span className="px-2 text-[10px] font-bold text-[#7A8981]">×</span>
                       <input
                         type="number"
                         min="1"
                         max="999"
                         value={item.quantity || 1}
                         onChange={e => updateItemQuantity(item.id, parseInt(e.target.value) || 1)}
-                        className="w-12 py-1 text-center text-xs font-bold bg-transparent outline-none text-slate-800 dark:text-white"
+                        className="w-12 py-1 text-center text-xs font-bold bg-transparent outline-none text-[#141A16] dark:text-[#ECF2EE]"
                       />
                     </div>
                     <button
                       onClick={() => removeItemFromProject(item.id)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg text-[#7A8981] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors cursor-pointer"
                       title="Remove item"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -336,20 +336,20 @@ export function ProjectBOQDrawer() {
 
           {/* Drawer Actions Footer */}
           {project.items.length > 0 && (
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B0D16] space-y-2">
+            <div className="p-4 border-t border-[#E2E6E2] dark:border-[#1A211D] bg-white dark:bg-[#131715] space-y-2">
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={handleExportExcel}
-                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                  className="flex-1 py-2.5 rounded-xl bg-[#22C55E] hover:bg-[#16a34a] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
                 >
                   <FileSpreadsheet className="w-4 h-4" />
                   <span>Export Master BOQ (Excel)</span>
                 </button>
                 <button
                   onClick={handleExportPDF}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                  className="flex-1 py-2.5 rounded-xl bg-brand hover:bg-primary-dark text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
                 >
-                  <FileText className="w-4 h-4 text-orange-400" />
+                  <FileText className="w-4 h-4" />
                   <span>Export PDF Report</span>
                 </button>
               </div>
@@ -359,7 +359,7 @@ export function ProjectBOQDrawer() {
                     clearProject();
                   }
                 }}
-                className="w-full py-1.5 text-[10px] text-slate-400 hover:text-red-500 transition-colors cursor-pointer text-center"
+                className="w-full py-1.5 text-[10px] text-[#7A8981] hover:text-[#EF4444] transition-colors cursor-pointer text-center"
               >
                 Clear Entire Project
               </button>
@@ -370,3 +370,4 @@ export function ProjectBOQDrawer() {
     </AnimatePresence>
   );
 }
+

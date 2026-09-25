@@ -87,34 +87,34 @@ export default function FAQPage() {
 
       <div className="max-w-4xl mx-auto px-4">
         {/* Breadcrumbs */}
-        <nav className="flex items-center gap-1.5 text-xs font-medium text-slate-400 dark:text-slate-500 pt-6 pb-4 border-b border-slate-100 dark:border-slate-800">
-          <Link to="/" className="hover:text-[#f97316] transition-colors no-underline">Home</Link>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
-          <span className="text-[#f97316] font-bold">Frequently Asked Questions</span>
+        <nav className="flex items-center gap-1.5 text-xs font-medium text-[#7A8981] dark:text-[#8891B0] pt-6 pb-4 border-b border-[#E2E6E2]/60 dark:border-[#1A211D]/60">
+          <Link to="/" className="hover:text-brand transition-colors no-underline">Home</Link>
+          <ChevronRight className="w-3.5 h-3.5 text-[#7A8981]" />
+          <span className="text-brand font-bold">Frequently Asked Questions</span>
         </nav>
 
         {/* Hero */}
         <div className="pt-10 pb-8 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-[#f97316] text-[11px] font-bold uppercase tracking-wider mb-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/20 text-brand text-[11px] font-bold uppercase tracking-wider mb-4">
             <HelpCircle className="w-3.5 h-3.5" />
-            Support & Help Center
+            Support &amp; Help Center
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-[#141A16] dark:text-[#ECF2EE] tracking-tight leading-tight">
             Frequently Asked Questions
           </h1>
-          <p className="mt-3 text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-3 text-sm text-[#7A8981] dark:text-[#7A8981] max-w-2xl mx-auto leading-relaxed">
             Everything you need to know about CivilMath calculators, engineering formulas, unit conversions, and documentation.
           </p>
 
           {/* Search */}
           <div className="mt-6 relative max-w-xl mx-auto">
-            <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#7A8981] absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search questions or keywords (e.g. ACI 318, PDF, units)..."
-              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl pl-11 pr-4 py-3.5 text-sm outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/20 shadow-xs transition-all placeholder:text-slate-400"
+              className="w-full backdrop-blur-xl backdrop-saturate-150 bg-[#F2F5F3]/70 dark:bg-[#131715]/70 border border-[#E2E6E2] dark:border-[#1A211D] text-[#141A16] dark:text-[#ECF2EE] rounded-2xl pl-11 pr-4 py-3.5 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 shadow-xs transition-all placeholder:text-[#7A8981]"
             />
           </div>
         </div>
@@ -127,8 +127,8 @@ export default function FAQPage() {
               onClick={() => setSelectedCat(cat)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 selectedCat === cat
-                  ? 'bg-[#f97316] text-white shadow-sm'
-                  : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-[#f97316]/50'
+                  ? 'bg-brand text-white shadow-xs'
+                  : 'backdrop-blur-xl backdrop-saturate-150 bg-[#F2F5F3]/70 dark:bg-[#131715]/70 border border-[#E2E6E2] dark:border-[#1A211D] text-[#7A8981] hover:text-[#141A16] dark:hover:text-white hover:border-brand'
               }`}
             >
               {cat}
@@ -139,15 +139,15 @@ export default function FAQPage() {
         {/* FAQ Accordion List */}
         <div className="space-y-3 mb-12">
           {filteredFaqs.length === 0 ? (
-            <div className="text-center py-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
-              <HelpCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No matching questions found</p>
+            <div className="text-center py-12 backdrop-blur-xl backdrop-saturate-150 bg-[#F2F5F3]/70 dark:bg-[#131715]/70 border border-[#E2E6E2] dark:border-[#1A211D] rounded-2xl p-6">
+              <HelpCircle className="w-8 h-8 text-[#7A8981] mx-auto mb-2" />
+              <p className="text-sm font-semibold text-[#141A16] dark:text-[#ECF2EE]">No matching questions found</p>
               <button
                 onClick={() => {
                   setSearch('');
                   setSelectedCat('All');
                 }}
-                className="mt-3 text-xs text-[#f97316] font-semibold hover:underline"
+                className="mt-3 text-xs text-brand font-semibold hover:underline cursor-pointer"
               >
                 Reset search
               </button>
@@ -156,13 +156,13 @@ export default function FAQPage() {
             filteredFaqs.map((faq, idx) => (
               <details
                 key={idx}
-                className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-2xs hover:shadow-xs transition-shadow"
+                className="group backdrop-blur-xl backdrop-saturate-150 bg-[#F2F5F3]/70 dark:bg-[#131715]/70 border border-[#E2E6E2] dark:border-[#1A211D] rounded-2xl overflow-hidden shadow-2xs hover:shadow-xs transition-shadow"
               >
-                <summary className="px-5 py-4 text-sm font-bold text-slate-800 dark:text-slate-200 cursor-pointer flex items-center justify-between list-none">
+                <summary className="px-5 py-4 text-sm font-bold text-[#141A16] dark:text-[#ECF2EE] cursor-pointer flex items-center justify-between list-none">
                   <span>{faq.question}</span>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-open:rotate-90 transition-transform shrink-0 ml-3" />
+                  <ChevronRight className="w-4 h-4 text-[#7A8981] group-open:rotate-90 transition-transform shrink-0 ml-3" />
                 </summary>
-                <div className="px-5 pb-5 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed border-t border-slate-100 dark:border-slate-800 pt-3">
+                <div className="px-5 pb-5 text-xs sm:text-sm text-[#7A8981] leading-relaxed border-t border-[#E2E6E2]/60 dark:border-[#1A211D]/60 pt-3">
                   {faq.answer}
                 </div>
               </details>
@@ -171,21 +171,21 @@ export default function FAQPage() {
         </div>
 
         {/* Support Card */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-center shadow-xs">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">Have a question not listed here?</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-4 leading-relaxed">
+        <div className="backdrop-blur-xl backdrop-saturate-150 bg-[#F2F5F3]/70 dark:bg-[#131715]/70 border border-[#E2E6E2] dark:border-[#1A211D] rounded-2xl p-6 text-center shadow-xs">
+          <h3 className="text-base font-bold text-[#141A16] dark:text-[#ECF2EE] mb-2">Have a question not listed here?</h3>
+          <p className="text-xs text-[#7A8981] max-w-md mx-auto mb-4 leading-relaxed">
             Our engineering team is continually expanding our formula library and tools based on professional feedback.
           </p>
           <div className="flex items-center justify-center gap-3">
             <Link
               to="/contact"
-              className="px-4 py-2 rounded-xl bg-[#f97316] text-white text-xs font-semibold hover:bg-[#ea580c] transition-colors no-underline"
+              className="px-4 py-2 rounded-xl bg-brand hover:bg-primary-dark text-white text-xs font-semibold transition-colors no-underline shadow-xs"
             >
               Contact Engineering Team
             </Link>
             <Link
               to="/calculators"
-              className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors no-underline"
+              className="px-4 py-2 rounded-xl border border-[#E2E6E2] dark:border-[#1A211D] bg-[#ECF2EE]/60 dark:bg-[#181E1A] text-[#141A16] dark:text-[#ECF2EE] text-xs font-semibold hover:border-[#7A8981] transition-colors no-underline"
             >
               Explore Calculators
             </Link>

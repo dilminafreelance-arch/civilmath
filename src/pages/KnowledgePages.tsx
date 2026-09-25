@@ -2,15 +2,15 @@ import { Link, useParams } from 'react-router-dom';
 import { SEO, getRouteSEO, SITE_URL, DEFAULT_IMAGE } from '../utils/seo';
 import { FORMULAS, GUIDES, REFERENCE_TABLES } from '../data/knowledgeBase';
 
-const container = 'max-w-4xl mx-auto space-y-6 text-[#161A2C] dark:text-[#E7EAF7]';
-const card = 'block backdrop-blur-xl backdrop-saturate-150 bg-[#F7F9FF]/70 dark:bg-[#141826]/70 border border-[#DCE3F5] dark:border-[#2A3350] rounded-2xl p-5 no-underline hover:border-[#4C5FE0] transition-colors shadow-2xs';
+const container = 'max-w-4xl mx-auto space-y-6 text-ink dark:text-ink-dark';
+const card = 'block bg-surface-1 dark:bg-surface-2 border border-border-subtle rounded-2xl p-5 no-underline hover:border-brand/40 transition-colors shadow-xs';
 
 function Crumbs({ label }: { label: string }) {
   return (
-    <nav aria-label="Breadcrumb" className="text-xs text-[#7C88B8]">
-      <Link to="/" className="text-[#4C5FE0] no-underline hover:underline">Home</Link>
-      <span aria-hidden="true" className="mx-1.5 text-[#DCE3F5]">/</span>
-      <span className="font-semibold text-[#161A2C] dark:text-[#E7EAF7]">{label}</span>
+    <nav aria-label="Breadcrumb" className="text-xs text-ink-muted dark:text-ink-muted-dark">
+      <Link to="/" className="text-brand no-underline hover:underline">Home</Link>
+      <span aria-hidden="true" className="mx-1.5 text-border-subtle">/</span>
+      <span className="font-semibold text-ink dark:text-ink-dark">{label}</span>
     </nav>
   );
 }
@@ -95,7 +95,7 @@ export function GuidePage() {
         </section>
         <section className={card}>
           <h2 className="font-bold text-slate-900 dark:text-white">Use the related tool</h2>
-          <Link to={guide.calculator.url} className="mt-2 inline-block text-blue-600 font-semibold no-underline hover:underline">
+          <Link to={guide.calculator.url} className="mt-2 inline-block text-brand font-semibold no-underline hover:underline">
             {guide.calculator.label} →
           </Link>
         </section>
@@ -129,7 +129,7 @@ export function FormulasPage() {
             <h2 className="font-bold text-slate-900 dark:text-white">{item.name}</h2>
             <p className="font-mono mt-2">{item.equation}</p>
             <p className="text-sm mt-2">{item.meaning}</p>
-            <Link to={item.calculator} className="text-sm text-blue-600 font-semibold no-underline hover:underline mt-2 inline-block">
+            <Link to={item.calculator} className="text-sm text-brand font-semibold no-underline hover:underline mt-2 inline-block">
               Open related calculator →
             </Link>
           </section>

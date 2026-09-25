@@ -173,7 +173,7 @@ export default function Visual3DPreview({ calculatorId, inputs, outputs, unitSys
       const height = h / dpr;
 
       // Draw grid pattern (Engineering workspace grid)
-      ctx.strokeStyle = 'rgba(76, 95, 224, 0.08)'; 
+      ctx.strokeStyle = 'rgba(46, 107, 86, 0.08)'; 
       ctx.lineWidth = 0.5;
       const gridSize = 24;
       for (let x = 0; x < width; x += gridSize) {
@@ -190,7 +190,7 @@ export default function Visual3DPreview({ calculatorId, inputs, outputs, unitSys
       }
 
       // Technical Telemetry & Model Indicators (No brand name)
-      ctx.fillStyle = '#7C88B8';
+      ctx.fillStyle = '#5A7D71';
       ctx.font = '600 9px monospace';
       ctx.fillText(`ENGINEERING CAD MODEL // SCALE 1:100`, 16, 22);
 
@@ -301,7 +301,7 @@ export default function Visual3DPreview({ calculatorId, inputs, outputs, unitSys
       // Define faces with center depths to do painter's algorithm sorting
       const faces = [
         { name: 'bottom', indices: [0, 1, 2, 3], color: 'rgba(175, 168, 156, 0.6)', stroke: '#70675B' },
-        { name: 'top', indices: [4, 5, 6, 7], color: isSlabStressMode ? 'rgba(76, 95, 224, 0.25)' : '#C7D0EE', stroke: '#232B44' },
+        { name: 'top', indices: [4, 5, 6, 7], color: isSlabStressMode ? 'rgba(46, 107, 86, 0.25)' : '#C7D0EE', stroke: '#232B44' },
         { name: 'front_left', indices: [0, 1, 5, 4], color: '#B5ADA0', stroke: '#232B44' },
         { name: 'front_right', indices: [1, 2, 6, 5], color: '#C2BBAE', stroke: '#232B44' },
         { name: 'back_right', indices: [2, 3, 7, 6], color: '#A69E91', stroke: '#5C5448' },
@@ -337,7 +337,7 @@ export default function Visual3DPreview({ calculatorId, inputs, outputs, unitSys
             const grad = ctx.createRadialGradient((v4.x+v6.x)/2, (v4.y+v6.y)/2, 5, (v4.x+v6.x)/2, (v4.y+v6.y)/2, L * 0.7);
             grad.addColorStop(0, 'rgba(181, 111, 80, 0.6)');
             grad.addColorStop(0.5, 'rgba(217, 185, 110, 0.4)');
-            grad.addColorStop(1, 'rgba(76, 95, 224, 0.2)');
+            grad.addColorStop(1, 'rgba(46, 107, 86, 0.2)');
             ctx.fillStyle = grad;
           } else {
             ctx.fillStyle = face.color;
@@ -385,8 +385,8 @@ export default function Visual3DPreview({ calculatorId, inputs, outputs, unitSys
       // TECHNICAL CAD DIMENSION LEADER LINES (WARM CHARCOAL)
       // ----------------------------------------------------
       ctx.save();
-      ctx.strokeStyle = '#161A2C';
-      ctx.fillStyle = '#161A2C';
+      ctx.strokeStyle = '#141A16';
+      ctx.fillStyle = '#141A16';
       ctx.lineWidth = 1.2;
       ctx.font = '600 11px Inter, system-ui, sans-serif';
 
@@ -2432,24 +2432,24 @@ export default function Visual3DPreview({ calculatorId, inputs, outputs, unitSys
   return (
     <div 
       ref={containerRef}
-      className="relative w-full h-[320px] md:h-full min-h-[260px] backdrop-blur-xl backdrop-saturate-150 bg-[#F7F9FF]/70 dark:bg-[#11141F]/80 border border-[#DCE3F5] dark:border-[#2A3350] rounded-2xl overflow-hidden shadow-xs flex flex-col justify-between"
+      className="relative w-full h-[320px] md:h-full min-h-[260px] backdrop-blur-xl bg-surface-1/70 dark:bg-surface-2/80 border border-border-subtle rounded-2xl overflow-hidden shadow-xs flex flex-col justify-between"
     >
       {/* VISUAL ENGINE STATE HUB */}
-      <div className="absolute top-3 right-4 flex items-center space-x-1.5 bg-white/90 dark:bg-[#141826]/90 px-2.5 py-1.5 rounded-lg border border-[#DCE3F5] dark:border-[#2A3350] backdrop-blur-md z-10 shadow-xs">
-        <span className="w-1.5 h-1.5 bg-[#4C5FE0] rounded-full mr-0.5"></span>
-        <span className="text-[9px] font-mono font-bold text-[#4C5FE0] dark:text-[#9AA3C4] uppercase tracking-wider">
+      <div className="absolute top-3 right-4 flex items-center space-x-1.5 bg-surface-1/90 dark:bg-surface-2/90 px-2.5 py-1.5 rounded-lg border border-border-subtle backdrop-blur-md z-10 shadow-xs">
+        <span className="w-1.5 h-1.5 bg-brand rounded-full mr-0.5"></span>
+        <span className="text-[9px] font-mono font-bold text-brand dark:text-brand-light uppercase tracking-wider">
           {has3DSupport ? '3D MODEL READY' : 'CAD VIEW READY'}
         </span>
       </div>
 
       {/* OVERLAY ACTIONS BAR (HUD CAMERA PLATFORM) */}
       {has3DSupport && (
-        <div className="absolute bottom-3 right-4 flex items-center space-x-1 bg-white/95 dark:bg-[#141826]/95 p-1 rounded-xl border border-[#DCE3F5] dark:border-[#2A3350] backdrop-blur-md z-10 shadow-xs">
+        <div className="absolute bottom-3 right-4 flex items-center space-x-1 bg-surface-1/95 dark:bg-surface-2/95 p-1 rounded-xl border border-border-subtle backdrop-blur-md z-10 shadow-xs">
           <button
             type="button"
             onClick={() => setAutoRotate(!autoRotate)}
             title={autoRotate ? 'Stop Automated Orbit' : 'Automated 3D Orbit Spin'}
-            className={`p-1.5 rounded-lg hover:bg-[#EEF1FB] dark:hover:bg-[#232A3D] transition-colors cursor-pointer text-xs ${autoRotate ? 'text-white bg-[#4C5FE0]' : 'text-[#7C88B8]'}`}
+            className={`p-1.5 rounded-lg hover:bg-surface-2 dark:hover:bg-surface-3 transition-colors cursor-pointer text-xs ${autoRotate ? 'text-white bg-brand' : 'text-ink-muted'}`}
           >
             {autoRotate ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
           </button>
@@ -2458,7 +2458,7 @@ export default function Visual3DPreview({ calculatorId, inputs, outputs, unitSys
             type="button"
             onClick={handleZoomIn}
             title="Zoom Camera In"
-            className="p-1.5 rounded-lg hover:bg-[#EEF1FB] dark:hover:bg-[#232A3D] transition-colors text-[#7C88B8] hover:text-[#161A2C] dark:hover:text-white cursor-pointer text-xs"
+            className="p-1.5 rounded-lg hover:bg-surface-2 dark:hover:bg-surface-3 transition-colors text-ink-muted hover:text-ink dark:hover:text-ink-dark cursor-pointer text-xs"
           >
             <ZoomIn className="w-4 h-4" />
           </button>
@@ -2467,7 +2467,7 @@ export default function Visual3DPreview({ calculatorId, inputs, outputs, unitSys
             type="button"
             onClick={handleZoomOut}
             title="Zoom Camera Out"
-            className="p-1.5 rounded-lg hover:bg-[#EEF1FB] dark:hover:bg-[#232A3D] transition-colors text-[#7C88B8] hover:text-[#161A2C] dark:hover:text-white cursor-pointer text-xs"
+            className="p-1.5 rounded-lg hover:bg-surface-2 dark:hover:bg-surface-3 transition-colors text-ink-muted hover:text-ink dark:hover:text-ink-dark cursor-pointer text-xs"
           >
             <ZoomOut className="w-4 h-4" />
           </button>
@@ -2476,18 +2476,18 @@ export default function Visual3DPreview({ calculatorId, inputs, outputs, unitSys
             type="button"
             onClick={() => setShowWireframeOnly(!showWireframeOnly)}
             title="Toggle Wireframe Blueprint Mode"
-            className={`p-1.5 rounded-lg hover:bg-[#EEF1FB] dark:hover:bg-[#232A3D] transition-colors cursor-pointer text-xs ${showWireframeOnly ? 'text-white bg-[#4C5FE0]' : 'text-[#7C88B8]'}`}
+            className={`p-1.5 rounded-lg hover:bg-surface-2 dark:hover:bg-surface-3 transition-colors cursor-pointer text-xs ${showWireframeOnly ? 'text-white bg-brand' : 'text-ink-muted'}`}
           >
             <Compass className="w-4 h-4" />
           </button>
 
-          <div className="w-[1px] h-4 bg-[#DCE3F5] dark:bg-[#2A3350] mx-1"></div>
+          <div className="w-[1px] h-4 bg-border-subtle mx-1"></div>
 
           <button
             type="button"
             onClick={handleResetCamera}
             title="Reset Camera Angle"
-            className="p-1.5 rounded-lg hover:bg-[#EEF1FB] dark:hover:bg-[#232A3D] transition-colors text-[#7C88B8] hover:text-[#161A2C] dark:hover:text-white cursor-pointer text-xs"
+            className="p-1.5 rounded-lg hover:bg-surface-2 dark:hover:bg-surface-3 transition-colors text-ink-muted hover:text-ink dark:hover:text-ink-dark cursor-pointer text-xs"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
@@ -2496,18 +2496,18 @@ export default function Visual3DPreview({ calculatorId, inputs, outputs, unitSys
 
       {/* 2D / 3D VIEW SELECTOR */}
       <div className="absolute top-3 left-4 flex flex-col space-y-1.5 z-10 text-left">
-        <div className="flex space-x-1 bg-white/95 dark:bg-[#141826]/95 p-0.5 rounded-xl border border-[#DCE3F5] dark:border-[#2A3350] backdrop-blur-md shadow-xs">
+        <div className="flex space-x-1 bg-surface-1/95 dark:bg-surface-2/95 p-0.5 rounded-xl border border-border-subtle backdrop-blur-md shadow-xs">
           <button
             type="button"
             onClick={() => setViewMode('2d')}
-            className={`px-3 py-1 text-[10px] font-bold font-mono uppercase rounded-lg transition-all cursor-pointer ${viewMode === '2d' ? 'bg-[#4C5FE0] text-white shadow-xs' : 'text-[#7C88B8] hover:text-[#161A2C]'}`}
+            className={`px-3 py-1 text-[10px] font-bold font-mono uppercase rounded-lg transition-all cursor-pointer ${viewMode === '2d' ? 'bg-brand text-white shadow-xs' : 'text-ink-muted hover:text-ink'}`}
           >
             2D
           </button>
           <button
             type="button"
             onClick={() => setViewMode('3d')}
-            className={`px-3 py-1 text-[10px] font-bold font-mono uppercase rounded-lg transition-all cursor-pointer ${viewMode === '3d' ? 'bg-[#4C5FE0] text-white shadow-xs' : 'text-[#7C88B8] hover:text-[#161A2C]'}`}
+            className={`px-3 py-1 text-[10px] font-bold font-mono uppercase rounded-lg transition-all cursor-pointer ${viewMode === '3d' ? 'bg-brand text-white shadow-xs' : 'text-ink-muted hover:text-ink'}`}
           >
             3D
           </button>
@@ -2515,25 +2515,25 @@ export default function Visual3DPreview({ calculatorId, inputs, outputs, unitSys
 
         {/* SECONDARY BEAM LEVEL DIAGRAM TABS FOR 2D ANALYSIS */}
         {viewMode === '2d' && (calculatorId === 'structural-beam' || calculatorId === 'structural-deflection') && (
-          <div className="flex space-x-0.5 bg-white/90 dark:bg-[#141826]/90 p-0.5 rounded-md border border-[#DCE3F5] dark:border-[#2A3350] w-fit">
+          <div className="flex space-x-0.5 bg-surface-1/90 dark:bg-surface-2/90 p-0.5 rounded-md border border-border-subtle w-fit">
             <button
               type="button"
               onClick={() => setBeamTab('profile')}
-              className={`px-1.5 py-0.5 text-[8px] font-semibold font-mono uppercase rounded-sm transition-all cursor-pointer ${beamTab === 'profile' ? 'bg-[#4C5FE0] text-white' : 'text-[#7C88B8] hover:text-[#161A2C]'}`}
+              className={`px-1.5 py-0.5 text-[8px] font-semibold font-mono uppercase rounded-sm transition-all cursor-pointer ${beamTab === 'profile' ? 'bg-brand text-white' : 'text-ink-muted hover:text-ink'}`}
             >
               Deflection
             </button>
             <button
               type="button"
               onClick={() => setBeamTab('sfd')}
-              className={`px-1.5 py-0.5 text-[8px] font-semibold font-mono uppercase rounded-sm transition-all cursor-pointer ${beamTab === 'sfd' ? 'bg-[#B56F50]/20 text-[#B56F50]' : 'text-[#7C88B8] hover:text-[#161A2C]'}`}
+              className={`px-1.5 py-0.5 text-[8px] font-semibold font-mono uppercase rounded-sm transition-all cursor-pointer ${beamTab === 'sfd' ? 'bg-[#B56F50]/20 text-[#B56F50]' : 'text-ink-muted hover:text-ink'}`}
             >
               SFD
             </button>
             <button
               type="button"
               onClick={() => setBeamTab('bmd')}
-              className={`px-1.5 py-0.5 text-[8px] font-semibold font-mono uppercase rounded-sm transition-all cursor-pointer ${beamTab === 'bmd' ? 'bg-[#4C5FE0]/20 text-[#4C5FE0]' : 'text-[#7C88B8] hover:text-[#161A2C]'}`}
+              className={`px-1.5 py-0.5 text-[8px] font-semibold font-mono uppercase rounded-sm transition-all cursor-pointer ${beamTab === 'bmd' ? 'bg-brand/20 text-brand' : 'text-ink-muted hover:text-ink'}`}
             >
               BMD
             </button>

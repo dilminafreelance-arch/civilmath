@@ -1,41 +1,50 @@
 import React from 'react';
+import { Card } from './ui';
 
 export function cls(...classes: (string | false | undefined | null)[]): string {
   return classes.filter(Boolean).join(' ');
 }
 
-export function Card({ title, children, className }: { title?: string; children: React.ReactNode; className?: string }) {
+export function TitledCard({ title, children, className }: { title?: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={cls("bg-white dark:bg-[#0D1527] border border-[#E2E8F0] dark:border-[#1E293B] rounded-xl p-4", className)}>
-      {title && <h3 className="text-xs font-extrabold text-[#0F172A] dark:text-white mb-3">{title}</h3>}
+    <Card className={className}>
+      {title && <h3 className="text-xs font-bold text-ink uppercase tracking-wider mb-3">{title}</h3>}
       {children}
+    </Card>
+  );
+}
+
+export function ProgressBar({ value, size = 'md', color = '#2E6B56' }: { value: number; size?: 'sm' | 'md'; color?: string }) {
+  const h = size === 'sm' ? 'h-1.5' : 'h-2';
+  return (
+    <div className={cls('w-full bg-border-subtle rounded-full overflow-hidden', h)}>
+      <div className={cls('rounded-full transition-all duration-300', h)} style={{ width: `${Math.min(100, value)}%`, backgroundColor: color }} />
     </div>
   );
 }
 
-export function ProgressBar({ value, size = 'md', color = '#2563EB' }: { value: number; size?: 'sm' | 'md'; color?: string }) {
-  const h = size === 'sm' ? 'h-1.5' : 'h-2.5';
+export function StatusBadge({ label, color = '#2E6B56' }: { label: string; color?: string }) {
   return (
-    <div className={cls("w-full bg-[#E2E8F0] dark:bg-[#1E293B] rounded-full overflow-hidden", h)}>
-      <div className={cls("rounded-full transition-all duration-500", h)} style={{ width: `${Math.min(100, value)}%`, backgroundColor: color }} />
-    </div>
-  );
-}
-
-export function StatusBadge({ label, color }: { label: string; color: string }) {
-  return (
-    <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold" style={{ backgroundColor: `${color}20`, color }}>
+    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold border" style={{ backgroundColor: `${color}15`, borderColor: `${color}30`, color }}>
       {label}
     </span>
   );
 }
 
 export function Avatar({ name, url, size = 7 }: { name: string; url?: string; size?: number }) {
-  const s = size * 4;
+  const sizeClasses: Record<number, string> = {
+    5: 'w-5 h-5 text-[8px]',
+    6: 'w-6 h-6 text-[9px]',
+    7: 'w-7 h-7 text-[10px]',
+    8: 'w-8 h-8 text-xs',
+    10: 'w-10 h-10 text-sm',
+    12: 'w-12 h-12 text-base',
+  };
+  const sizeClass = sizeClasses[size] ?? 'w-7 h-7 text-[10px]';
   return url ? (
-    <img src={url} alt={`${name}'s avatar`} className={`w-${size} h-${size} rounded-full`} />
+    <img src={url} alt={`${name}'s avatar`} className={`${sizeClass} rounded-full object-cover`} />
   ) : (
-    <div className={`w-${size} h-${size} rounded-full bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB] text-[${size * 1.5}px] font-bold shrink-0`}>
+    <div className={`${sizeClass} rounded-full bg-brand/15 flex items-center justify-center text-brand font-bold shrink-0 font-mono`}>
       {name.charAt(0).toUpperCase()}
     </div>
   );

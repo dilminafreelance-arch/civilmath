@@ -18,20 +18,20 @@ export type NumericInputVariant =
   | 'none';
 
 const VARIANTS: Record<Exclude<NumericInputVariant, 'none'>, string> = {
-  ws: 'w-full bg-[#F8FAFC] dark:bg-[#080d19] border border-[#E2E8F0] dark:border-[#1E293B] rounded-lg px-2 py-1.5 text-[10px] outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316]/20',
-  wsMd: 'w-full bg-[#F8FAFC] dark:bg-[#080d19] border border-[#E2E8F0] dark:border-[#1E293B] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316]/20',
-  wsPlain: 'w-full bg-[#F8FAFC] dark:bg-[#080d19] border border-[#E2E8F0] dark:border-[#1E293B] rounded-lg px-2 py-1.5 text-[10px] outline-none',
-  calc: 'w-full bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316]/20 shadow-2xs',
-  calcPlain: 'w-full bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 outline-none',
-  calcCenter: 'w-full bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-slate-800 rounded-lg p-1.5 text-center text-slate-800 dark:text-slate-100 outline-none focus:border-[#f97316] font-sans text-xs',
-  calcMono: 'w-full bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 outline-none text-xs font-mono font-bold',
-  calcXs: 'w-full bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-slate-800 rounded-lg p-1.5 text-center text-slate-700 dark:text-slate-300 outline-none text-[11px] font-mono',
-  ubbs: 'w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-2.5 pr-10 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316]/20 font-bold',
-  ubbsDark: 'w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-2 py-1 text-white text-xs outline-none focus:border-[#f97316] h-7',
-  mini: 'w-10 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-1 py-0.5 text-[10px] font-bold text-center outline-none',
-  field: 'w-full mt-0.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 text-[10px] outline-none',
-  fieldF: 'w-full mt-0.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 text-[10px] outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316]/20',
-  bare: 'bg-transparent border-none outline-none text-[10px] w-full',
+  ws: 'w-full bg-surface-2 dark:bg-surface-2 border border-border-subtle rounded-xl px-2 py-1.5 text-[10px] text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all',
+  wsMd: 'w-full bg-surface-2 dark:bg-surface-2 border border-border-subtle rounded-xl px-3 py-1.5 text-xs text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all',
+  wsPlain: 'w-full bg-surface-2 dark:bg-surface-2 border border-border-subtle rounded-xl px-2 py-1.5 text-[10px] text-ink outline-none',
+  calc: 'w-full bg-surface-0 dark:bg-surface-1 border border-border-subtle rounded-xl px-3 py-2 text-xs text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 shadow-2xs transition-all',
+  calcPlain: 'w-full bg-surface-0 dark:bg-surface-1 border border-border-subtle rounded-xl px-3 py-2 text-xs text-ink outline-none',
+  calcCenter: 'w-full bg-surface-0 dark:bg-surface-1 border border-border-subtle rounded-xl p-1.5 text-center text-ink outline-none focus:border-brand font-sans text-xs transition-all',
+  calcMono: 'w-full bg-surface-0 dark:bg-surface-1 border border-border-subtle rounded-xl px-3 py-2 text-ink outline-none text-xs font-mono font-bold',
+  calcXs: 'w-full bg-surface-0 dark:bg-surface-1 border border-border-subtle rounded-lg p-1.5 text-center text-ink-secondary outline-none text-[11px] font-mono',
+  ubbs: 'w-full bg-surface-0 dark:bg-surface-1 border border-border-subtle rounded-xl pl-2.5 pr-10 py-1.5 text-xs text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 font-bold transition-all',
+  ubbsDark: 'w-full bg-surface-1 border border-border-subtle rounded-xl pl-9 pr-2 py-1 text-ink text-xs outline-none focus:border-brand h-7 transition-all',
+  mini: 'w-10 bg-surface-0 dark:bg-surface-1 border border-border-subtle rounded-md px-1 py-0.5 text-[10px] font-bold text-center outline-none text-ink',
+  field: 'w-full mt-0.5 bg-surface-0 dark:bg-surface-1 border border-border-subtle rounded-xl px-2 py-1 text-[10px] text-ink outline-none',
+  fieldF: 'w-full mt-0.5 bg-surface-0 dark:bg-surface-1 border border-border-subtle rounded-xl px-2 py-1 text-[10px] text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all',
+  bare: 'bg-transparent border-none outline-none text-[10px] w-full text-ink',
 };
 
 export interface NumericInputProps
@@ -89,7 +89,7 @@ export function NumericInput({
   return (
     <>
       {prefix != null && (
-        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-500 pointer-events-none">
+        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-ink-muted pointer-events-none">
           {prefix}
         </span>
       )}
@@ -105,7 +105,7 @@ export function NumericInput({
         {...rest}
       />
       {suffix != null && (
-        <span className="absolute right-3 text-[10px] uppercase text-slate-400 pointer-events-none font-bold">
+        <span className="absolute right-3 text-[10px] font-mono uppercase text-ink-muted pointer-events-none font-bold">
           {suffix}
         </span>
       )}

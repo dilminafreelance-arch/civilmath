@@ -209,7 +209,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ activeCalcId, unitSystem }) =>
       <div className="fixed top-[250px] right-4 md:top-auto md:bottom-6 md:right-6 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="relative w-13 h-13 bg-[#4C5FE0] text-white hover:bg-[#3B47B8] rounded-full flex items-center justify-center shadow-md shadow-[#4C5FE0]/25 cursor-pointer border border-[#7C88B8]/40 transition-transform duration-200 hover:scale-105 active:scale-95 group focus:outline-none"
+          className="relative w-13 h-13 bg-brand text-white hover:bg-primary-dark rounded-full flex items-center justify-center shadow-md shadow-brand/25 cursor-pointer border border-[#7A8981]/40 transition-transform duration-200 hover:scale-105 active:scale-95 group focus:outline-none"
           aria-label="Engineering Assistant Chat"
         >
           <AnimatePresence mode="wait">
@@ -237,7 +237,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ activeCalcId, unitSystem }) =>
             )}
           </AnimatePresence>
           {/* Notification dot (Online Indicator) */}
-          <span className="absolute top-0 right-0 w-3 h-3 bg-[#4C5FE0] border-2 border-white dark:border-[#11141F] rounded-full"></span>
+          <span className="absolute top-0 right-0 w-3 h-3 bg-brand border-2 border-white dark:border-[#0D100E] rounded-full"></span>
         </button>
       </div>
 
@@ -249,10 +249,10 @@ export const ChatBot: React.FC<ChatBotProps> = ({ activeCalcId, unitSystem }) =>
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ type: 'spring', damping: 20, stiffness: 260 }}
-            className="fixed top-[180px] right-4 md:top-auto md:bottom-24 md:right-6 z-50 w-[380px] h-[520px] max-h-[calc(100vh-16rem)] md:max-h-none max-w-[calc(100vw-2rem)] bg-[#F7F9FF]/98 dark:bg-[#11141F]/98 border border-[#DCE3F5] dark:border-[#2A3350] rounded-3xl shadow-xl backdrop-blur-md flex flex-col overflow-hidden text-left"
+            className="fixed top-[180px] right-4 md:top-auto md:bottom-24 md:right-6 z-50 w-[380px] h-[520px] max-h-[calc(100vh-16rem)] md:max-h-none max-w-[calc(100vw-2rem)] bg-[#F2F5F3]/98 dark:bg-[#0D100E]/98 border border-[#E2E6E2] dark:border-[#1A211D] rounded-3xl shadow-xl backdrop-blur-md flex flex-col overflow-hidden text-left"
           >
             {/* Header */}
-            <div className="bg-[#161A2C] dark:bg-[#161916] p-4 text-white flex items-center justify-between border-b border-[#DCE3F5]/20 shadow-xs relative">
+            <div className="bg-[#141A16] dark:bg-[#161916] p-4 text-white flex items-center justify-between border-b border-[#E2E6E2]/20 shadow-xs relative">
               <div className="flex items-center space-x-2.5">
                 <div className="p-2 bg-white/10 text-white rounded-xl border border-white/15">
                   <HardHat className="w-4 h-4 text-[#D9B96E]" />
@@ -260,9 +260,9 @@ export const ChatBot: React.FC<ChatBotProps> = ({ activeCalcId, unitSystem }) =>
                 <div>
                   <h3 className="text-xs font-bold font-sans tracking-tight text-white flex items-center">
                     Engineering Assistant
-                    <span className="w-1.5 h-1.5 bg-[#4C5FE0] rounded-full ml-1.5 inline-block"></span>
+                    <span className="w-1.5 h-1.5 bg-brand rounded-full ml-1.5 inline-block"></span>
                   </h3>
-                  <span className="text-[9px] font-mono text-[#9AA3C4] uppercase tracking-wider block">Principal Structural AI</span>
+                  <span className="text-[9px] font-mono text-[#7A8981] uppercase tracking-wider block">Principal Structural AI</span>
                 </div>
               </div>
               <div className="flex items-center space-x-1">
@@ -285,19 +285,19 @@ export const ChatBot: React.FC<ChatBotProps> = ({ activeCalcId, unitSystem }) =>
 
             {/* Context bar if viewing a calculator */}
             {activeCalcDef && (
-              <div className="bg-blue-50/50 dark:bg-blue-950/20 px-4 py-2 border-b border-slate-100 dark:border-slate-850 flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
+              <div className="bg-brand/8 dark:bg-brand/15 px-4 py-2 border-b border-[#E2E6E2] dark:border-[#1A211D] flex items-center justify-between text-[10px] font-mono text-[#7A8981]">
                 <span className="flex items-center">
-                  <Sparkles className="w-3 h-3 text-[#0A84FF] mr-1" />
+                  <Sparkles className="w-3 h-3 text-brand mr-1" />
                   Viewing: <strong>{activeCalcDef.name}</strong>
                 </span>
-                <span className="bg-[#0A84FF]/10 text-[#0A84FF] px-1.5 py-0.5 rounded uppercase font-bold text-[8px]">
+                <span className="bg-brand/10 text-brand px-1.5 py-0.5 rounded uppercase font-bold text-[8px]">
                   Context Active
                 </span>
               </div>
             )}
 
             {/* Chat Messages Log */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-3 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 scroll-smooth">
+            <div className="flex-1 p-4 overflow-y-auto space-y-3 scrollbar-thin scrollbar-thumb-[#E2E6E2] dark:scrollbar-thumb-[#1A211D] scroll-smooth">
               {messages.map((msg, index) => (
                 <div
                   key={index}
@@ -306,8 +306,8 @@ export const ChatBot: React.FC<ChatBotProps> = ({ activeCalcId, unitSystem }) =>
                   <div
                     className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[11.5px] leading-relaxed shadow-3xs ${
                       msg.role === 'user'
-                        ? 'bg-[#0A84FF] text-white rounded-tr-none'
-                        : 'bg-slate-105/90 dark:bg-slate-900/90 text-slate-800 dark:text-slate-200 rounded-tl-none border border-slate-200/50 dark:border-slate-800/80'
+                        ? 'bg-brand text-white rounded-tr-none'
+                        : 'bg-[#F2F5F3] dark:bg-[#131715] text-[#141A16] dark:text-[#ECF2EE] rounded-tl-none border border-[#E2E6E2] dark:border-[#1A211D]'
                     }`}
                   >
                     {msg.role === 'user' ? (
@@ -321,10 +321,10 @@ export const ChatBot: React.FC<ChatBotProps> = ({ activeCalcId, unitSystem }) =>
 
               {isLoading && (
                 <div className="flex justify-start items-center space-x-2">
-                  <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/60 rounded-2xl rounded-tl-none px-4 py-3 flex items-center space-x-1">
-                    <span className="w-1.5 h-1.5 bg-[#0A84FF] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                    <span className="w-1.5 h-1.5 bg-[#0A84FF] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                    <span className="w-1.5 h-1.5 bg-[#0A84FF] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                  <div className="bg-[#F2F5F3] dark:bg-[#131715] border border-[#E2E6E2] dark:border-[#1A211D] rounded-2xl rounded-tl-none px-4 py-3 flex items-center space-x-1">
+                    <span className="w-1.5 h-1.5 bg-brand rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-1.5 h-1.5 bg-brand rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-1.5 h-1.5 bg-brand rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                   </div>
                 </div>
               )}
@@ -334,9 +334,9 @@ export const ChatBot: React.FC<ChatBotProps> = ({ activeCalcId, unitSystem }) =>
 
             {/* Suggestion Chips */}
             {messages.length <= 1 && (
-              <div className="px-4 pb-2 text-[10px] text-slate-400 dark:text-slate-550 font-sans">
+              <div className="px-4 pb-2 text-[10px] text-[#7A8981] font-sans">
                 <span className="flex items-center mb-1.5 font-bold">
-                  <HelpCircle className="w-3 h-3 mr-1 text-[#0A84FF]" />
+                  <HelpCircle className="w-3 h-3 mr-1 text-brand" />
                   Suggested Engineering Queries:
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -344,7 +344,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ activeCalcId, unitSystem }) =>
                     <button
                       key={idx}
                       onClick={() => handleSendMessage(suggestion)}
-                      className="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-600 dark:text-slate-350 cursor-pointer transition-colors text-[10px] text-left hover:border-[#0A84FF]/40 font-medium"
+                      className="px-2.5 py-1 bg-[#F2F5F3] hover:bg-[#ECF2EE] dark:bg-[#131715] dark:hover:bg-[#181E1A] border border-[#E2E6E2] dark:border-[#1A211D] rounded-lg text-[#141A16] dark:text-[#ECF2EE] cursor-pointer transition-colors text-[10px] text-left hover:border-brand font-medium"
                     >
                       {suggestion}
                     </button>
@@ -359,7 +359,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ activeCalcId, unitSystem }) =>
                 e.preventDefault();
                 handleSendMessage();
               }}
-              className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-[#090F1C]/40 flex items-center space-x-2"
+              className="p-3 border-t border-[#E2E6E2] dark:border-[#1A211D] bg-[#F2F5F3]/70 dark:bg-[#090B0A]/50 flex items-center space-x-2"
             >
               <input
                 type="text"
@@ -367,12 +367,12 @@ export const ChatBot: React.FC<ChatBotProps> = ({ activeCalcId, unitSystem }) =>
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 disabled={isLoading}
-                className="flex-grow bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-[#0A84FF] font-sans placeholder-slate-450 dark:placeholder-slate-500"
+                className="flex-grow bg-white dark:bg-[#090B0A] border border-[#E2E6E2] dark:border-[#1A211D] rounded-xl px-3.5 py-2 text-xs text-[#141A16] dark:text-[#ECF2EE] outline-none focus:border-brand font-sans placeholder:text-[#7A8981]"
               />
               <button
                 type="submit"
                 disabled={isLoading || !inputValue.trim()}
-                className="p-2 bg-[#0A84FF] hover:bg-blue-600 text-white rounded-xl flex items-center justify-center cursor-pointer transition-colors disabled:opacity-35"
+                className="p-2 bg-brand hover:bg-primary-dark text-white rounded-xl flex items-center justify-center cursor-pointer transition-colors disabled:opacity-35"
                 title="Send Message"
               >
                 <Send className="w-3.5 h-3.5" />

@@ -69,25 +69,25 @@ export default function LeftSidebar({ onItemClick, className = '' }: LeftSidebar
   // Sidebar is intentionally always dark (independent of the light/dark theme toggle),
   // matching the dark nav-rail look of the reference dashboard.
   return (
-    <aside className={`w-64 shrink-0 flex flex-col justify-between py-6 px-4 bg-[#0C0F1D] border-r border-[#1C2138] select-none text-left ${className}`}>
+    <aside className={`w-64 shrink-0 flex flex-col justify-between py-6 px-4 bg-[#0D100E] border-r border-white/8 select-none text-left ${className}`}>
       {/* Top Section */}
       <div className="space-y-6">
-        {/* Geometric Engineering Logo (No brand name) */}
+        {/* Geometric Engineering Logo */}
         <Link to="/" onClick={onItemClick} className="flex items-center gap-3 px-2 no-underline group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4C5FE0] to-[#7C88B8] flex items-center justify-center text-white shadow-[0_4px_14px_rgba(76,95,224,0.4)] group-hover:scale-105 transition-transform">
+          <div className="w-8 h-8 rounded-lg bg-[#18221D] border border-[#34D399]/30 flex items-center justify-center text-[#34D399] shadow-[0_0_12px_rgba(52,211,153,0.15)] group-hover:scale-105 transition-transform">
             {/* Geometric isometric engineering mark */}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
               <polygon points="12 2 2 7 12 12 22 7 12 2" />
               <polyline points="2 17 12 22 22 17" />
               <polyline points="2 12 12 17 22 12" />
             </svg>
           </div>
           <div>
-            <div className="text-xs font-extrabold tracking-wider uppercase text-[#E7EAF7] leading-tight">
-              Engineering Tools
+            <div className="text-xs font-bold tracking-tight text-[#ECF2EE] leading-tight">
+              Civil<span className="text-[#34D399]">Math</span>
             </div>
-            <div className="text-[9.5px] font-medium tracking-wide text-[#7C88B8]">
-              Precision Workspace
+            <div className="text-[9px] font-mono tracking-wider uppercase text-[#7A8981]">
+              Precision Studio
             </div>
           </div>
         </Link>
@@ -97,21 +97,21 @@ export default function LeftSidebar({ onItemClick, className = '' }: LeftSidebar
           <Link
             to="/"
             onClick={onItemClick}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-colors no-underline ${
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors no-underline ${
               location.pathname === '/'
-                ? 'bg-[#1B2140] text-[#E7EAF7]'
-                : 'text-[#9AA3C4] hover:bg-[#141830] hover:text-[#E7EAF7]'
+                ? 'bg-[#18221D] text-[#34D399] border border-[#34D399]/25 shadow-2xs'
+                : 'text-[#97A69E] hover:bg-[#131715] hover:text-[#ECF2EE]'
             }`}
           >
-            <Home className="w-4 h-4 text-[#7C88B8]" />
-            <span>Home</span>
+            <Home className="w-4 h-4 text-[#7A8981]" />
+            <span>Overview</span>
           </Link>
         </div>
 
         {/* Calculators Categories */}
         <div className="space-y-1">
-          <div className="px-3 pb-1 text-[9px] font-bold font-mono uppercase tracking-wider text-[#5E6996]">
-            Calculators
+          <div className="px-3 pb-1 text-[9px] font-mono font-bold uppercase tracking-wider text-[#64736B]">
+            DISCIPLINES
           </div>
 
           <div className="space-y-0.5">
@@ -124,16 +124,16 @@ export default function LeftSidebar({ onItemClick, className = '' }: LeftSidebar
                   key={cat.id}
                   to={cat.path}
                   onClick={onItemClick}
-                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all no-underline ${
+                  className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs transition-all no-underline ${
                     active
-                      ? 'bg-[#4C5FE0] text-white shadow-[0_4px_14px_rgba(76,95,224,0.35)] font-semibold'
-                      : 'text-[#C9D0EA] hover:bg-[#141830]'
+                      ? 'bg-[#18221D] text-[#34D399] border border-[#34D399]/30 font-semibold shadow-2xs'
+                      : 'text-[#97A69E] hover:bg-[#131715] hover:text-[#ECF2EE]'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span
-                      className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-colors"
-                      style={{ color: active ? '#ffffff' : cat.color }}
+                      className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-colors"
+                      style={{ color: active ? '#34D399' : '#7A8981' }}
                     >
                       <IconComp className="w-3.5 h-3.5" />
                     </span>
@@ -141,10 +141,10 @@ export default function LeftSidebar({ onItemClick, className = '' }: LeftSidebar
                   </div>
 
                   <div className="flex items-center gap-1 shrink-0">
-                    <span className={`text-[10px] font-mono ${active ? 'text-white/80' : 'text-[#5E6996]'}`}>
+                    <span className={`text-[9.5px] font-mono ${active ? 'text-[#34D399]' : 'text-[#64736B]'}`}>
                       {cat.count}
                     </span>
-                    {active && <ChevronRight className="w-3.5 h-3.5 text-white/90" />}
+                    {active && <ChevronRight className="w-3 h-3 text-[#34D399]" />}
                   </div>
                 </Link>
               );
@@ -154,9 +154,9 @@ export default function LeftSidebar({ onItemClick, className = '' }: LeftSidebar
       </div>
 
       {/* Bottom Tools Section */}
-      <div className="pt-4 border-t border-[#1C2138] space-y-1">
-        <div className="px-3 pb-1 text-[9px] font-bold font-mono uppercase tracking-wider text-[#5E6996]">
-          Tools
+      <div className="pt-4 border-t border-white/8 space-y-1">
+        <div className="px-3 pb-1 text-[9px] font-mono font-bold uppercase tracking-wider text-[#64736B]">
+          RESOURCES
         </div>
 
         {TOOLS.map((t) => {
@@ -168,13 +168,13 @@ export default function LeftSidebar({ onItemClick, className = '' }: LeftSidebar
               key={t.name}
               to={t.path}
               onClick={onItemClick}
-              className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs transition-colors no-underline ${
+              className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs transition-colors no-underline ${
                 active
-                  ? 'bg-[#1B2140] text-[#E7EAF7] font-semibold'
-                  : 'text-[#9AA3C4] hover:bg-[#141830] hover:text-[#E7EAF7]'
+                  ? 'bg-[#18221D] text-[#34D399] border border-[#34D399]/25 font-semibold'
+                  : 'text-[#97A69E] hover:bg-[#131715] hover:text-[#ECF2EE]'
               }`}
             >
-              <IconComp className="w-3.5 h-3.5 text-[#7C88B8]" />
+              <IconComp className="w-3.5 h-3.5 text-[#7A8981]" />
               <span className="truncate">{t.name}</span>
             </Link>
           );

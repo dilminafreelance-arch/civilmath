@@ -293,39 +293,39 @@ export default function CalculatorsDirectoryPage() {
 
       <div className="max-w-6xl mx-auto px-4">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5 text-xs font-medium text-[#7C88B8] pt-6 pb-4 border-b border-[#DCE3F5]/50 dark:border-[#2A3350]/50">
-          <Link to="/" className="hover:text-[#161A2C] dark:hover:text-white transition-colors no-underline">Home</Link>
-          <ChevronRight className="w-3.5 h-3.5 text-[#DCE3F5]" />
-          <span className="text-[#4C5FE0] font-bold">Calculators Directory</span>
+        <nav className="flex items-center gap-1.5 text-xs font-medium text-[#7A8981] pt-6 pb-4 border-b border-[#E2E6E2]/50 dark:border-[#1A211D]/50">
+          <Link to="/" className="hover:text-[#141A16] dark:hover:text-white transition-colors no-underline">Home</Link>
+          <ChevronRight className="w-3.5 h-3.5 text-[#E2E6E2]" />
+          <span className="text-brand font-bold">Calculators Directory</span>
         </nav>
 
         {/* Hero Banner */}
         <div className="pt-8 pb-8 text-center max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E7EAF7] dark:bg-[#1D2438] border border-[#DCE3F5] dark:border-[#2A3350] text-[#4C5FE0] text-[10px] font-mono font-bold uppercase tracking-wider mb-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#ECF2EE] dark:bg-[#181E1A] border border-[#E2E6E2] dark:border-[#1A211D] text-brand text-[10px] font-mono font-bold uppercase tracking-wider mb-4">
             <Sparkles className="w-3.5 h-3.5" />
             ENGINEERING WORKSPACE · 50+ TOOLS
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#161A2C] dark:text-[#E7EAF7] tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#141A16] dark:text-[#ECF2EE] tracking-tight leading-tight">
             Civil Engineering Calculator Directory
           </h1>
-          <p className="mt-3 text-sm sm:text-base text-[#7C88B8] dark:text-[#8894BE] leading-relaxed">
+          <p className="mt-3 text-sm sm:text-base text-[#7A8981] dark:text-[#97A69E] leading-relaxed">
             Fast, code-aligned calculations for concrete volume, structural analysis, reinforcement schedules, surveying, and site management.
           </p>
 
           {/* Instant Search Bar */}
           <div className="mt-6 relative max-w-xl mx-auto">
-            <Search className="w-4 h-4 text-[#7C88B8] absolute left-4 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#7A8981] absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by tool name, standard (e.g. ACI 318), or keyword..."
-              className="w-full backdrop-blur-xl backdrop-saturate-150 bg-[#F7F9FF]/70 dark:bg-[#141826]/70 border border-[#DCE3F5] dark:border-[#2A3350] rounded-2xl pl-11 pr-4 py-3.5 text-sm outline-none focus:border-[#4C5FE0] focus:ring-1 focus:ring-[#4C5FE0] shadow-2xs transition-all placeholder:text-[#7C88B8]"
+              className="w-full backdrop-blur-xl backdrop-saturate-150 bg-[#F2F5F3]/70 dark:bg-[#131715]/70 border border-[#E2E6E2] dark:border-[#1A211D] rounded-2xl pl-11 pr-4 py-3.5 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand shadow-2xs transition-all placeholder:text-[#7A8981]"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-[#7C88B8] hover:text-[#161A2C] font-semibold px-2 py-1 cursor-pointer"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-[#7A8981] hover:text-[#141A16] font-semibold px-2 py-1 cursor-pointer"
               >
                 Clear
               </button>
@@ -343,8 +343,8 @@ export default function CalculatorsDirectoryPage() {
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   active
-                    ? 'bg-[#4C5FE0] text-white shadow-xs'
-                    : 'backdrop-blur-xl backdrop-saturate-150 bg-[#F7F9FF]/70 dark:bg-[#141826]/70 border border-[#DCE3F5] dark:border-[#2A3350] text-[#7C88B8] hover:text-[#161A2C] dark:hover:text-white hover:border-[#4C5FE0]'
+                    ? 'bg-brand text-white shadow-xs'
+                    : 'backdrop-blur-xl backdrop-saturate-150 bg-[#F2F5F3]/70 dark:bg-[#131715]/70 border border-[#E2E6E2] dark:border-[#1A211D] text-[#7A8981] hover:text-[#141A16] dark:hover:text-white hover:border-brand'
                 }`}
               >
                 {cat.label}
@@ -357,8 +357,8 @@ export default function CalculatorsDirectoryPage() {
         {!search && selectedCategory === 'all' && (
           <div className="mb-10">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-bold text-[#161A2C] dark:text-[#E7EAF7] uppercase tracking-wider flex items-center gap-1.5 font-mono">
-                <span className="w-2 h-2 rounded-full bg-[#4C5FE0]" />
+              <h2 className="text-sm font-bold text-[#141A16] dark:text-[#ECF2EE] uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                <span className="w-2 h-2 rounded-full bg-brand" />
                 Most Popular Calculators
               </h2>
             </div>
@@ -370,25 +370,25 @@ export default function CalculatorsDirectoryPage() {
                     setActiveCalcId(calc.id);
                     navigate(calc.path);
                   }}
-                  className="backdrop-blur-xl backdrop-saturate-150 bg-[#F7F9FF]/70 dark:bg-[#141826]/70 border border-[#DCE3F5] dark:border-[#2A3350] rounded-2xl p-4 hover:border-[#4C5FE0] dark:hover:border-[#7C88B8] hover:shadow-xs transition-all cursor-pointer group flex flex-col justify-between"
+                  className="backdrop-blur-xl backdrop-saturate-150 bg-[#F2F5F3]/70 dark:bg-[#131715]/70 border border-[#E2E6E2] dark:border-[#1A211D] rounded-2xl p-4 hover:border-brand dark:hover:border-[#7A8981] hover:shadow-xs transition-all cursor-pointer group flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <div className="w-8 h-8 rounded-lg bg-[#4C5FE0]/10 text-[#4C5FE0] flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-brand/10 text-brand flex items-center justify-center">
                         <calc.icon className="w-4 h-4" />
                       </div>
-                      <span className="text-[10px] font-mono font-bold text-[#7C88B8] bg-[#E7EAF7] dark:bg-[#1D2438] px-2 py-0.5 rounded-md border border-[#DCE3F5] dark:border-[#2A3350]">
+                      <span className="text-[10px] font-mono font-bold text-[#7A8981] bg-[#ECF2EE] dark:bg-[#181E1A] px-2 py-0.5 rounded-md border border-[#E2E6E2] dark:border-[#1A211D]">
                         {calc.code}
                       </span>
                     </div>
-                    <h3 className="text-sm font-bold text-[#161A2C] dark:text-[#E7EAF7] group-hover:text-[#4C5FE0] transition-colors leading-snug">
+                    <h3 className="text-sm font-bold text-[#141A16] dark:text-[#ECF2EE] group-hover:text-brand transition-colors leading-snug">
                       {calc.name}
                     </h3>
-                    <p className="mt-1.5 text-xs text-[#7C88B8] dark:text-[#8894BE] line-clamp-2 leading-relaxed">
+                    <p className="mt-1.5 text-xs text-[#7A8981] dark:text-[#97A69E] line-clamp-2 leading-relaxed">
                       {calc.description}
                     </p>
                   </div>
-                  <div className="mt-4 pt-3 border-t border-[#DCE3F5]/50 dark:border-[#2A3350]/50 flex items-center justify-between text-xs font-semibold text-[#4C5FE0]">
+                  <div className="mt-4 pt-3 border-t border-[#E2E6E2]/50 dark:border-[#1A211D]/50 flex items-center justify-between text-xs font-semibold text-brand">
                     <span>Calculate Now</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </div>
@@ -401,25 +401,25 @@ export default function CalculatorsDirectoryPage() {
         {/* Full Calculator Grid */}
         <div className="mb-12">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-bold text-[#161A2C] dark:text-[#E7EAF7]">
+            <h2 className="text-base font-bold text-[#141A16] dark:text-[#ECF2EE]">
               {selectedCategory === 'all' ? 'All Calculators' : CATEGORIES.find((c) => c.id === selectedCategory)?.label}
-              <span className="ml-2 text-xs font-normal text-[#7C88B8] font-mono">
+              <span className="ml-2 text-xs font-normal text-[#7A8981] font-mono">
                 ({filteredCalculators.length} {filteredCalculators.length === 1 ? 'tool' : 'tools'})
               </span>
             </h2>
           </div>
 
           {filteredCalculators.length === 0 ? (
-            <div className="text-center py-16 backdrop-blur-xl backdrop-saturate-150 bg-[#F7F9FF]/70 dark:bg-[#141826]/70 border border-[#DCE3F5] dark:border-[#2A3350] rounded-2xl">
-              <Search className="w-8 h-8 text-[#7C88B8] mx-auto mb-2" />
-              <p className="text-sm font-semibold text-[#161A2C] dark:text-[#E7EAF7]">No calculators found</p>
-              <p className="text-xs text-[#7C88B8] mt-1">Try another search term or select a different category above.</p>
+            <div className="text-center py-16 backdrop-blur-xl backdrop-saturate-150 bg-[#F2F5F3]/70 dark:bg-[#131715]/70 border border-[#E2E6E2] dark:border-[#1A211D] rounded-2xl">
+              <Search className="w-8 h-8 text-[#7A8981] mx-auto mb-2" />
+              <p className="text-sm font-semibold text-[#141A16] dark:text-[#ECF2EE]">No calculators found</p>
+              <p className="text-xs text-[#7A8981] mt-1">Try another search term or select a different category above.</p>
               <button
                 onClick={() => {
                   setSearch('');
                   setSelectedCategory('all');
                 }}
-                className="mt-4 px-4 py-2 rounded-xl bg-[#4C5FE0] text-white text-xs font-semibold cursor-pointer"
+                className="mt-4 px-4 py-2 rounded-xl bg-brand text-white text-xs font-semibold cursor-pointer"
               >
                 Reset Filters
               </button>
@@ -431,33 +431,33 @@ export default function CalculatorsDirectoryPage() {
                   key={calc.id}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: Math.min(0.12, idx * 0.02) }}
+                  transition={{ delay: Math.min(0.24, idx * 0.04), duration: 0.3, ease: 'easeOut' }}
                   onClick={() => {
                     setActiveCalcId(calc.id);
                     navigate(calc.path);
                   }}
-                  className="backdrop-blur-xl backdrop-saturate-150 bg-[#F7F9FF]/70 dark:bg-[#141826]/70 border border-[#DCE3F5] dark:border-[#2A3350] rounded-2xl p-5 hover:border-[#4C5FE0] dark:hover:border-[#7C88B8] hover:shadow-xs transition-all cursor-pointer group flex flex-col justify-between"
+                  className="backdrop-blur-xl backdrop-saturate-150 bg-[#F2F5F3]/70 dark:bg-[#131715]/70 border border-[#E2E6E2] dark:border-[#1A211D] rounded-2xl p-5 hover:border-brand dark:hover:border-[#7A8981] hover:shadow-xs transition-all cursor-pointer group flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <div className="p-2.5 rounded-xl bg-[#4C5FE0]/10 text-[#4C5FE0]">
+                      <div className="p-2.5 rounded-xl bg-brand/10 text-brand">
                         <calc.icon className="w-4 h-4" />
                       </div>
-                      <span className="text-[10px] font-mono font-bold text-[#7C88B8] bg-[#E7EAF7] dark:bg-[#1D2438] px-2 py-0.5 rounded-md border border-[#DCE3F5] dark:border-[#2A3350]">
+                      <span className="text-[10px] font-mono font-bold text-[#7A8981] bg-[#ECF2EE] dark:bg-[#181E1A] px-2 py-0.5 rounded-md border border-[#E2E6E2] dark:border-[#1A211D]">
                         {calc.code}
                       </span>
                     </div>
-                    <div className="text-[10px] font-mono font-bold text-[#4C5FE0] uppercase tracking-wider mb-1">
+                    <div className="text-[10px] font-mono font-bold text-brand uppercase tracking-wider mb-1">
                       {calc.categoryLabel}
                     </div>
-                    <h3 className="text-sm font-bold text-[#161A2C] dark:text-[#E7EAF7] group-hover:text-[#4C5FE0] transition-colors leading-snug">
+                    <h3 className="text-sm font-bold text-[#141A16] dark:text-[#ECF2EE] group-hover:text-brand transition-colors leading-snug">
                       {calc.name}
                     </h3>
-                    <p className="mt-1.5 text-xs text-[#7C88B8] dark:text-[#8894BE] line-clamp-2 leading-relaxed">
+                    <p className="mt-1.5 text-xs text-[#7A8981] dark:text-[#97A69E] line-clamp-2 leading-relaxed">
                       {calc.description}
                     </p>
                   </div>
-                  <div className="mt-4 pt-3 border-t border-[#DCE3F5]/50 dark:border-[#2A3350]/50 flex items-center justify-between text-xs font-semibold text-[#4C5FE0]">
+                  <div className="mt-4 pt-3 border-t border-[#E2E6E2]/50 dark:border-[#1A211D]/50 flex items-center justify-between text-xs font-semibold text-brand">
                     <span>Open Calculator</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </div>
@@ -468,10 +468,10 @@ export default function CalculatorsDirectoryPage() {
         </div>
 
         {/* Technical Trust & Compliance Box */}
-        <div className="backdrop-blur-xl backdrop-saturate-150 bg-[#F7F9FF]/70 dark:bg-[#141826]/70 border border-[#DCE3F5] dark:border-[#2A3350] rounded-2xl p-6 shadow-2xs text-[#7C88B8]">
+        <div className="backdrop-blur-xl backdrop-saturate-150 bg-[#F2F5F3]/70 dark:bg-[#131715]/70 border border-[#E2E6E2] dark:border-[#1A211D] rounded-2xl p-6 shadow-2xs text-[#7A8981]">
           <div className="flex items-center gap-2.5 mb-2">
-            <Shield className="w-4 h-4 text-[#4C5FE0]" />
-            <h3 className="text-sm font-bold text-[#161A2C] dark:text-[#E7EAF7]">Engineering Quality & Disclaimer</h3>
+            <Shield className="w-4 h-4 text-brand" />
+            <h3 className="text-sm font-bold text-[#141A16] dark:text-[#ECF2EE]">Engineering Quality & Disclaimer</h3>
           </div>
           <p className="text-xs leading-relaxed">
             All formulas and calculations follow international design codes including ACI 318, Eurocode 2, BS 8110, BS 8666, and IS 456. Calculations are provided for planning, preliminary estimation, and educational verification. Final structural and construction designs must always be verified by a licensed professional engineer against project-specific drawings.

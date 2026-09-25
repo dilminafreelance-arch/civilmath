@@ -55,7 +55,7 @@ export default function ShortcutHelpModal({ open, onClose }: ShortcutHelpModalPr
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-xs p-4"
           onClick={onClose}
         >
           <motion.div
@@ -63,18 +63,18 @@ export default function ShortcutHelpModal({ open, onClose }: ShortcutHelpModalPr
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -16, scale: 0.96 }}
             transition={{ duration: 0.2 }}
-            className="w-full max-w-md bg-[#FAF9F6] dark:bg-[#1E221E] border border-[#D8D0C2] dark:border-[#384238] rounded-3xl shadow-2xl overflow-hidden"
+            className="w-full max-w-md backdrop-blur-xl backdrop-saturate-150 bg-[#F2F5F3]/95 dark:bg-[#131715]/95 border border-[#E2E6E2] dark:border-[#1A211D] rounded-2xl shadow-2xl overflow-hidden text-left"
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#D8D0C2] dark:border-[#333C33]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E6E2] dark:border-[#1A211D]">
               <div className="flex items-center gap-2">
-                <Keyboard className="w-4 h-4 text-[#657565]" />
-                <h2 className="text-sm font-bold text-[#20231F] dark:text-[#EAE7E0]">Keyboard Shortcuts</h2>
+                <Keyboard className="w-4 h-4 text-brand" />
+                <h2 className="text-sm font-bold text-[#141A16] dark:text-[#ECF2EE]">Keyboard Shortcuts</h2>
               </div>
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-xl text-[#94A094] hover:text-[#20231F] dark:hover:text-white hover:bg-[#EAE7E0] dark:hover:bg-[#2A312A] cursor-pointer transition-colors"
+                className="p-1.5 rounded-xl text-[#7A8981] hover:text-[#141A16] dark:hover:text-white hover:bg-[#ECF2EE]/60 dark:hover:bg-[#181E1A] cursor-pointer transition-colors"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -84,18 +84,18 @@ export default function ShortcutHelpModal({ open, onClose }: ShortcutHelpModalPr
             <div className="p-5 space-y-5">
               {SHORTCUT_GROUPS.map(group => (
                 <div key={group.title}>
-                  <p className="text-[9px] font-mono font-bold uppercase tracking-widest text-[#7B8978] mb-2">{group.title}</p>
+                  <p className="text-[9px] font-mono font-bold uppercase tracking-widest text-[#7A8981] mb-2">{group.title}</p>
                   <div className="space-y-1.5">
                     {group.shortcuts.map(sc => (
                       <div key={sc.description} className="flex items-center justify-between">
-                        <span className="text-xs text-[#555C55] dark:text-[#C5D0C5]">{sc.description}</span>
+                        <span className="text-xs text-[#141A16] dark:text-[#ECF2EE]">{sc.description}</span>
                         <div className="flex items-center gap-1">
                           {sc.keys.map((k, i) => (
                             <span key={i}>
-                              <kbd className="px-2 py-0.5 rounded-md border border-[#D8D0C2] dark:border-[#384238] bg-white dark:bg-[#242A24] text-[10px] font-mono font-bold text-[#20231F] dark:text-[#EAE7E0]">
+                              <kbd className="px-2 py-0.5 rounded-md border border-[#E2E6E2] dark:border-[#1A211D] bg-white dark:bg-[#181E1A] text-[10px] font-mono font-bold text-[#141A16] dark:text-[#ECF2EE]">
                                 {k}
                               </kbd>
-                              {i < sc.keys.length - 1 && <span className="text-[10px] text-[#94A094] mx-0.5">+</span>}
+                              {i < sc.keys.length - 1 && <span className="text-[10px] text-[#7A8981] mx-0.5">+</span>}
                             </span>
                           ))}
                         </div>
@@ -107,8 +107,8 @@ export default function ShortcutHelpModal({ open, onClose }: ShortcutHelpModalPr
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-3 border-t border-[#D8D0C2] dark:border-[#333C33] bg-[#F3F1EC]/50 dark:bg-[#242A24]/40">
-              <p className="text-[10px] text-[#94A094] text-center">Press <kbd className="px-1.5 py-0.5 rounded bg-[#EAE7E0] dark:bg-[#2A312A] font-mono text-[9px]">?</kbd> or <kbd className="px-1.5 py-0.5 rounded bg-[#EAE7E0] dark:bg-[#2A312A] font-mono text-[9px]">Esc</kbd> to close</p>
+            <div className="px-6 py-3 border-t border-[#E2E6E2] dark:border-[#1A211D] bg-[#F2F5F3]/70 dark:bg-[#090B0A]/40">
+              <p className="text-[10px] font-mono text-[#7A8981] text-center">Press <kbd className="px-1.5 py-0.5 rounded border border-[#E2E6E2] dark:border-[#1A211D] bg-white dark:bg-[#181E1A] font-mono text-[9px] text-[#141A16] dark:text-[#ECF2EE]">?</kbd> or <kbd className="px-1.5 py-0.5 rounded border border-[#E2E6E2] dark:border-[#1A211D] bg-white dark:bg-[#181E1A] font-mono text-[9px] text-[#141A16] dark:text-[#ECF2EE]">Esc</kbd> to close</p>
             </div>
           </motion.div>
         </motion.div>

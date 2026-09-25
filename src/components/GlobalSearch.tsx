@@ -57,17 +57,17 @@ export default function GlobalSearch() {
   };
 
   return <>
-    <button onClick={() => setOpen(true)} aria-label="Search calculators" className="inline-flex items-center gap-2.5 rounded-xl border border-[#DCE3F5] dark:border-[#2A3350] backdrop-blur-xl backdrop-saturate-150 bg-[#F7F9FF]/70 dark:bg-[#141826]/70 px-3.5 py-1.5 text-xs font-semibold text-[#4A5578] dark:text-[#9AA3C4] hover:border-[#7C88B8] transition-colors cursor-pointer shadow-2xs">
-      <Search className="w-3.5 h-3.5 text-[#7C88B8]" />
+    <button onClick={() => setOpen(true)} aria-label="Search calculators" className="inline-flex items-center gap-2.5 rounded-lg border border-[#E2E6E2] dark:border-white/10 bg-white dark:bg-[#131715] px-3 py-1.5 text-xs font-medium text-[#526058] dark:text-[#97A69E] hover:border-[#2E6B56]/50 dark:hover:border-[#34D399]/40 transition-colors cursor-pointer shadow-2xs">
+      <Search className="w-3.5 h-3.5 text-[#7A8981]" />
       <span className="hidden sm:inline">Search calculators...</span>
-      <kbd className="hidden sm:inline rounded-md border border-[#DCE3F5] dark:border-[#2A3350] bg-white dark:bg-[#11141F]/80 px-1.5 py-0.5 text-[9px] font-mono text-[#7C88B8]">Ctrl K</kbd>
+      <kbd className="hidden sm:inline rounded border border-[#E2E6E2] dark:border-white/10 bg-[#F2F5F3] dark:bg-[#181E1A] px-1.5 py-0.5 text-[9px] font-mono text-[#7A8981]">Ctrl K</kbd>
     </button>
-    {open && <div role="dialog" aria-modal="true" aria-label="Search calculators" className="fixed inset-0 z-[100] flex items-start justify-center bg-black/40 p-4 pt-[12vh] backdrop-blur-sm" onMouseDown={() => setOpen(false)}>
-      <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-[#DCE3F5] backdrop-blur-xl backdrop-saturate-150 bg-[#F7F9FF]/98 shadow-2xl dark:border-[#2A3350] dark:bg-[#11141F]/98" onMouseDown={event => event.stopPropagation()}>
-        <div className="flex items-center gap-3 border-b border-[#DCE3F5] dark:border-[#2A3350] px-4 py-3.5">
-          <Search className="w-4 h-4 text-[#7C88B8]" />
-          <input autoFocus value={query} onChange={event => setQuery(event.target.value)} placeholder="Search calculators, engineering tools, formulas…" className="min-w-0 flex-1 bg-transparent text-sm text-[#161A2C] dark:text-[#E7EAF7] outline-none placeholder-[#8894BE]" />
-          <button onClick={() => setOpen(false)} aria-label="Close search" className="rounded-lg p-1 text-[#7C88B8] hover:bg-[#E7EAF7] dark:hover:bg-[#232A3D] cursor-pointer"><X className="w-4 h-4" /></button>
+    {open && <div role="dialog" aria-modal="true" aria-label="Search calculators" className="fixed inset-0 z-[100] flex items-start justify-center bg-black/50 p-4 pt-[12vh] backdrop-blur-xs" onMouseDown={() => setOpen(false)}>
+      <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-[#E2E6E2] bg-white/95 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#111413]/95" onMouseDown={event => event.stopPropagation()}>
+        <div className="flex items-center gap-3 border-b border-[#E2E6E2] dark:border-white/10 px-4 py-3">
+          <Search className="w-4 h-4 text-[#7A8981]" />
+          <input autoFocus value={query} onChange={event => setQuery(event.target.value)} placeholder="Search calculators, engineering tools, formulas…" className="min-w-0 flex-1 bg-transparent text-sm text-[#141A16] dark:text-[#ECF2EE] outline-none placeholder-[#7A8981]" />
+          <button onClick={() => setOpen(false)} aria-label="Close search" className="rounded-lg p-1 text-[#7A8981] hover:bg-[#F2F5F3] dark:hover:bg-[#181E1A] cursor-pointer"><X className="w-4 h-4" /></button>
         </div>
         <div className="max-h-[55vh] overflow-y-auto p-2">
           {query ? (
@@ -75,23 +75,23 @@ export default function GlobalSearch() {
               <SearchGroup title="Calculators" items={results} onOpen={openCalculator} empty={articleResults.length === 0 ? "No calculators match that search." : undefined} />
               {articleResults.length > 0 && (
                 <section className="mb-2">
-                  <div className="flex items-center gap-1.5 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#7B8978]">
-                    <BookOpen className="w-3 h-3 text-[#657565]" />
-                    Articles & Guides
+                  <div className="flex items-center gap-1.5 px-3 py-2 text-[10px] font-mono font-bold uppercase tracking-wider text-[#7A8981]">
+                    <BookOpen className="w-3 h-3 text-[#2E6B56] dark:text-[#34D399]" />
+                    Articles &amp; Guides
                   </div>
                   {articleResults.map(art => (
                     <button
                       key={art.slug}
                       onClick={() => openArticle(art.slug)}
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-[#EAE7E0] dark:hover:bg-[#2A312A] cursor-pointer transition-colors"
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-[#F2F5F3] dark:hover:bg-[#181E1A] cursor-pointer transition-colors"
                     >
-                      <BookOpen className="w-3.5 h-3.5 text-[#657565]" />
+                      <BookOpen className="w-3.5 h-3.5 text-[#2E6B56] dark:text-[#34D399]" />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-xs font-bold text-[#20231F] dark:text-[#EAE7E0]">
+                        <span className="block truncate text-xs font-semibold text-[#141A16] dark:text-[#ECF2EE]">
                           {art.title}
                         </span>
-                        <span className="block truncate text-[10px] text-[#7B8978]">
-                          {art.readingTimeMinutes} min read • {art.category}
+                        <span className="block truncate text-[10px] text-[#7A8981] font-mono">
+                          {art.readingTimeMinutes} min read &bull; {art.category}
                         </span>
                       </span>
                     </button>
@@ -102,7 +102,7 @@ export default function GlobalSearch() {
           ) : <>
             {favorites.length > 0 && <SearchGroup title="Favorites" icon={Star} items={favorites} onOpen={openCalculator} />}
             <SearchGroup title="Recently used" icon={History} items={recents} onOpen={openCalculator} empty="Start a calculation to build your recent list." />
-            <div className="px-3 py-3 text-[10px] font-mono text-[#8894BE]">Popular searches: concrete volume, rebar weight, brickwork, beam analysis</div>
+            <div className="px-3 py-3 text-[10px] font-mono text-[#7A8981]">Popular searches: concrete volume, rebar weight, brickwork, beam analysis</div>
           </>}
         </div>
       </div>
@@ -111,5 +111,5 @@ export default function GlobalSearch() {
 }
 
 function SearchGroup({ title, icon: Icon, items, onOpen, empty }: { title: string; icon?: typeof Search; items: ReturnType<typeof CALCULATORS_LIST.filter>; onOpen: (id: string) => void; empty?: string }) {
-  return <section className="mb-2"><div className="flex items-center gap-1.5 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#7C88B8]">{Icon && <Icon className="w-3 h-3" />}{title}</div>{items.length === 0 ? <p className="px-3 pb-3 text-xs text-[#8894BE]">{empty}</p> : items.map(calc => <button key={calc.id} onClick={() => onOpen(calc.id)} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-[#E7EAF7] dark:hover:bg-[#1D2438] cursor-pointer transition-colors"><Command className="w-3.5 h-3.5 text-[#4C5FE0]" /><span className="min-w-0 flex-1"><span className="block truncate text-xs font-bold text-[#161A2C] dark:text-[#E7EAF7]">{calc.name}</span><span className="block truncate text-[10px] text-[#7C88B8]">{calc.category}</span></span></button>)}</section>;
+  return <section className="mb-2"><div className="flex items-center gap-1.5 px-3 py-2 text-[10px] font-mono font-bold uppercase tracking-wider text-[#7A8981]">{Icon && <Icon className="w-3 h-3 text-[#2E6B56] dark:text-[#34D399]" />}{title}</div>{items.length === 0 ? <p className="px-3 pb-3 text-xs text-[#7A8981]">{empty}</p> : items.map(calc => <button key={calc.id} onClick={() => onOpen(calc.id)} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-[#F2F5F3] dark:hover:bg-[#181E1A] cursor-pointer transition-colors"><Command className="w-3.5 h-3.5 text-[#2E6B56] dark:text-[#34D399]" /><span className="min-w-0 flex-1"><span className="block truncate text-xs font-semibold text-[#141A16] dark:text-[#ECF2EE]">{calc.name}</span><span className="block truncate text-[10px] text-[#7A8981] font-mono">{calc.category}</span></span></button>)}</section>;
 }

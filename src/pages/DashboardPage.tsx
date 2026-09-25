@@ -7,18 +7,18 @@ import { CALCULATORS_LIST } from '../data/calculatorsData';
 import { useApp } from '../context/AppContext';
 
 const CATEGORY_META: Record<string, { label: string; color: string }> = {
-  concrete: { label: 'Concrete', color: '#4C5FE0' },
-  structural: { label: 'Structural', color: '#00B894' },
-  bbs: { label: 'Reinforcement', color: '#7C88B8' },
-  geotech: { label: 'Geotechnical', color: '#E17055' },
-  survey: { label: 'Surveying', color: '#0984E3' },
-  utility: { label: 'Utilities', color: '#FDCB6E' },
+  concrete: { label: 'Concrete', color: '#2E6B56' },
+  structural: { label: 'Structural', color: '#3D8B6E' },
+  bbs: { label: 'Reinforcement', color: '#5A7D71' },
+  geotech: { label: 'Geotechnical', color: '#C07D53' },
+  survey: { label: 'Surveying', color: '#3B82A6' },
+  utility: { label: 'Utilities', color: '#D4A359' },
 };
 
 const LATEST_ARTICLES = [
-  { title: 'Types of Foundations and Their Uses', date: 'Structural basics', color: '#4C5FE0' },
-  { title: 'Concrete Mix Ratios Explained', date: 'Concrete & materials', color: '#E17055' },
-  { title: 'Reading Structural Drawings for Beginners', date: 'Drafting & documentation', color: '#00B894' },
+  { title: 'Types of Foundations and Their Uses', date: 'Structural basics', color: '#2E6B56' },
+  { title: 'Concrete Mix Ratios Explained', date: 'Concrete & materials', color: '#C07D53' },
+  { title: 'Reading Structural Drawings for Beginners', date: 'Drafting & documentation', color: '#3D8B6E' },
 ];
 
 export default function DashboardPage() {

@@ -9,6 +9,7 @@ import { CalculatorCategory } from '../types';
 import { CALCULATORS_LIST } from '../data/calculatorsData';
 import StepWizard from './StepWizard';
 import { BeginnerToggle } from './BeginnerMode';
+import { Button, Card } from './ui';
 
 interface CalculatorPageProps {
   title: string;
@@ -93,43 +94,53 @@ export default function CalculatorPageTemplate({
       />
 
       {/* Breadcrumbs */}
-      <nav className="flex items-center gap-2 text-xs font-medium text-[#7C88B8] dark:text-[#8891B0] mb-4 pb-3 border-b border-[#DCE3F5]/60 dark:border-[#262E42]">
-        <Link to="/" className="hover:text-[#161A2C] dark:hover:text-white transition-colors cursor-pointer font-semibold no-underline">Home</Link>
-        <ChevronRight className="w-3.5 h-3.5 text-[#B4ACA0]" />
-        <Link to={`/${categoryPath}`} className="hover:text-[#161A2C] dark:hover:text-white transition-colors cursor-pointer font-semibold capitalize no-underline">
+      <nav className="flex items-center gap-2 text-xs font-medium text-ink-muted mb-4 pb-3 border-b border-border-subtle">
+        <Link to="/" className="hover:text-ink transition-colors cursor-pointer font-semibold no-underline">Home</Link>
+        <ChevronRight className="w-3.5 h-3.5 text-ink-muted" />
+        <Link to={`/${categoryPath}`} className="hover:text-ink transition-colors cursor-pointer font-semibold capitalize no-underline">
           {categoryPathNames[category] || category}
         </Link>
-        <ChevronRight className="w-3.5 h-3.5 text-[#B4ACA0]" />
-        <span className="text-[#161A2C] dark:text-[#E7EAF7] font-bold truncate max-w-[240px]">{breadcrumbLabel || title}</span>
+        <ChevronRight className="w-3.5 h-3.5 text-ink-muted" />
+        <span className="text-ink font-bold truncate max-w-[240px]">{breadcrumbLabel || title}</span>
       </nav>
 
       {/* Title + Actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#161A2C] dark:text-[#E7EAF7] tracking-tight">{title}</h1>
-          <p className="text-xs sm:text-sm text-[#7C88B8] dark:text-[#8891B0] mt-1 max-w-2xl leading-relaxed">{description}</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-ink tracking-tight">{title}</h1>
+          <p className="text-xs sm:text-sm text-ink-secondary mt-1 max-w-2xl leading-relaxed">{description}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0 flex-wrap">
           {onBeginnerModeChange && (
             <BeginnerToggle enabled={!!beginnerMode} onChange={onBeginnerModeChange} />
           )}
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => {
               const evt = new CustomEvent('civilmath:save-current-calc');
               window.dispatchEvent(evt);
             }}
-            className="px-3.5 py-2 backdrop-blur-xl backdrop-saturate-150 bg-[#F7F9FF]/70 dark:bg-[#141826]/70 border border-[#DCE3F5] dark:border-[#2A3350] rounded-xl text-xs font-semibold text-[#161A2C] dark:text-[#E7EAF7] flex items-center gap-1.5 hover:border-[#7C88B8] transition-all cursor-pointer shadow-2xs"
+            icon={Bookmark}
           >
-            <Bookmark className="w-3.5 h-3.5 text-[#7C88B8]" /> Save Calculator
-          </button>
-          <button onClick={handleShare}
-            className="px-3 py-2 backdrop-blur-xl backdrop-saturate-150 bg-[#F7F9FF]/70 dark:bg-[#141826]/70 border border-[#DCE3F5] dark:border-[#2A3350] rounded-xl text-xs font-semibold text-[#4A5578] dark:text-[#C9D0EA] flex items-center gap-1.5 hover:border-[#7C88B8] transition-all cursor-pointer shadow-2xs">
-            <Share2 className="w-3.5 h-3.5 text-[#7C88B8]" /> Share
-          </button>
-          <button onClick={() => window.print()}
-            className="px-3 py-2 backdrop-blur-xl backdrop-saturate-150 bg-[#F7F9FF]/70 dark:bg-[#141826]/70 border border-[#DCE3F5] dark:border-[#2A3350] rounded-xl text-xs font-semibold text-[#4A5578] dark:text-[#C9D0EA] flex items-center gap-1.5 hover:border-[#7C88B8] transition-all cursor-pointer shadow-2xs">
-            <Printer className="w-3.5 h-3.5 text-[#7C88B8]" /> Print
-          </button>
+            Save Calculator
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleShare}
+            icon={Share2}
+          >
+            Share
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            icon={Printer}
+          >
+            Print
+          </Button>
         </div>
       </div>
 
@@ -145,33 +156,55 @@ export default function CalculatorPageTemplate({
         {children}
       </div>
 
-      {relatedCalculators.length > 0 && <section className="mt-10 max-w-5xl"><div className="flex items-center gap-2 mb-3"><SparklesIcon /><h2 className="text-sm font-bold text-[#161A2C] dark:text-[#E7EAF7]">You may also need</h2></div><div className="grid gap-3 sm:grid-cols-3">{relatedCalculators.map(calc => <Link key={calc.id} to={calc.category === 'bbs' ? '/bbs/footing' : `/${CATEGORY_PATH_MAP[calc.category]}/${calc.slug || calc.id.replace(`${calc.category}-`, '')}`} className="rounded-2xl border border-[#DCE3F5] bg-white/80 p-3.5 text-xs font-semibold text-[#161A2C] no-underline hover:border-[#7C88B8] hover:shadow-2xs dark:border-[#2A3350] dark:bg-[#141826]/70 dark:text-[#E7EAF7] transition-all">{calc.name}<span className="mt-1 block text-[10.5px] font-normal text-[#7C88B8]">Related {categoryPathNames[category]} tool</span></Link>)}</div></section>}
+      {relatedCalculators.length > 0 && (
+        <section className="mt-10 max-w-5xl">
+          <div className="flex items-center gap-2 mb-3">
+            <SparklesIcon />
+            <h2 className="text-sm font-bold text-ink">You may also need</h2>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {relatedCalculators.map(calc => (
+              <Link
+                key={calc.id}
+                to={calc.category === 'bbs' ? '/bbs/footing' : `/${CATEGORY_PATH_MAP[calc.category]}/${calc.slug || calc.id.replace(`${calc.category}-`, '')}`}
+                className="block no-underline"
+              >
+                <Card elevation="interactive" className="p-3.5">
+                  <div className="text-xs font-semibold text-ink">{calc.name}</div>
+                  <span className="mt-1 block text-[10.5px] font-normal text-ink-muted">Related {categoryPathNames[category]} tool</span>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* FAQ Section */}
       <section className="mt-10 max-w-4xl">
         <div className="flex items-center gap-2 mb-4">
-          <BookOpen className="w-4 h-4 text-[#2563EB]" />
-          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Frequently Asked Questions</h3>
+          <BookOpen className="w-4 h-4 text-brand" />
+          <h3 className="text-sm font-bold text-ink">Frequently Asked Questions</h3>
         </div>
         <div className="space-y-2">
           {(faqs || defaultFaqs).map((faq, idx) => (
-            <details key={idx} className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden transition-shadow hover:shadow-xs">
-              <summary className="px-4 py-3.5 text-[11px] font-semibold text-slate-800 dark:text-slate-200 cursor-pointer flex items-center justify-between list-none">
+            <details key={idx} className="group bg-surface-1 border border-border-subtle rounded-2xl overflow-hidden transition-shadow hover:shadow-xs">
+              <summary className="px-4 py-3.5 text-[11px] font-semibold text-ink cursor-pointer flex items-center justify-between list-none">
                 {faq.question}
-                <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-open:rotate-90 transition-transform shrink-0" />
+                <ChevronRight className="w-3.5 h-3.5 text-ink-muted group-open:rotate-90 transition-transform shrink-0" />
               </summary>
-              <div className="px-4 pb-3.5 text-[10px] text-slate-500 leading-relaxed border-t border-slate-100 dark:border-slate-800 pt-3">
+              <div className="px-4 pb-3.5 text-[10px] text-ink-secondary leading-relaxed border-t border-border-subtle pt-3">
                 {faq.answer}
               </div>
             </details>
           ))}
         </div>
       </section>
-      <aside className="mt-6 max-w-4xl border-l-4 border-amber-400 bg-amber-50 dark:bg-amber-950/20 px-4 py-3 text-xs leading-5 text-amber-900 dark:text-amber-200">
+      <aside className="mt-6 max-w-4xl rounded-xl bg-brand/5 dark:bg-brand/10 border border-brand/20 dark:border-brand/25 px-4 py-3 text-xs leading-5 text-ink-secondary flex items-start gap-2">
+        <span className="text-brand mt-0.5 shrink-0">⚠</span>
         This calculator provides an estimate or preliminary calculation for educational and planning purposes. Verify final structural design and construction decisions with a qualified professional and the applicable project specification and design requirements.
       </aside>
     </>
   );
 }
 
-function SparklesIcon() { return <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-blue-50 text-xs text-[#2563EB] dark:bg-blue-500/10">✦</span>; }
+function SparklesIcon() { return <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-brand/10 text-xs text-brand font-bold">✦</span>; }
