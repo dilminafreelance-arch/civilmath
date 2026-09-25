@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Send, CheckCircle2, MessageSquare, AlertCircle, Clock, ShieldCheck, Copy, Check } from 'lucide-react';
+import { submitContactInquiry } from '../../utils/inquiryStore';
 
 const CONTACT_CATEGORIES = [
   'General Question',
@@ -42,11 +43,13 @@ export default function ContactPage() {
 
     setSubmitting(true);
 
-    // Simulate sending / attempt endpoint
     try {
-      // In production/local, gracefully record inquiry
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setSubmitted(true);
+      const result = await submitContactInquiry(formData);
+      if (!result.success && result.error) {
+        setErrorMessage(result.error);
+      } else {
+        setSubmitted(true);
+      }
     } catch {
       setErrorMessage('An unexpected error occurred while transmitting your message. Please email support@civilmath.com directly.');
     } finally {

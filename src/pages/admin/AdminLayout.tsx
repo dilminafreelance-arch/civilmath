@@ -1,4 +1,4 @@
-import React, { ReactNode, useState, FormEvent } from 'react';
+import React, { ReactNode, useState, useEffect, FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, PenTool, ExternalLink, ArrowLeft, ShieldCheck,
@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { SEOHead } from '../../utils/seo';
 import { AdminAuthProvider, useAdminAuth } from '../../context/AdminAuthContext';
+import { getUnreadInquiriesCount } from '../../utils/inquiryStore';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -172,6 +173,13 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
 
   const isNew = location.pathname.includes('/new');
   const isDashboard = location.pathname === '/admin' || location.pathname === '/admin/articles';
+  const isInquiries = location.pathname === '/admin/inquiries';
+
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    setUnreadCount(getUnreadInquiriesCount());
+  }, [location.pathname]);
 
   // Loading state during session check
   if (isLoading) {
@@ -234,7 +242,7 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
                     ADMIN
                   </span>
                 </div>
-                <div className="text-[10px] text-[#7B8978]">Articles & SEO Command Center</div>
+                <div className="text-[10px] text-[#7B8978]">Articles &amp; SEO Command Center</div>
               </div>
             </Link>
 
@@ -251,7 +259,23 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
                 }`}
               >
                 <LayoutDashboard className="w-3.5 h-3.5" />
-                All Articles & Overview
+                All Articles &amp; Overview
+              </Link>
+              <Link
+                to="/admin/inquiries"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold no-underline transition-colors flex items-center gap-1.5 ${
+                  isInquiries
+                    ? 'bg-[#EAE7E0] dark:bg-[#2A312A] text-[#20231F] dark:text-white'
+                    : 'text-[#7B8978] hover:text-[#20231F] dark:hover:text-white'
+                }`}
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span>Contact Inquiries</span>
+                {unreadCount > 0 && (
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-600 text-white">
+                    {unreadCount}
+                  </span>
+                )}
               </Link>
               <Link
                 to="/admin/articles/new"

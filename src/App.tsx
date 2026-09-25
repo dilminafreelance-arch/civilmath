@@ -34,6 +34,7 @@ const ArticlesDirectoryPage = lazy(() => import('./pages/ArticlesDirectoryPage')
 const ArticleDetailPage = lazy(() => import('./pages/ArticleDetailPage'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminArticleEditor = lazy(() => import('./pages/admin/AdminArticleEditor'));
+const AdminInquiriesPage = lazy(() => import('./pages/admin/AdminInquiriesPage'));
 
 function SuspenseFallback() {
   return (
@@ -65,6 +66,7 @@ export default function App() {
               {/* ── Admin Content Management Studio (Dedicated Standalone Layout) ── */}
               <Route path="/admin" element={<Suspense fallback={<SuspenseFallback />}><AdminDashboard /></Suspense>} />
               <Route path="/admin/articles" element={<Suspense fallback={<SuspenseFallback />}><AdminDashboard /></Suspense>} />
+              <Route path="/admin/inquiries" element={<Suspense fallback={<SuspenseFallback />}><AdminInquiriesPage /></Suspense>} />
               <Route path="/admin/articles/new" element={<Suspense fallback={<SuspenseFallback />}><AdminArticleEditor /></Suspense>} />
               <Route path="/admin/articles/edit/:slug" element={<Suspense fallback={<SuspenseFallback />}><AdminArticleEditor /></Suspense>} />
 

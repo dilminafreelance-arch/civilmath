@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   User, Settings, LayoutDashboard,
-  ChevronDown, Check, X, Edit2, ShieldCheck
+  ChevronDown, Check, X, Edit2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
@@ -163,14 +163,6 @@ export default function ProfileDropdown() {
               >
                 <LayoutDashboard className="w-3.5 h-3.5 text-brand" />
                 My Dashboard &amp; Saved Calcs
-              </Link>
-              <Link
-                to="/admin"
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-brand hover:bg-[#ECF2EE]/60 dark:hover:bg-[#181E1A] no-underline transition-colors"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-brand" />
-                Admin &amp; Article Studio
               </Link>
               <Link
                 to="/about"

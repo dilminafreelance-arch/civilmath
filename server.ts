@@ -539,6 +539,157 @@ app.post("/api/upload", requireAdminAuth, (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────
+// Contact Inquiries Storage Helpers & APIs
+// ─────────────────────────────────────────────────────────────
+const INQUIRIES_FILE = path.join(process.cwd(), "data", "inquiries.json");
+
+function readStoredInquiries(): any[] {
+  try {
+    if (!fs.existsSync(INQUIRIES_FILE)) return [];
+    const content = fs.readFileSync(INQUIRIES_FILE, "utf-8");
+    return JSON.parse(content) || [];
+  } catch (err) {
+    console.error("Error reading contact inquiries:", err);
+    return [];
+  }
+}
+
+function writeStoredInquiries(inquiries: any[]) {
+  try {
+    const dir = path.dirname(INQUIRIES_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(INQUIRIES_FILE, JSON.stringify(inquiries, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Error writing contact inquiries:", err);
+  }
+}
+
+const contactLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  message: { error: "Too many messages sent. Please wait a few minutes before submitting again.", status: "rate_limited" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Public: Submit a contact message from ContactPage
+app.post("/api/contact", contactLimiter, async (req, res) => {
+  const { name, email, category, subject, message } = req.body || {};
+
+  if (!name || typeof name !== "string" || !name.trim()) {
+    return res.status(400).json({ error: "Name is required.", status: "invalid_input" });
+  }
+  if (!email || typeof email !== "string" || !email.includes("@")) {
+    return res.status(400).json({ error: "A valid email address is required.", status: "invalid_input" });
+  }
+  if (!message || typeof message !== "string" || !message.trim()) {
+    return res.status(400).json({ error: "Message is required.", status: "invalid_input" });
+  }
+
+  const id = `inq_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
+  const now = new Date().toISOString();
+
+  const newInquiry = {
+    id,
+    name: name.trim().slice(0, 100),
+    email: email.trim().toLowerCase().slice(0, 150),
+    category: typeof category === "string" ? category.trim().slice(0, 50) : "General Question",
+    subject: typeof subject === "string" ? subject.trim().slice(0, 200) : "",
+    message: message.trim().slice(0, 5000),
+    status: "unread",
+    createdAt: now,
+  };
+
+  const inquiries = readStoredInquiries();
+  inquiries.unshift(newInquiry);
+  writeStoredInquiries(inquiries);
+
+  const supabase = getSupabaseServer();
+  if (supabase) {
+    try {
+      await supabase.from("inquiries").insert([newInquiry]);
+    } catch {
+      // Non-fatal, local file stored
+    }
+  }
+
+  console.log(`[Contact] New inquiry received from ${newInquiry.name} (${newInquiry.email}) - Category: ${newInquiry.category}`);
+
+  return res.json({
+    status: "success",
+    message: "Thank you for contacting CivilMath. Your inquiry has been received.",
+    inquiryId: id,
+  });
+});
+
+// Admin: Get all contact inquiries
+app.get("/api/inquiries", requireAdminAuth, async (req, res) => {
+  const supabase = getSupabaseServer();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("inquiries")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (!error && Array.isArray(data) && data.length > 0) {
+        return res.json(data);
+      }
+    } catch {
+      // Fallback to local file
+    }
+  }
+
+  const inquiries = readStoredInquiries();
+  return res.json(inquiries);
+});
+
+// Admin: Update inquiry status (read, replied, archived)
+app.patch("/api/inquiries/:id", requireAdminAuth, async (req, res) => {
+  const { id } = req.params;
+  const { status, notes } = req.body || {};
+
+  const inquiries = readStoredInquiries();
+  const idx = inquiries.findIndex((i: any) => i.id === id);
+  if (idx === -1) {
+    return res.status(404).json({ error: "Inquiry not found.", status: "not_found" });
+  }
+
+  if (status) inquiries[idx].status = status;
+  if (notes !== undefined) inquiries[idx].notes = notes;
+  inquiries[idx].updatedAt = new Date().toISOString();
+
+  writeStoredInquiries(inquiries);
+
+  const supabase = getSupabaseServer();
+  if (supabase) {
+    try {
+      await supabase.from("inquiries").update({ status, notes, updated_at: inquiries[idx].updatedAt }).eq("id", id);
+    } catch {}
+  }
+
+  return res.json({ status: "success", inquiry: inquiries[idx] });
+});
+
+// Admin: Delete inquiry
+app.delete("/api/inquiries/:id", requireAdminAuth, async (req, res) => {
+  const { id } = req.params;
+  const inquiries = readStoredInquiries();
+  const filtered = inquiries.filter((i: any) => i.id !== id);
+  writeStoredInquiries(filtered);
+
+  const supabase = getSupabaseServer();
+  if (supabase) {
+    try {
+      await supabase.from("inquiries").delete().eq("id", id);
+    } catch {}
+  }
+
+  return res.json({ status: "success", message: `Inquiry ${id} removed.` });
+});
+
 // Auto SEO API endpoint (AI-enhanced if key available)
 app.post("/api/seo/generate", requireAdminAuth, async (req, res) => {
   const { title, content, category } = req.body;

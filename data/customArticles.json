@@ -1,1 +1,52 @@
-[]
+[
+  {
+    "slug": "t",
+    "title": "test one",
+    "h1": "test one",
+    "excerpt": "test one",
+    "category": "concrete",
+    "author": "CivilMath Engineering Lead",
+    "publishedAt": "2026-09-25T13:09:30.418Z",
+    "updatedAt": "2026-09-25T13:09:51.396Z",
+    "readTimeMinutes": 5,
+    "status": "published",
+    "coverImage": "/uploads/articles/1790341785630-chatgpt-image-sep-24--2026--06_13_16-pm.png",
+    "tags": [
+      "concrete",
+      "guide"
+    ],
+    "content": "test one",
+    "introduction": "test one",
+    "theory": "test one",
+    "realWorldApplications": [],
+    "formulas": [],
+    "commonErrors": [],
+    "bestPractices": [],
+    "designCodes": [],
+    "faqs": [],
+    "relatedCalculators": [],
+    "references": [],
+    "seo": {
+      "seoTitle": "test one: Complete Test Test Guide | CivilMath",
+      "metaDescription": "Comprehensive guide to test one. Master test test with accurate formulas, numerical examples, and site best practices. Check details on CivilMath now.",
+      "primaryKeyword": "test test",
+      "secondaryKeywords": [
+        "test"
+      ],
+      "lsiKeywords": [
+        "mix design",
+        "compressive strength",
+        "water cement ratio",
+        "curing time",
+        "slump test",
+        "IS 456",
+        "ACI 318",
+        "cement bags"
+      ],
+      "canonicalUrl": "https://civilmath.com/articles/t",
+      "ogImage": "/uploads/articles/1790341785630-chatgpt-image-sep-24--2026--06_13_16-pm.png",
+      "noindex": false
+    },
+    "isBuiltin": false
+  }
+]

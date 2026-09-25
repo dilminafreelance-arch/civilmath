@@ -200,9 +200,17 @@ async function prerenderRoutes() {
     await Promise.all(chunk.map(r => processRoute(r)));
   }
 
-  await browser.close();
-  server.close();
+  try {
+    await Promise.race([
+      browser.close(),
+      new Promise(resolve => setTimeout(resolve, 3000)),
+    ]);
+  } catch {}
+  try {
+    server.close();
+  } catch {}
   console.log(`[Prerender] Successfully prerendered ${completed} routes to static HTML.`);
+  process.exit(0);
 }
 
 prerenderRoutes().catch(err => {

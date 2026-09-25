@@ -3,13 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   PenTool, Upload, Download, Search, Filter,
   FileText, ExternalLink, Trash2, Edit3, Sparkles,
-  BarChart3, CheckCircle2, Clock, Globe, AlertCircle, RefreshCw
+  BarChart3, CheckCircle2, Clock, Globe, AlertCircle, RefreshCw, Mail
 } from 'lucide-react';
 import AdminLayout from './AdminLayout';
 import AdminUploadModal from './AdminUploadModal';
 import { Article, ArticleCategory } from '../../types/article';
 import { getAllArticleSummaries, deleteArticle, exportAllArticlesAsJson, fetchAndSyncAllArticles, clearLocalArticleCache } from '../../utils/articleStore';
 import { auditArticleSeo } from '../../utils/autoSeo';
+import { getUnreadInquiriesCount } from '../../utils/inquiryStore';
 
 const CATEGORY_NAMES: Record<ArticleCategory, string> = {
   concrete: 'Concrete & Materials',
@@ -30,10 +31,12 @@ export default function AdminDashboard() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [deleteConfirmSlug, setDeleteConfirmSlug] = useState<string | null>(null);
+  const [unreadInquiries, setUnreadInquiries] = useState(0);
 
   const refreshArticles = () => {
     const list = getAllArticleSummaries();
     setArticles(list);
+    setUnreadInquiries(getUnreadInquiriesCount());
     fetchAndSyncAllArticles()
       .then(synced => setArticles(synced))
       .catch(err => console.error('Failed to sync articles in admin:', err));
@@ -143,6 +146,20 @@ export default function AdminDashboard() {
             </button>
 
             <button
+              onClick={() => navigate('/admin/inquiries')}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-[#FAF9F6] dark:bg-[#252B25] border border-[#D8D0C2] dark:border-[#384238] text-[#20231F] dark:text-[#EAE7E0] hover:border-[#657565] transition-all cursor-pointer shadow-2xs relative"
+              title="Review messages sent from Contact CivilMath"
+            >
+              <Mail className="w-3.5 h-3.5 text-[#657565]" />
+              <span>Contact Messages</span>
+              {unreadInquiries > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-600 text-white">
+                  {unreadInquiries}
+                </span>
+              )}
+            </button>
+
+            <button
               onClick={() => navigate('/admin/articles/new')}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#657565] hover:bg-[#536153] text-white transition-all shadow-xs cursor-pointer"
             >
@@ -151,6 +168,31 @@ export default function AdminDashboard() {
             </button>
           </div>
         </div>
+
+        {/* Unread Contact Messages Alert Banner */}
+        {unreadInquiries > 0 && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800/50 shadow-2xs">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                <Mail className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-emerald-950 dark:text-emerald-200">
+                  You have {unreadInquiries} unread inquiry message{unreadInquiries > 1 ? 's' : ''} from Contact CivilMath.
+                </div>
+                <div className="text-[11px] text-emerald-800/80 dark:text-emerald-300/80">
+                  Users have submitted questions and calculator reports waiting for response.
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/admin/inquiries')}
+              className="self-start sm:self-center px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white transition-all shadow-xs cursor-pointer shrink-0"
+            >
+              Open Inquiries
+            </button>
+          </div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

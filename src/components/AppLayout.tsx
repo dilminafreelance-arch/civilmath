@@ -103,7 +103,7 @@ export default function AppLayout() {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Floating Top Header */}
         <header className="sticky top-0 z-30 bg-surface-1/80 dark:bg-canvas-dark/80 backdrop-blur-xl px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-3 border-b border-border-subtle transition-colors">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Mobile Hamburger Button */}
             <button
               onClick={() => setMobileMenuOpen(true)}
@@ -115,6 +115,20 @@ export default function AppLayout() {
 
             {/* Search Input with Ctrl+K */}
             <GlobalSearch />
+
+            {/* Articles Tab */}
+            <Link
+              to="/articles"
+              className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors no-underline shadow-2xs ${
+                isArticlesActive
+                  ? 'border-brand/60 bg-brand/10 text-brand dark:text-brand-light font-semibold'
+                  : 'border-[#E2E6E2] dark:border-white/10 bg-white dark:bg-[#131715] text-[#526058] dark:text-[#97A69E] hover:text-[#141A16] dark:hover:text-[#ECF2EE] hover:border-[#2E6B56]/50 dark:hover:border-[#34D399]/40'
+              }`}
+              title="Engineering Articles"
+            >
+              <BookOpen className={`w-3.5 h-3.5 ${isArticlesActive ? 'text-brand dark:text-brand-light' : 'text-[#7A8981]'}`} />
+              <span>Articles</span>
+            </Link>
           </div>
 
           {/* Right Header Controls */}
