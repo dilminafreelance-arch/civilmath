@@ -8,7 +8,7 @@ import {
 import AdminLayout from './AdminLayout';
 import AdminUploadModal from './AdminUploadModal';
 import { Article, ArticleCategory } from '../../types/article';
-import { getAllArticleSummaries, deleteArticle, exportAllArticlesAsJson, fetchAndSyncAllArticles } from '../../utils/articleStore';
+import { getAllArticleSummaries, deleteArticle, exportAllArticlesAsJson, fetchAndSyncAllArticles, clearLocalArticleCache } from '../../utils/articleStore';
 import { auditArticleSeo } from '../../utils/autoSeo';
 
 const CATEGORY_NAMES: Record<ArticleCategory, string> = {
@@ -112,6 +112,18 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={() => {
+                clearLocalArticleCache();
+                refreshArticles();
+              }}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-[#FAF9F6] dark:bg-[#252B25] border border-[#D8D0C2] dark:border-[#384238] text-[#20231F] dark:text-[#EAE7E0] hover:border-[#657565] transition-all cursor-pointer shadow-2xs"
+              title="Clear local browser storage and reload from Supabase"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-[#657565]" />
+              <span>Sync Supabase</span>
+            </button>
+
             <button
               onClick={() => setUploadModalOpen(true)}
               className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-[#FAF9F6] dark:bg-[#252B25] border border-[#D8D0C2] dark:border-[#384238] text-[#20231F] dark:text-[#EAE7E0] hover:border-[#657565] transition-all cursor-pointer shadow-2xs"

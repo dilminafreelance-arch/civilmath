@@ -150,6 +150,7 @@ async function prerenderRoutes() {
                 tag.remove();
               } else {
                 seenKeys.add(lowerKey);
+                tag.setAttribute('data-rh', 'true');
               }
             }
           }
@@ -157,10 +158,11 @@ async function prerenderRoutes() {
 
         // 3. Deduplicate canonical links (keep the last one)
         const canonicals = Array.from(document.querySelectorAll('head > link[rel="canonical"]'));
-        if (canonicals.length > 1) {
+        if (canonicals.length > 0) {
           for (let i = 0; i < canonicals.length - 1; i++) {
             canonicals[i].remove();
           }
+          canonicals[canonicals.length - 1].setAttribute('data-rh', 'true');
         }
 
         // 4. Remove splash loader from prerendered HTML so search engines & static previews have clear markup

@@ -1,5 +1,4 @@
 import { Article, ArticleCategory } from '../types/article';
-import { BUILTIN_ARTICLES_MANIFEST, convertArticleDataToArticle } from '../data/articlesManifest';
 import { autoGenerateSeo } from './autoSeo';
 
 const LOCAL_STORAGE_KEY = 'civilmath_custom_articles_v1';
@@ -237,43 +236,32 @@ export function setStoredCustomArticles(articles: Article[]) {
 
 /**
  * Returns list of all article summaries (Built-in + Custom), sorted by date or title.
+/**
+ * Wipes local article storage and in-memory cache completely.
+ */
+export function clearLocalArticleCache(): void {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+  }
+  articleCache.clear();
+}
+
+/**
+ * Returns list of all article summaries, sorted by date or title.
+ * Exclusively loads articles synchronized from Supabase.
  */
 export function getAllArticleSummaries(): Article[] {
-  const custom = getStoredCustomArticles();
-  const customSlugs = new Set(custom.map(a => a.slug.toLowerCase()));
-
-  // Built-in manifest entries converted to lightweight Article records
-  const builtinSummaries: Article[] = BUILTIN_ARTICLES_MANIFEST
-    .filter(entry => !customSlugs.has(entry.slug.toLowerCase())) // Custom overrides built-in if same slug
-    .map(entry => ({
-      slug: entry.slug,
-      title: entry.title,
-      h1: entry.title,
-      excerpt: entry.excerpt,
-      category: entry.category,
-      author: 'CivilMath Engineering Editorial Team',
-      publishedAt: '2025-01-15T00:00:00.000Z',
-      readTimeMinutes: entry.readTimeMinutes,
-      status: 'published',
-      tags: [entry.category, entry.primaryKeyword],
-      seo: {
-        seoTitle: `${entry.title} | CivilMath`,
-        metaDescription: entry.excerpt,
-        primaryKeyword: entry.primaryKeyword,
-        secondaryKeywords: [],
-        lsiKeywords: [],
-        canonicalUrl: `https://civilmath.com/articles/${entry.slug}`,
-      },
-      relatedCalculators: [{ name: entry.title, url: entry.calculatorUrl }],
-      isBuiltin: true,
-    }));
-
-  return [...custom, ...builtinSummaries];
+  return getStoredCustomArticles();
 }
 
 /**
  * Fetches all custom articles from backend API / Supabase, normalizes them,
- * synchronizes into localStorage, updates in-memory cache, and returns all summaries.
+ * strictly overwrites localStorage with Supabase articles, updates in-memory cache,
+ * and returns all summaries.
  */
 export async function fetchAndSyncAllArticles(): Promise<Article[]> {
   try {
@@ -282,28 +270,17 @@ export async function fetchAndSyncAllArticles(): Promise<Article[]> {
       const data = await res.json();
       if (Array.isArray(data)) {
         const normalizedRemote = data.map((item: any) => normalizeArticleData(item));
-        const localCustom = getStoredCustomArticles();
 
-        // Merge map keyed by slug (lowercase)
-        const mergedMap = new Map<string, Article>();
-
-        // First add existing local custom
-        for (const art of localCustom) {
-          if (art && art.slug) {
-            mergedMap.set(art.slug.toLowerCase(), normalizeArticleData(art));
-          }
-        }
-
-        // Then override/add with remote (Supabase is source of truth)
+        // Supabase is the sole source of truth:
+        // Overwrite local storage strictly with Supabase articles
+        setStoredCustomArticles(normalizedRemote);
+        articleCache.clear();
         for (const art of normalizedRemote) {
           if (art && art.slug) {
-            mergedMap.set(art.slug.toLowerCase(), art);
             articleCache.set(art.slug.toLowerCase(), art);
           }
         }
-
-        const mergedList = Array.from(mergedMap.values());
-        setStoredCustomArticles(mergedList);
+        return normalizedRemote;
       }
     }
   } catch (err) {
@@ -314,7 +291,7 @@ export async function fetchAndSyncAllArticles(): Promise<Article[]> {
 }
 
 /**
- * Loads a single article by slug (either from custom storage, cache, or dynamic builtin import).
+ * Loads a single article by slug (from in-memory cache, custom storage, or remote Supabase API).
  */
 export async function getArticleBySlug(slug: string): Promise<Article | undefined> {
   if (!slug) return undefined;
@@ -334,21 +311,7 @@ export async function getArticleBySlug(slug: string): Promise<Article | undefine
     return normalized;
   }
 
-  // 3. Check built-in manifest
-  const builtinEntry = BUILTIN_ARTICLES_MANIFEST.find(b => b.slug.toLowerCase() === normalizedSlug);
-  if (builtinEntry) {
-    try {
-      const fullData = await builtinEntry.loadFullArticle();
-      const article = convertArticleDataToArticle(fullData, builtinEntry);
-      const normalized = normalizeArticleData(article, normalizedSlug);
-      articleCache.set(normalizedSlug, normalized);
-      return normalized;
-    } catch (err) {
-      console.error(`Failed to load built-in article ${slug}:`, err);
-    }
-  }
-
-  // 4. Try backend API / Supabase
+  // 3. Try backend API / Supabase
   try {
     const res = await fetch(`/api/articles/${encodeURIComponent(normalizedSlug)}`);
     if (res.ok) {

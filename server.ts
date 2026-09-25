@@ -332,10 +332,7 @@ app.get("/api/articles", async (req, res) => {
 
       if (!error && Array.isArray(data)) {
         const mapped = data.map(rowToArticle);
-        const local = readStoredArticles();
-        const serverSlugs = new Set(mapped.map((m: any) => m.slug.toLowerCase()));
-        const extraLocal = local.filter((l: any) => !serverSlugs.has(l.slug?.toLowerCase()));
-        return res.json([...mapped, ...extraLocal]);
+        return res.json(mapped);
       }
       if (error) {
         console.warn("Supabase fetch error in server.ts:", error.message);
@@ -867,7 +864,9 @@ app.all("/api/*", (req, res) => {
 
 // Setup Vite & Static Assets Handlers
 async function startServer() {
-  if (process.env.NODE_ENV !== "production") {
+  const isProduction = process.env.NODE_ENV === "production" || Boolean(process.argv[1]?.includes("dist"));
+
+  if (!isProduction) {
     // Vite Middlewares in development mode
     const vite = await createViteServer({
       server: { middlewareMode: true },
