@@ -77,8 +77,8 @@ async function prerenderRoutes() {
         browser = await chromium.launch({ channel: 'chrome' });
       } catch {
         console.warn('[Prerender] Browser not available in this build environment (e.g. Vercel CI). SPA fallback index.html will serve routes.');
-        server.close();
-        return;
+        try { server.close(); } catch {}
+        process.exit(0);
       }
     }
   }
