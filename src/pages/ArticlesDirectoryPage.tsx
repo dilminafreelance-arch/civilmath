@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { SEOHead } from '../utils/seo';
 import { Article } from '../types/article';
-import { getAllArticleSummaries } from '../utils/articleStore';
+import { getAllArticleSummaries, fetchAndSyncAllArticles } from '../utils/articleStore';
 import { getArticleCoverImage } from '../data/articleVisuals';
 
 type SortOption = 'recommended' | 'time-asc' | 'time-desc' | 'alphabetical';
@@ -41,6 +41,9 @@ export default function ArticlesDirectoryPage() {
 
   useEffect(() => {
     setArticles(getAllArticleSummaries());
+    fetchAndSyncAllArticles()
+      .then(synced => setArticles(synced))
+      .catch(err => console.error('Failed to sync articles in directory:', err));
   }, []);
 
   // Filter & Sort

@@ -72,13 +72,153 @@ export async function uploadArticleImage(file: File): Promise<{ url: string; fil
   });
 }
 
+const VALID_CATEGORIES: ArticleCategory[] = [
+  'concrete',
+  'structural',
+  'bbs',
+  'geotech',
+  'survey',
+  'utility',
+  'general',
+];
+
+/**
+ * Normalizes any raw article object into a strictly-typed, guaranteed-safe Article.
+ * Prevents runtime crashes when fields (like category, seo, tags) are missing or null.
+ */
+export function normalizeArticleData(raw: any, fallbackSlug?: string): Article {
+  if (!raw || typeof raw !== 'object') {
+    const slug = fallbackSlug || 'unknown-article';
+    return {
+      slug,
+      title: 'Untitled Article',
+      h1: 'Untitled Article',
+      excerpt: '',
+      category: 'general',
+      author: 'CivilMath Engineering Editorial Team',
+      publishedAt: new Date().toISOString(),
+      readTimeMinutes: 5,
+      status: 'published',
+      tags: ['general'],
+      content: '',
+      introduction: '',
+      theory: '',
+      realWorldApplications: [],
+      formulas: [],
+      commonErrors: [],
+      bestPractices: [],
+      designCodes: [],
+      faqs: [],
+      relatedCalculators: [],
+      references: [],
+      seo: {
+        seoTitle: 'Untitled Article | CivilMath',
+        metaDescription: '',
+        primaryKeyword: 'general',
+        secondaryKeywords: [],
+        lsiKeywords: [],
+        canonicalUrl: `https://civilmath.com/articles/${slug}`,
+      },
+      isBuiltin: false,
+    };
+  }
+
+  const title = String(raw.title || raw.h1 || raw.seoTitle || 'Untitled Article').trim();
+  const slug = String(raw.slug || fallbackSlug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'article').trim();
+  const h1 = String(raw.h1 || title).trim();
+  const rawCat = typeof raw.category === 'string' ? raw.category.toLowerCase().trim() : '';
+  const category: ArticleCategory = VALID_CATEGORIES.includes(rawCat as ArticleCategory)
+    ? (rawCat as ArticleCategory)
+    : 'general';
+
+  const content = typeof raw.content === 'string' ? raw.content : '';
+  const intro = typeof raw.introduction === 'string' ? raw.introduction : '';
+  const excerpt = String(
+    raw.excerpt ||
+    raw.metaDescription ||
+    raw.summary ||
+    (intro.length > 20 ? intro.slice(0, 160) : '') ||
+    (content.length > 20 ? content.slice(0, 160) : '') ||
+    title
+  ).trim();
+
+  const author = String(raw.author || 'CivilMath Engineering Editorial Team').trim();
+  const publishedAt = raw.publishedAt || raw.published_at || new Date().toISOString();
+  const updatedAt = raw.updatedAt || raw.updated_at || undefined;
+
+  const wordCount = (content + ' ' + intro).split(/\s+/).filter(Boolean).length;
+  const readTimeMinutes = Number(raw.readTimeMinutes) || Math.max(2, Math.ceil((wordCount || 500) / 200));
+
+  const status: 'published' | 'draft' =
+    raw.status === 'draft' || raw.published === false ? 'draft' : 'published';
+
+  const tags: string[] = Array.isArray(raw.tags) && raw.tags.length > 0
+    ? raw.tags.map((t: any) => String(t).trim()).filter(Boolean)
+    : [category];
+
+  const primaryKeyword = raw.seo?.primaryKeyword || raw.primaryKeyword || tags[0] || category;
+  const autoSeo = autoGenerateSeo({ title, category, content: content || intro, slug });
+
+  const seoTitle = raw.seo?.seoTitle || raw.seoTitle || autoSeo.seoTitle || `${title} | CivilMath`;
+  const metaDescription = raw.seo?.metaDescription || raw.metaDescription || excerpt || autoSeo.metaDescription;
+
+  const seo = {
+    seoTitle,
+    metaDescription,
+    primaryKeyword: String(primaryKeyword),
+    secondaryKeywords: Array.isArray(raw.seo?.secondaryKeywords)
+      ? raw.seo.secondaryKeywords
+      : (Array.isArray(raw.secondaryKeywords) ? raw.secondaryKeywords : autoSeo.secondaryKeywords),
+    lsiKeywords: Array.isArray(raw.seo?.lsiKeywords)
+      ? raw.seo.lsiKeywords
+      : (Array.isArray(raw.lsiKeywords) ? raw.lsiKeywords : autoSeo.lsiKeywords),
+    canonicalUrl: raw.seo?.canonicalUrl || raw.canonicalUrl || `https://civilmath.com/articles/${slug}`,
+    ogImage: raw.seo?.ogImage || raw.coverImage || raw.image_url || undefined,
+    noindex: Boolean(raw.seo?.noindex ?? raw.noindex),
+  };
+
+  return {
+    id: raw.id,
+    slug,
+    title,
+    h1,
+    excerpt,
+    category,
+    author,
+    publishedAt,
+    updatedAt,
+    readTimeMinutes,
+    status,
+    coverImage: raw.coverImage || raw.image_url || raw.imageUrl || undefined,
+    tags,
+    content,
+    introduction: intro,
+    theory: typeof raw.theory === 'string' ? raw.theory : '',
+    realWorldApplications: Array.isArray(raw.realWorldApplications) ? raw.realWorldApplications : [],
+    formulas: Array.isArray(raw.formulas) ? raw.formulas : [],
+    stepByStepExample: raw.stepByStepExample && typeof raw.stepByStepExample === 'object' ? raw.stepByStepExample : undefined,
+    commonErrors: Array.isArray(raw.commonErrors) ? raw.commonErrors : [],
+    bestPractices: Array.isArray(raw.bestPractices) ? raw.bestPractices : [],
+    designCodes: Array.isArray(raw.designCodes) ? raw.designCodes : [],
+    faqs: Array.isArray(raw.faqs) ? raw.faqs : [],
+    relatedCalculators: Array.isArray(raw.relatedCalculators) ? raw.relatedCalculators : [],
+    references: Array.isArray(raw.references) ? raw.references : [],
+    seo,
+    isBuiltin: Boolean(raw.isBuiltin),
+  };
+}
+
 // Helper to get custom articles stored in localStorage
 export function getStoredCustomArticles(): Article[] {
   if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (!raw) return [];
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return parsed.map(item => normalizeArticleData(item));
+    }
+    return [];
   } catch (err) {
     console.error('Failed to parse custom articles from localStorage:', err);
     return [];
@@ -100,14 +240,15 @@ export function setStoredCustomArticles(articles: Article[]) {
  */
 export function getAllArticleSummaries(): Article[] {
   const custom = getStoredCustomArticles();
-  const customSlugs = new Set(custom.map(a => a.slug));
+  const customSlugs = new Set(custom.map(a => a.slug.toLowerCase()));
 
   // Built-in manifest entries converted to lightweight Article records
   const builtinSummaries: Article[] = BUILTIN_ARTICLES_MANIFEST
-    .filter(entry => !customSlugs.has(entry.slug)) // Custom overrides built-in if same slug
+    .filter(entry => !customSlugs.has(entry.slug.toLowerCase())) // Custom overrides built-in if same slug
     .map(entry => ({
       slug: entry.slug,
       title: entry.title,
+      h1: entry.title,
       excerpt: entry.excerpt,
       category: entry.category,
       author: 'CivilMath Engineering Editorial Team',
@@ -131,6 +272,48 @@ export function getAllArticleSummaries(): Article[] {
 }
 
 /**
+ * Fetches all custom articles from backend API / Supabase, normalizes them,
+ * synchronizes into localStorage, updates in-memory cache, and returns all summaries.
+ */
+export async function fetchAndSyncAllArticles(): Promise<Article[]> {
+  try {
+    const res = await fetch('/api/articles');
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        const normalizedRemote = data.map((item: any) => normalizeArticleData(item));
+        const localCustom = getStoredCustomArticles();
+
+        // Merge map keyed by slug (lowercase)
+        const mergedMap = new Map<string, Article>();
+
+        // First add existing local custom
+        for (const art of localCustom) {
+          if (art && art.slug) {
+            mergedMap.set(art.slug.toLowerCase(), normalizeArticleData(art));
+          }
+        }
+
+        // Then override/add with remote (Supabase is source of truth)
+        for (const art of normalizedRemote) {
+          if (art && art.slug) {
+            mergedMap.set(art.slug.toLowerCase(), art);
+            articleCache.set(art.slug.toLowerCase(), art);
+          }
+        }
+
+        const mergedList = Array.from(mergedMap.values());
+        setStoredCustomArticles(mergedList);
+      }
+    }
+  } catch (err) {
+    console.warn('Could not sync articles with remote API:', err);
+  }
+
+  return getAllArticleSummaries();
+}
+
+/**
  * Loads a single article by slug (either from custom storage, cache, or dynamic builtin import).
  */
 export async function getArticleBySlug(slug: string): Promise<Article | undefined> {
@@ -139,15 +322,16 @@ export async function getArticleBySlug(slug: string): Promise<Article | undefine
 
   // 1. Check in-memory cache
   if (articleCache.has(normalizedSlug)) {
-    return articleCache.get(normalizedSlug);
+    return normalizeArticleData(articleCache.get(normalizedSlug)!, normalizedSlug);
   }
 
   // 2. Check custom storage
   const customList = getStoredCustomArticles();
   const foundCustom = customList.find(a => a.slug.toLowerCase() === normalizedSlug);
   if (foundCustom) {
-    articleCache.set(normalizedSlug, foundCustom);
-    return foundCustom;
+    const normalized = normalizeArticleData(foundCustom, normalizedSlug);
+    articleCache.set(normalizedSlug, normalized);
+    return normalized;
   }
 
   // 3. Check built-in manifest
@@ -156,14 +340,15 @@ export async function getArticleBySlug(slug: string): Promise<Article | undefine
     try {
       const fullData = await builtinEntry.loadFullArticle();
       const article = convertArticleDataToArticle(fullData, builtinEntry);
-      articleCache.set(normalizedSlug, article);
-      return article;
+      const normalized = normalizeArticleData(article, normalizedSlug);
+      articleCache.set(normalizedSlug, normalized);
+      return normalized;
     } catch (err) {
       console.error(`Failed to load built-in article ${slug}:`, err);
     }
   }
 
-  // 4. Try backend API if running with server
+  // 4. Try backend API / Supabase
   try {
     const res = await fetch(`/api/articles/${encodeURIComponent(normalizedSlug)}`);
     if (res.ok) {
@@ -171,9 +356,21 @@ export async function getArticleBySlug(slug: string): Promise<Article | undefine
       if (text && text.trim()) {
         try {
           const data = JSON.parse(text);
-          if (data && data.slug) {
-            articleCache.set(normalizedSlug, data);
-            return data;
+          if (data && (data.slug || data.title)) {
+            const normalized = normalizeArticleData(data, normalizedSlug);
+            articleCache.set(normalizedSlug, normalized);
+
+            // Also store in custom articles so directory / prev-next works immediately
+            const current = getStoredCustomArticles();
+            const idx = current.findIndex(c => c.slug.toLowerCase() === normalizedSlug);
+            if (idx >= 0) {
+              current[idx] = normalized;
+            } else {
+              current.unshift(normalized);
+            }
+            setStoredCustomArticles(current);
+
+            return normalized;
           }
         } catch {
           // ignore non-json response
@@ -188,14 +385,15 @@ export async function getArticleBySlug(slug: string): Promise<Article | undefine
 }
 
 /**
- * Saves or updates an article in custom storage and server API.
+ * Saves or updates an article in custom storage and server API (Supabase).
  */
 export async function saveArticle(article: Article): Promise<void> {
+  const normalized = normalizeArticleData(article);
   const custom = getStoredCustomArticles();
-  const index = custom.findIndex(a => a.slug === article.slug);
+  const index = custom.findIndex(a => a.slug.toLowerCase() === normalized.slug.toLowerCase());
 
   const updatedArticle: Article = {
-    ...article,
+    ...normalized,
     updatedAt: new Date().toISOString(),
     isBuiltin: false,
   };
@@ -207,15 +405,29 @@ export async function saveArticle(article: Article): Promise<void> {
   }
 
   setStoredCustomArticles(custom);
-  articleCache.set(article.slug, updatedArticle);
+  articleCache.set(updatedArticle.slug.toLowerCase(), updatedArticle);
 
   // Sync to server API if available
   try {
-    await fetch('/api/articles', {
+    const res = await fetch('/api/articles', {
       method: 'POST',
       headers: getAdminAuthHeaders(),
       body: JSON.stringify(updatedArticle),
     });
+    if (res.ok) {
+      const json = await res.json();
+      const saved = json?.article || json;
+      if (saved && (saved.slug || saved.title)) {
+        const synced = normalizeArticleData(saved, updatedArticle.slug);
+        articleCache.set(synced.slug.toLowerCase(), synced);
+        const latestCustom = getStoredCustomArticles();
+        const lIdx = latestCustom.findIndex(c => c.slug.toLowerCase() === synced.slug.toLowerCase());
+        if (lIdx >= 0) {
+          latestCustom[lIdx] = synced;
+          setStoredCustomArticles(latestCustom);
+        }
+      }
+    }
   } catch {
     // Offline or static mode
   }
@@ -228,23 +440,13 @@ export async function bulkUploadArticles(articles: Article[]): Promise<{ added: 
   const custom = getStoredCustomArticles();
   let added = 0;
   let updated = 0;
+  const normalizedList: Article[] = [];
 
-  for (const art of articles) {
-    if (!art.slug || !art.title) continue;
-    
-    // Ensure SEO fields are present
-    if (!art.seo || !art.seo.seoTitle) {
-      const autoSeo = autoGenerateSeo(art);
-      art.seo = {
-        seoTitle: autoSeo.seoTitle,
-        metaDescription: autoSeo.metaDescription,
-        primaryKeyword: autoSeo.primaryKeyword,
-        secondaryKeywords: autoSeo.secondaryKeywords,
-        lsiKeywords: autoSeo.lsiKeywords,
-      };
-    }
+  for (const raw of articles) {
+    if (!raw.slug && !raw.title) continue;
+    const art = normalizeArticleData(raw);
 
-    const idx = custom.findIndex(c => c.slug === art.slug);
+    const idx = custom.findIndex(c => c.slug.toLowerCase() === art.slug.toLowerCase());
     if (idx >= 0) {
       custom[idx] = { ...art, updatedAt: new Date().toISOString(), isBuiltin: false };
       updated++;
@@ -256,7 +458,8 @@ export async function bulkUploadArticles(articles: Article[]): Promise<{ added: 
       });
       added++;
     }
-    articleCache.set(art.slug, art);
+    articleCache.set(art.slug.toLowerCase(), art);
+    normalizedList.push(art);
   }
 
   setStoredCustomArticles(custom);
@@ -266,7 +469,7 @@ export async function bulkUploadArticles(articles: Article[]): Promise<{ added: 
     await fetch('/api/articles/bulk', {
       method: 'POST',
       headers: getAdminAuthHeaders(),
-      body: JSON.stringify(articles),
+      body: JSON.stringify(normalizedList),
     });
   } catch {
     // Static mode or server offline
@@ -279,14 +482,15 @@ export async function bulkUploadArticles(articles: Article[]): Promise<{ added: 
  * Deletes an article by slug (custom only).
  */
 export async function deleteArticle(slug: string): Promise<boolean> {
+  const normSlug = slug.toLowerCase().trim();
   const custom = getStoredCustomArticles();
-  const filtered = custom.filter(a => a.slug !== slug);
+  const filtered = custom.filter(a => a.slug.toLowerCase() !== normSlug);
   if (filtered.length === custom.length) {
     return false; // nothing was deleted
   }
 
   setStoredCustomArticles(filtered);
-  articleCache.delete(slug);
+  articleCache.delete(normSlug);
 
   try {
     await fetch(`/api/articles/${encodeURIComponent(slug)}`, {

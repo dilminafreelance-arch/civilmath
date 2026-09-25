@@ -1,6 +1,7 @@
 import { setCors } from "../_lib/openrouter.js";
 import { requireAdminAuth } from "../_lib/auth.js";
 import { getSupabase } from "../_lib/supabase.js";
+import { rowToArticle } from "../_lib/articleMapper.js";
 
 export default async function handler(req, res) {
   setCors(res);
@@ -21,7 +22,7 @@ export default async function handler(req, res) {
     if (error || !data) {
       return res.status(404).json({ error: "Article not found", status: "not_found" });
     }
-    return res.status(200).json(data);
+    return res.status(200).json(rowToArticle(data));
   }
 
   if (req.method === "DELETE") {

@@ -183,10 +183,10 @@ export function getArticleCoverImage(slug: string, category: string = 'general',
       caption: 'Illustration: Article reference visual diagram',
     };
   }
-  const normSlug = slug.toLowerCase().trim();
-  if (TOPIC_IMAGES[normSlug]) {
+  const normSlug = slug ? slug.toLowerCase().trim() : '';
+  if (normSlug && TOPIC_IMAGES[normSlug]) {
     return TOPIC_IMAGES[normSlug];
   }
-  const normCat = category.toLowerCase().trim();
+  const normCat = (category || 'general').toLowerCase().trim();
   return CATEGORY_DEFAULT_IMAGES[normCat] || CATEGORY_DEFAULT_IMAGES.general;
 }

@@ -458,17 +458,25 @@ export function auditArticleSeo(article: Partial<Article>): SeoAuditResult {
  */
 export function generateArticleJsonLd(article: Article): Record<string, any> {
   const url = `${SITE_URL}/articles/${article.slug}`;
+  const seo = article.seo || {
+    seoTitle: article.title || '',
+    metaDescription: article.excerpt || '',
+    primaryKeyword: '',
+    secondaryKeywords: [],
+    lsiKeywords: [],
+    ogImage: undefined,
+  };
   const schema: Record<string, any> = {
     '@context': 'https://schema.org',
     '@type': 'TechArticle',
-    headline: article.seo.seoTitle || article.title,
-    description: article.seo.metaDescription || article.excerpt,
+    headline: seo.seoTitle || article.title,
+    description: seo.metaDescription || article.excerpt,
     url,
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': url,
     },
-    image: article.coverImage || article.seo.ogImage || DEFAULT_IMAGE,
+    image: article.coverImage || seo.ogImage || DEFAULT_IMAGE,
     datePublished: article.publishedAt,
     dateModified: article.updatedAt || article.publishedAt,
     author: {
@@ -488,8 +496,8 @@ export function generateArticleJsonLd(article: Article): Record<string, any> {
     inLanguage: 'en-US',
   };
 
-  if (article.seo.primaryKeyword) {
-    schema.keywords = [article.seo.primaryKeyword, ...(article.seo.secondaryKeywords || [])].join(', ');
+  if (seo.primaryKeyword) {
+    schema.keywords = [seo.primaryKeyword, ...(seo.secondaryKeywords || [])].join(', ');
   }
 
   return schema;

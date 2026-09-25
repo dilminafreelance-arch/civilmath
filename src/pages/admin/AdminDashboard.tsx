@@ -8,7 +8,7 @@ import {
 import AdminLayout from './AdminLayout';
 import AdminUploadModal from './AdminUploadModal';
 import { Article, ArticleCategory } from '../../types/article';
-import { getAllArticleSummaries, deleteArticle, exportAllArticlesAsJson } from '../../utils/articleStore';
+import { getAllArticleSummaries, deleteArticle, exportAllArticlesAsJson, fetchAndSyncAllArticles } from '../../utils/articleStore';
 import { auditArticleSeo } from '../../utils/autoSeo';
 
 const CATEGORY_NAMES: Record<ArticleCategory, string> = {
@@ -34,6 +34,9 @@ export default function AdminDashboard() {
   const refreshArticles = () => {
     const list = getAllArticleSummaries();
     setArticles(list);
+    fetchAndSyncAllArticles()
+      .then(synced => setArticles(synced))
+      .catch(err => console.error('Failed to sync articles in admin:', err));
   };
 
   useEffect(() => {

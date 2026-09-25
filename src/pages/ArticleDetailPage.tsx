@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { SEOHead } from '../utils/seo';
 import { Article } from '../types/article';
-import { getArticleBySlug, getAllArticleSummaries } from '../utils/articleStore';
+import { getArticleBySlug, getAllArticleSummaries, fetchAndSyncAllArticles } from '../utils/articleStore';
 import { getArticleCoverImage } from '../data/articleVisuals';
 import ArticleDiagram from '../components/ArticleDiagrams';
 import { generateArticleJsonLd } from '../utils/autoSeo';
@@ -46,6 +46,9 @@ export default function ArticleDetailPage() {
 
     const summaries = getAllArticleSummaries();
     setAllArticles(summaries);
+    fetchAndSyncAllArticles()
+      .then(synced => setAllArticles(synced))
+      .catch(() => {});
   }, [slug]);
 
   // Compute Prev / Next Articles

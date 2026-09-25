@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { createServer as createViteServer } from "vite";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { rowToArticle, articleToRow } from "./api/_lib/articleMapper.js";
 
 // Load environment variables (.env.local overrides .env when present)
 dotenv.config();
@@ -278,6 +280,23 @@ app.post("/api/admin/logout", (req, res) => {
 // Articles storage helpers
 const ARTICLES_FILE = path.join(process.cwd(), "data", "customArticles.json");
 
+let supabaseServerClient: SupabaseClient | null = null;
+function getSupabaseServer(): SupabaseClient | null {
+  if (supabaseServerClient) return supabaseServerClient;
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+  try {
+    supabaseServerClient = createClient(url, key, {
+      auth: { persistSession: false },
+    });
+    return supabaseServerClient;
+  } catch (err) {
+    console.warn("Failed to initialize Supabase client on server:", err);
+    return null;
+  }
+}
+
 function readStoredArticles(): any[] {
   try {
     if (!fs.existsSync(ARTICLES_FILE)) return [];
@@ -302,14 +321,55 @@ function writeStoredArticles(articles: any[]) {
 }
 
 // Articles API - Get all custom articles
-app.get("/api/articles", (req, res) => {
+app.get("/api/articles", async (req, res) => {
+  const supabase = getSupabaseServer();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("articles")
+        .select("*")
+        .order("published_at", { ascending: false });
+
+      if (!error && Array.isArray(data)) {
+        const mapped = data.map(rowToArticle);
+        const local = readStoredArticles();
+        const serverSlugs = new Set(mapped.map((m: any) => m.slug.toLowerCase()));
+        const extraLocal = local.filter((l: any) => !serverSlugs.has(l.slug?.toLowerCase()));
+        return res.json([...mapped, ...extraLocal]);
+      }
+      if (error) {
+        console.warn("Supabase fetch error in server.ts:", error.message);
+      }
+    } catch (err) {
+      console.warn("Supabase fetch exception in server.ts, falling back to local file:", err);
+    }
+  }
   const articles = readStoredArticles();
   res.json(articles);
 });
 
 // Articles API - Get single article
-app.get("/api/articles/:slug", (req, res) => {
+app.get("/api/articles/:slug", async (req, res) => {
   const { slug } = req.params;
+  const supabase = getSupabaseServer();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("articles")
+        .select("*")
+        .eq("slug", slug)
+        .maybeSingle();
+
+      if (!error && data) {
+        return res.json(rowToArticle(data));
+      }
+      if (error) {
+        console.warn("Supabase single fetch error in server.ts:", error.message);
+      }
+    } catch (err) {
+      console.warn("Supabase single fetch exception, checking local file:", err);
+    }
+  }
   const articles = readStoredArticles();
   const article = articles.find((a: any) => a.slug?.toLowerCase() === slug.toLowerCase());
   if (!article) {
@@ -319,14 +379,15 @@ app.get("/api/articles/:slug", (req, res) => {
 });
 
 // Articles API - Save / Update an article
-app.post("/api/articles", requireAdminAuth, (req, res) => {
+app.post("/api/articles", requireAdminAuth, async (req, res) => {
   const article = req.body;
   if (!article || !article.slug || !article.title) {
     return res.status(400).json({ error: "Slug and title are required." });
   }
 
+  // Also sync to local file for backup/offline
   const articles = readStoredArticles();
-  const idx = articles.findIndex((a: any) => a.slug === article.slug);
+  const idx = articles.findIndex((a: any) => a.slug?.toLowerCase() === article.slug?.toLowerCase());
   const now = new Date().toISOString();
 
   if (idx >= 0) {
@@ -334,13 +395,32 @@ app.post("/api/articles", requireAdminAuth, (req, res) => {
   } else {
     articles.unshift({ ...article, publishedAt: article.publishedAt || now, updatedAt: now });
   }
-
   writeStoredArticles(articles);
+
+  const supabase = getSupabaseServer();
+  if (supabase) {
+    try {
+      const row = articleToRow(article);
+      const { data, error } = await supabase
+        .from("articles")
+        .upsert(row, { onConflict: "slug" })
+        .select()
+        .single();
+      if (error) {
+        console.error("Supabase upsert error in server.ts:", error);
+      } else if (data) {
+        return res.json({ status: "success", article: rowToArticle(data) });
+      }
+    } catch (err) {
+      console.error("Supabase upsert exception in server.ts:", err);
+    }
+  }
+
   res.json({ status: "success", article });
 });
 
 // Articles API - Bulk upload articles
-app.post("/api/articles/bulk", requireAdminAuth, (req, res) => {
+app.post("/api/articles/bulk", requireAdminAuth, async (req, res) => {
   const items = req.body;
   if (!Array.isArray(items)) {
     return res.status(400).json({ error: "Expected an array of articles." });
@@ -353,7 +433,7 @@ app.post("/api/articles/bulk", requireAdminAuth, (req, res) => {
 
   for (const item of items) {
     if (!item || !item.slug || !item.title) continue;
-    const idx = articles.findIndex((a: any) => a.slug === item.slug);
+    const idx = articles.findIndex((a: any) => a.slug?.toLowerCase() === item.slug?.toLowerCase());
     if (idx >= 0) {
       articles[idx] = { ...item, updatedAt: now };
       updated++;
@@ -362,20 +442,52 @@ app.post("/api/articles/bulk", requireAdminAuth, (req, res) => {
       added++;
     }
   }
-
   writeStoredArticles(articles);
+
+  const supabase = getSupabaseServer();
+  if (supabase) {
+    try {
+      const rows = items
+        .filter((item: any) => item && item.slug && item.title)
+        .map(articleToRow);
+      if (rows.length > 0) {
+        const { error } = await supabase
+          .from("articles")
+          .upsert(rows, { onConflict: "slug" });
+        if (error) {
+          console.error("Supabase bulk upsert error in server.ts:", error);
+        }
+      }
+    } catch (err) {
+      console.error("Supabase bulk upsert exception in server.ts:", err);
+    }
+  }
+
   res.json({ status: "success", added, updated, total: articles.length });
 });
 
 // Articles API - Delete article
-app.delete("/api/articles/:slug", requireAdminAuth, (req, res) => {
+app.delete("/api/articles/:slug", requireAdminAuth, async (req, res) => {
   const { slug } = req.params;
   const articles = readStoredArticles();
-  const filtered = articles.filter((a: any) => a.slug !== slug);
-  if (filtered.length === articles.length) {
-    return res.status(404).json({ error: "Article not found." });
-  }
+  const filtered = articles.filter((a: any) => a.slug?.toLowerCase() !== slug.toLowerCase());
   writeStoredArticles(filtered);
+
+  const supabase = getSupabaseServer();
+  if (supabase) {
+    try {
+      const { error } = await supabase
+        .from("articles")
+        .delete()
+        .eq("slug", slug);
+      if (error) {
+        console.error("Supabase delete error in server.ts:", error);
+      }
+    } catch (err) {
+      console.error("Supabase delete exception in server.ts:", err);
+    }
+  }
+
   res.json({ status: "success", message: `Article ${slug} deleted.` });
 });
 
