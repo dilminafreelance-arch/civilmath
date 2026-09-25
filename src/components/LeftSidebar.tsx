@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Home, Box, Grid, Compass,
+  Home, Box, Grid, Compass, HardHat,
   Layers, ArrowLeftRight, ClipboardList,
   FileText, Bookmark, BookOpen, ChevronRight
 } from 'lucide-react';
