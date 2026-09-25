@@ -6,6 +6,11 @@
     "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "1"
   },
   "rewrites": [
+    { "source": "/api/admin/:action", "destination": "/api/admin?action=:action" },
+    { "source": "/api/articles/bulk", "destination": "/api/articles?bulk=true" },
+    { "source": "/api/articles/:slug", "destination": "/api/articles?slug=:slug" },
+    { "source": "/api/inquiries/:id", "destination": "/api/inquiries?id=:id" },
+    { "source": "/api/seo/generate", "destination": "/api/seo?action=generate" },
     { "source": "/((?!api/|sitemap.xml|google).*)", "destination": "/index.html" }
   ]
 }

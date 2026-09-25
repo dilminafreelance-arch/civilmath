@@ -1,5 +1,5 @@
-import { setCors, callOpenRouter, stripMarkdownJson } from "../_lib/openrouter.js";
-import { requireAdminAuth } from "../_lib/auth.js";
+import { setCors, callOpenRouter, stripMarkdownJson } from "./_lib/openrouter.js";
+import { requireAdminAuth } from "./_lib/auth.js";
 
 export default async function handler(req, res) {
   setCors(res);
