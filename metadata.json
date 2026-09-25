@@ -1,0 +1,6 @@
+{
+  "name": "CivilMath",
+  "description": "Premium civil engineering workspace for structural load, concrete volumes, BBS schedules, geotechnical bearing, and surveying reports with dynamic interactive visualizations and AI explanation capabilities.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_AI_API"]
+}

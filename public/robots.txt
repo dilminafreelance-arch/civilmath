@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_*
+Disallow: /admin/
+Disallow: /admin
+
+Sitemap: https://civilmath.com/sitemap.xml

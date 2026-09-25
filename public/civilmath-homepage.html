@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CivilMath – Smart Calculations for Modern Construction</title>
+  <meta name="description" content="Professional engineering calculation platform for civil engineers, quantity surveyors, and construction professionals. 50+ tools. Instant results." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --accent: #f97316;
+      --accent-light: #fed7aa;
+      --accent-dark: #c2410c;
+      --accent-glow: rgba(249,115,22,0.12);
+      --bg: #ffffff;
+      --bg-2: #f8f8f7;
+      --bg-3: #f1f0ee;
+      --bg-card: #ffffff;
+      --bg-input: #f8f8f7;
+      --border: #e5e4e0;
+      --border-2: #d1cfc9;
+      --text-primary: #1a1917;
+      --text-secondary: #6b6862;
+      --text-muted: #9c9890;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.05);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06);
+      --shadow-xl: 0 24px 64px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.08);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --radius-2xl: 32px;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --nav-h: 64px;
+    }
+    [data-theme="dark"] {
+      --bg: #111110;
+      --bg-2: #18181b;
+      --bg-3: #1f1f22;
+      --bg-card: #1c1c1f;
+      --bg-input: #27272a;
+      --border: #2a2a2e;
+      --border-2: #3a3a3e;
+      --text-primary: #fafaf9;
+      --text-secondary: #a1a09c;
+      --text-muted: #6b6862;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
+      --shadow-xl: 0 24px 64px rgba(0,0,0,0.6);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text-primary); line-height: 1.6; -webkit-font-smoothing: antialiased; transition: background 0.3s ease, color 0.3s ease; }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: var(--font); cursor: pointer; border: none; background: none; }
+    ul { list-style: none; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .container-wide { max-width: 1320px; margin: 0 auto; padding: 0 24px; }
+    .label-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); background: var(--accent-glow); border: 1px solid rgba(249,115,22,0.2); border-radius: 100px; padding: 4px 12px; }
+    .label-tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+    .section-title { font-size: clamp(28px, 4vw, 42px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; color: var(--text-primary); }
+    .section-subtitle { font-size: 16px; color: var(--text-secondary); margin-top: 10px; line-height: 1.7; max-width: 520px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; letter-spacing: -0.01em; transition: all 0.2s ease; cursor: pointer; }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 16px rgba(249,115,22,0.35); }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(249,115,22,0.4); }
+    .btn-ghost { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+    .btn-ghost:hover { background: var(--bg-2); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .btn-lg { padding: 14px 28px; font-size: 15px; border-radius: var(--radius-lg); }
+
+    /* NAVBAR */
+    .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: var(--nav-h); display: flex; align-items: center; background: rgba(255,255,255,0.92); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); transition: background 0.3s, border-color 0.3s; }
+    [data-theme="dark"] .navbar { background: rgba(17,17,16,0.92); }
+    .navbar-inner { max-width: 1320px; margin: 0 auto; padding: 0 24px; width: 100%; display: flex; align-items: center; gap: 0; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav-logo-mark { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, var(--accent) 0%, #ea580c 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(249,115,22,0.35); }
+    .nav-logo-text { font-size: 16px; font-weight: 800; letter-spacing: -0.04em; color: var(--text-primary); }
+    .nav-logo-text span { color: var(--accent); }
+    .nav-links { display: flex; align-items: center; gap: 2px; margin: 0 auto; }
+    .nav-link { padding: 7px 14px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; color: var(--text-secondary); transition: all 0.15s; }
+    .nav-link:hover, .nav-link.active { color: var(--text-primary); background: var(--bg-2); }
+    .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .search-btn { display: flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-2); color: var(--text-secondary); font-size: 13px; transition: all 0.15s; }
+    .search-btn:hover { border-color: var(--border-2); color: var(--text-primary); }
+    .search-kbd { font-family: var(--mono); font-size: 11px; padding: 2px 5px; background: var(--bg-3); border: 1px solid var(--border); border-radius: 4px; color: var(--text-muted); }
+    .theme-toggle { width: 36px; height: 36px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; background: var(--bg-2); border: 1px solid var(--border); color: var(--text-secondary); font-size: 15px; transition: all 0.15s; }
+    .theme-toggle:hover { color: var(--accent); border-color: rgba(249,115,22,0.3); }
+    .nav-cta { background: var(--text-primary); color: var(--bg); padding: 8px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; letter-spacing: -0.01em; transition: all 0.2s; }
+    .nav-cta:hover { background: var(--accent); transform: translateY(-1px); }
+
+    /* HERO */
+    .hero { padding-top: calc(var(--nav-h) + 60px); overflow: hidden; }
+    .hero-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; max-width: 1320px; margin: 0 auto; padding: 0 24px; }
+    .hero-left { padding-bottom: 60px; }
+    .hero-headline { font-size: clamp(38px, 5vw, 62px); font-weight: 900; letter-spacing: -0.04em; line-height: 1.08; color: var(--text-primary); margin: 20px 0 22px; }
+    .hero-headline em { font-style: normal; color: var(--accent); }
+    .hero-desc { font-size: 17px; color: var(--text-secondary); line-height: 1.7; max-width: 440px; margin-bottom: 36px; }
+    .hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 44px; }
+    .hero-trust { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .trust-item { display: flex; flex-direction: column; gap: 2px; }
+    .trust-value { font-size: 22px; font-weight: 800; letter-spacing: -0.04em; color: var(--text-primary); }
+    .trust-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+    .trust-divider { width: 1px; height: 36px; background: var(--border); }
+
+    /* HERO WORKSPACE */
+    .hero-right { position: relative; display: flex; align-items: center; justify-content: center; }
+    .hero-workspace-wrap { position: relative; width: 100%; max-width: 560px; background: linear-gradient(160deg, var(--bg-2) 0%, var(--bg-3) 100%); border-radius: var(--radius-2xl) var(--radius-2xl) 0 0; border: 1px solid var(--border); border-bottom: none; padding: 32px 28px 0; box-shadow: var(--shadow-xl); margin-left: auto; }
+    .workspace-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .workspace-bar-dots { display: flex; gap: 6px; }
+    .ws-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .ws-dot-r { background: #ff5f57; }
+    .ws-dot-y { background: #febc2e; }
+    .ws-dot-g { background: #28c840; }
+    .workspace-bar-title { font-size: 12px; font-weight: 600; color: var(--text-muted); font-family: var(--mono); letter-spacing: 0.04em; }
+    .ws-action { width: 28px; height: 28px; border-radius: 7px; background: var(--bg-card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text-secondary); }
+    .calc-main-card { background: var(--bg-card); border-radius: var(--radius-xl); border: 1px solid var(--border); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 16px; }
+    .calc-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .calc-card-title { font-size: 13px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; }
+    .calc-card-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: var(--accent-glow); color: var(--accent); border: 1px solid rgba(249,115,22,0.2); padding: 3px 8px; border-radius: 100px; }
+    .calc-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+    .calc-input-group { display: flex; flex-direction: column; gap: 5px; }
+    .calc-input-label { font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.04em; text-transform: uppercase; }
+    .calc-input-field { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 11px; font-size: 14px; font-weight: 700; color: var(--text-primary); font-family: var(--mono); letter-spacing: -0.02em; display: flex; align-items: center; justify-content: space-between; }
+    .calc-input-unit { font-size: 11px; font-weight: 500; color: var(--text-muted); font-family: var(--mono); }
+    .calc-formula-row { display: flex; align-items: center; justify-content: center; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 16px; gap: 8px; }
+    .formula-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .formula-text { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+    .formula-text strong { color: var(--accent); }
+    .calc-result-row { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, rgba(249,115,22,0.08) 0%, rgba(249,115,22,0.04) 100%); border: 1.5px solid rgba(249,115,22,0.25); border-radius: var(--radius-md); padding: 14px 18px; }
+    .result-label { font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; }
+    .result-value { font-size: 28px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.04em; font-family: var(--mono); display: flex; align-items: baseline; gap: 6px; }
+    .result-unit { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
+    .result-actions { display: flex; gap: 6px; }
+    .result-action-btn { width: 32px; height: 32px; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; }
+    .result-action-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Float cards */
+    .float-card { position: absolute; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; box-shadow: var(--shadow-lg); min-width: 120px; }
+    .fc-anim-1 { animation: floatY 4s ease-in-out infinite; }
+    .fc-anim-2 { animation: floatY 4s ease-in-out -1.5s infinite; }
+    .fc-anim-3 { animation: floatY 4s ease-in-out -3s infinite; }
+    .fc-anim-4 { animation: floatY 4s ease-in-out -0.7s infinite; }
+    @keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+    .float-card-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; margin-bottom: 8px; }
+    .float-card-name { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+    .float-card-value { font-size: 18px; font-weight: 900; letter-spacing: -0.03em; color: var(--text-primary); font-family: var(--mono); }
+    .float-card-unit { font-size: 10px; color: var(--text-secondary); font-weight: 500; }
+    .fc-1 { top: 24px; left: -72px; }
+    .fc-2 { top: 110px; right: -64px; }
+    .fc-3 { top: 240px; left: -64px; }
+    .fc-4 { bottom: 100px; right: -52px; }
+
+    /* CAROUSEL */
+    .calc-carousel-section { background: var(--bg-2); border-top: 1px solid var(--border); padding: 28px 0; }
+    .carousel-wrapper { position: relative; max-width: 1320px; margin: 0 auto; padding: 0 52px; }
+    .carousel-track { display: flex; gap: 10px; overflow-x: auto; scroll-behavior: smooth; padding: 4px 0; scrollbar-width: none; }
+    .carousel-track::-webkit-scrollbar { display: none; }
+    .carousel-item { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 20px; border-radius: var(--radius-md); background: var(--bg-card); border: 1.5px solid var(--border); cursor: pointer; transition: all 0.2s; min-width: 100px; }
+    .carousel-item.active, .carousel-item:hover { border-color: var(--accent); background: var(--accent-glow); box-shadow: 0 4px 16px rgba(249,115,22,0.12); }
+    .carousel-item.active { transform: scale(1.04); }
+    .carousel-item-icon { font-size: 22px; }
+    .carousel-item-name { font-size: 12px; font-weight: 600; color: var(--text-primary); white-space: nowrap; }
+    .carousel-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text-secondary); cursor: pointer; z-index: 2; transition: all 0.2s; box-shadow: var(--shadow-md); }
+    .carousel-arrow:hover { border-color: var(--accent); color: var(--accent); }
+    .carousel-arrow.left { left: 4px; }
+    .carousel-arrow.right { right: 4px; }
+
+    /* CATEGORY PILLS */
+    .category-section { padding: 48px 0 0; }
+    .category-pills { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 24px; }
+    .cat-pill { padding: 8px 20px; border-radius: 100px; font-size: 13px; font-weight: 600; background: var(--bg-2); border: 1.5px solid var(--border); color: var(--text-secondary); cursor: pointer; transition: all 0.2s; }
+    .cat-pill.active, .cat-pill:hover { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 14px rgba(249,115,22,0.3); }
+
+    /* POPULAR CALCULATORS */
+    .popular-section { padding: 48px 0 80px; }
+    .section-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 36px; flex-wrap: wrap; gap: 16px; }
+    .view-all-link { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--text-secondary); padding: 8px 16px; border-radius: var(--radius-sm); background: var(--bg-2); border: 1px solid var(--border); transition: all 0.2s; }
+    .view-all-link:hover { color: var(--accent); border-color: rgba(249,115,22,0.3); }
+    .calc-cards-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+    .calc-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 20px 18px 18px; box-shadow: var(--shadow-sm); cursor: pointer; transition: all 0.25s; display: flex; flex-direction: column; gap: 12px; }
+    .calc-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--border-2); }
+    .calc-card-illus { width: 100%; aspect-ratio: 1.4; border-radius: var(--radius-md); background: var(--bg-2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .calc-card-illus svg { width: 90%; height: 90%; }
+    .calc-card-info { flex: 1; }
+    .calc-card-name { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; letter-spacing: -0.01em; }
+    .calc-card-desc { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+    .calc-card-footer { display: flex; align-items: center; justify-content: space-between; }
+    .calc-card-open { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; transition: all 0.2s; box-shadow: 0 4px 12px rgba(249,115,22,0.3); border: none; cursor: pointer; }
+    .calc-card:hover .calc-card-open { transform: scale(1.1); box-shadow: 0 6px 18px rgba(249,115,22,0.4); }
+
+    /* WHY SECTION */
+    .why-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .why-inner { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 0; }
+    .why-col { padding: 72px 40px; }
+    .why-col + .why-col { border-left: 1px solid var(--border); }
+    .why-features { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 32px; }
+    .why-feature-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px; }
+    .why-feature-icon { width: 36px; height: 36px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 10px; }
+    .why-feature-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .why-feature-desc { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+    .engineering-diagram { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 40px; }
+    .formula-result { font-size: 36px; font-weight: 900; font-family: var(--mono); letter-spacing: -0.04em; color: var(--text-primary); margin-top: 4px; }
+    .formula-result span { font-size: 18px; font-weight: 500; color: var(--text-secondary); }
+    .recent-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+    .recent-item { display: flex; align-items: center; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; }
+    .recent-item-icon { width: 34px; height: 34px; border-radius: var(--radius-sm); flex-shrink: 0; background: var(--bg-2); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .recent-item-info { flex: 1; }
+    .recent-item-name { font-size: 12px; font-weight: 700; color: var(--text-primary); }
+    .recent-item-meta { font-size: 11px; color: var(--text-muted); }
+    .recent-item-value { font-size: 14px; font-weight: 800; font-family: var(--mono); color: var(--text-primary); letter-spacing: -0.02em; }
+    .recent-item-more { color: var(--text-muted); font-size: 16px; }
+
+    /* CATEGORIES GRID */
+    .category-grid-section { padding: 96px 0; }
+    .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 48px; }
+    .cat-grid-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 28px 24px; cursor: pointer; transition: all 0.25s; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; }
+    .cat-grid-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), transparent); opacity: 0; transition: opacity 0.2s; }
+    .cat-grid-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: rgba(249,115,22,0.3); }
+    .cat-grid-card:hover::before { opacity: 1; }
+    .cat-grid-icon { width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 22px; background: var(--bg-2); border: 1px solid var(--border); }
+    .cat-grid-name { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: var(--text-primary); }
+    .cat-grid-count { font-size: 13px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+    .cat-grid-row { display: flex; align-items: center; justify-content: space-between; }
+    .cat-grid-arrow { margin-left: auto; color: var(--text-muted); font-size: 18px; transition: all 0.2s; }
+    .cat-grid-card:hover .cat-grid-arrow { color: var(--accent); transform: translateX(4px); }
+
+    /* PRODUCT PREVIEW */
+    .product-section { padding: 96px 0; background: var(--bg-2); border-top: 1px solid var(--border); }
+    .product-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .product-flow { display: flex; flex-direction: column; margin-top: 36px; }
+    .flow-step { display: flex; align-items: center; gap: 14px; padding: 16px 20px; background: var(--bg-card); border: 1px solid var(--border); }
+    .flow-step:first-child { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+    .flow-step:last-child { border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+    .flow-step + .flow-step { margin-top: -1px; border-radius: 0; }
+    .flow-num { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; background: var(--accent); color: #fff; }
+    .flow-step-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+    .flow-step-desc { font-size: 12px; color: var(--text-muted); margin-top: 1px; font-family: var(--mono); }
+    .product-mockup { background: var(--bg-card); border-radius: var(--radius-2xl); border: 1px solid var(--border); box-shadow: var(--shadow-xl); overflow: hidden; }
+    .mockup-header { background: var(--bg-2); padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .mockup-title-area { display: flex; align-items: center; gap: 10px; }
+    .mockup-icon { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), #ea580c); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; }
+    .mockup-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+    .mockup-subtitle { font-size: 11px; color: var(--text-muted); }
+    .mockup-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+    .mockup-section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+    .mockup-input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .mockup-input-row { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; }
+    .mockup-input-name { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+    .mockup-input-val { font-size: 13px; font-weight: 800; color: var(--text-primary); font-family: var(--mono); }
+    .mockup-formula-box { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; font-family: var(--mono); font-size: 13px; color: var(--text-secondary); text-align: center; }
+    .mockup-formula-box strong { color: var(--accent); }
+    .mockup-result-box { background: linear-gradient(135deg, rgba(249,115,22,0.06), rgba(249,115,22,0.02)); border: 1.5px solid rgba(249,115,22,0.25); border-radius: var(--radius-lg); padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; }
+    .mockup-result-num { font-size: 38px; font-weight: 900; font-family: var(--mono); letter-spacing: -0.04em; color: var(--text-primary); }
+    .mockup-result-num span { font-size: 18px; font-weight: 500; color: var(--text-secondary); margin-left: 4px; }
+    .mockup-materials { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+    .mockup-mat-item { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; text-align: center; }
+    .mockup-mat-name { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .mockup-mat-val { font-size: 14px; font-weight: 800; color: var(--text-primary); font-family: var(--mono); margin-top: 2px; }
+    .mockup-export-row { display: flex; gap: 8px; }
+    .mockup-export-btn { flex: 1; padding: 10px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: all 0.2s; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-secondary); font-family: var(--font); }
+    .mockup-export-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 14px rgba(249,115,22,0.3); }
+    .mockup-export-btn.primary:hover { background: var(--accent-dark); }
+    .mockup-export-btn:not(.primary):hover { border-color: var(--border-2); color: var(--text-primary); }
+
+    /* CTA */
+    .cta-section { padding: 120px 24px; text-align: center; }
+    .cta-inner { max-width: 820px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-2xl); padding: 80px 60px; box-shadow: var(--shadow-xl); position: relative; overflow: hidden; }
+    .cta-inner::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(249,115,22,0.07) 0%, transparent 70%); pointer-events: none; }
+    .cta-title { font-size: clamp(32px, 4vw, 52px); font-weight: 900; letter-spacing: -0.04em; line-height: 1.1; margin: 20px 0 18px; }
+    .cta-desc { font-size: 16px; color: var(--text-secondary); max-width: 420px; margin: 0 auto 36px; line-height: 1.7; }
+    .cta-btn-lg { background: var(--accent); color: #fff; padding: 16px 36px; border-radius: var(--radius-lg); font-size: 16px; font-weight: 700; letter-spacing: -0.01em; box-shadow: 0 8px 28px rgba(249,115,22,0.4); transition: all 0.2s; display: inline-flex; align-items: center; gap: 10px; }
+    .cta-btn-lg:hover { background: var(--accent-dark); transform: translateY(-2px); box-shadow: 0 12px 36px rgba(249,115,22,0.5); }
+
+    /* FOOTER */
+    footer { background: var(--bg-2); border-top: 1px solid var(--border); padding: 64px 0 32px; }
+    .footer-top { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 1.2fr; gap: 48px; padding-bottom: 48px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+    .footer-brand-name { font-size: 16px; font-weight: 800; letter-spacing: -0.03em; margin: 12px 0 8px; }
+    .footer-brand-name span { color: var(--accent); }
+    .footer-tagline { font-size: 13px; color: var(--text-muted); line-height: 1.6; max-width: 200px; }
+    .footer-social { display: flex; gap: 8px; margin-top: 20px; }
+    .social-btn { width: 34px; height: 34px; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--text-secondary); transition: all 0.15s; }
+    .social-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .footer-col-title { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px; }
+    .footer-links { display: flex; flex-direction: column; gap: 10px; }
+    .footer-link { font-size: 13px; color: var(--text-secondary); transition: color 0.15s; }
+    .footer-link:hover { color: var(--accent); }
+    .footer-email-form { display: flex; gap: 8px; margin-top: 14px; }
+    .footer-email-input { flex: 1; padding: 9px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-card); font-size: 13px; color: var(--text-primary); font-family: var(--font); outline: none; transition: border-color 0.15s; }
+    .footer-email-input:focus { border-color: var(--accent); }
+    .footer-email-input::placeholder { color: var(--text-muted); }
+    .footer-email-btn { width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--accent); color: #fff; font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; flex-shrink: 0; transition: background 0.2s; }
+    .footer-email-btn:hover { background: var(--accent-dark); }
+    .footer-bottom { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .footer-copy { font-size: 12px; color: var(--text-muted); }
+
+    /* ANIMATIONS */
+    .reveal { opacity: 0; transform: translateY(24px); transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* RESPONSIVE */
+    @media (max-width: 1100px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .hero-right { display: none; }
+      .calc-cards-grid { grid-template-columns: repeat(3, 1fr); }
+      .why-inner { grid-template-columns: 1fr; }
+      .why-col + .why-col { border-left: none; border-top: 1px solid var(--border); }
+      .product-inner { grid-template-columns: 1fr; }
+      .footer-top { grid-template-columns: 1fr 1fr; gap: 32px; }
+      .category-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .search-btn span { display: none; }
+      .search-btn .search-kbd { display: none; }
+      .calc-cards-grid { grid-template-columns: repeat(2, 1fr); }
+      .footer-top { grid-template-columns: 1fr; }
+      .category-grid { grid-template-columns: 1fr; }
+      .cta-inner { padding: 48px 28px; }
+      .why-features { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .calc-cards-grid { grid-template-columns: 1fr; }
+      .hero-trust { gap: 14px; }
+      .hero-actions { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="/" class="nav-logo" aria-label="CivilMath Home">
+      <div class="nav-logo-mark">
+        <svg viewBox="0 0 20 20" fill="none" width="20" height="20">
+          <polygon points="10,3 17.5,16 2.5,16" fill="none" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+          <line x1="2.5" y1="16" x2="17.5" y2="16" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="10" y1="3" x2="10" y2="16" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="2,2"/>
+          <circle cx="10" cy="3" r="1.2" fill="white"/>
+        </svg>
+      </div>
+      <span class="nav-logo-text">Civil<span>Math</span></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#" class="nav-link active">Home</a></li>
+      <li><a href="#" class="nav-link">Calculators</a></li>
+      <li><a href="#" class="nav-link">Engineering</a></li>
+      <li><a href="#" class="nav-link">Construction</a></li>
+      <li><a href="#" class="nav-link">QS Tools</a></li>
+      <li><a href="#" class="nav-link">Resources</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="search-btn" aria-label="Search tools">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span>Search tools...</span>
+        <kbd class="search-kbd">⌘ K</kbd>
+      </button>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+        <span id="themeIcon">☾</span>
+      </button>
+      <a href="#" class="nav-cta">Explore Calculators</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-left reveal">
+      <div style="margin-bottom:20px"><span class="label-tag">Civil Engineering Calculation Platform</span></div>
+      <h1 class="hero-headline">Build Smarter<br>with <em>Better</em><br>Calculations.</h1>
+      <p class="hero-desc">Fast, accurate and easy-to-use engineering calculators for construction professionals, quantity surveyors, and students.</p>
+      <div class="hero-actions">
+        <a href="#" class="btn btn-primary btn-lg">
+          Explore Calculators
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#" class="btn btn-ghost btn-lg">View All Tools</a>
+      </div>
+      <div class="hero-trust">
+        <div class="trust-item"><div class="trust-value">50+</div><div class="trust-label">Tools</div></div>
+        <div class="trust-divider"></div>
+        <div class="trust-item"><div class="trust-value">10+</div><div class="trust-label">Categories</div></div>
+        <div class="trust-divider"></div>
+        <div class="trust-item"><div class="trust-value">PDF</div><div class="trust-label">/ Excel</div></div>
+        <div class="trust-divider"></div>
+        <div class="trust-item"><div class="trust-value">Free</div><div class="trust-label">to use</div></div>
+      </div>
+    </div>
+
+    <div class="hero-right reveal reveal-delay-2">
+      <!-- Floating cards -->
+      <div class="float-card fc-1 fc-anim-1">
+        <div class="float-card-icon" style="background:rgba(239,68,68,0.08)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><rect x="2" y="8" width="20" height="5" rx="1"/><line x1="8" y1="13" x2="6" y2="20"/><line x1="16" y1="13" x2="18" y2="20"/></svg>
+        </div>
+        <div class="float-card-name">Beam</div>
+        <div class="float-card-value">42.5</div>
+        <div class="float-card-unit">kNm</div>
+      </div>
+      <div class="float-card fc-2 fc-anim-2">
+        <div class="float-card-icon" style="background:rgba(34,197,94,0.08)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M2 20h4v-4h4v-4h4v-4h4v-4h4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="float-card-name">Staircase</div>
+        <div class="float-card-value">18</div>
+        <div class="float-card-unit">Steps</div>
+      </div>
+      <div class="float-card fc-3 fc-anim-3">
+        <div class="float-card-icon" style="background:rgba(234,179,8,0.08)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2"><path d="M2 18Q8 10 12 14Q16 18 22 10" stroke-linecap="round"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+        </div>
+        <div class="float-card-name">Earthwork</div>
+        <div class="float-card-value">125.4</div>
+        <div class="float-card-unit">m³</div>
+      </div>
+      <div class="float-card fc-4 fc-anim-4">
+        <div class="float-card-icon" style="background:rgba(139,92,246,0.08)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h10M7 11h10M7 15h6" stroke-linecap="round"/></svg>
+        </div>
+        <div class="float-card-name">Plaster</div>
+        <div class="float-card-value">84.5</div>
+        <div class="float-card-unit">m²</div>
+      </div>
+
+      <!-- Main workspace -->
+      <div class="hero-workspace-wrap">
+        <div class="workspace-bar">
+          <div class="workspace-bar-dots">
+            <div class="ws-dot ws-dot-r"></div>
+            <div class="ws-dot ws-dot-y"></div>
+            <div class="ws-dot ws-dot-g"></div>
+          </div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-muted);font-family:var(--mono);letter-spacing:0.04em">CIVILMATH · CONCRETE CALCULATOR</div>
+          <div style="display:flex;gap:6px">
+            <div class="ws-action">⊞</div>
+            <div class="ws-action">↗</div>
+          </div>
+        </div>
+
+        <div class="calc-main-card">
+          <div class="calc-card-header">
+            <div class="calc-card-title">Concrete Volume Calculator</div>
+            <span class="calc-card-badge">ACI 318</span>
+          </div>
+          <div class="calc-inputs">
+            <div class="calc-input-group">
+              <div class="calc-input-label">Length</div>
+              <div class="calc-input-field">5.00<span class="calc-input-unit">m</span></div>
+            </div>
+            <div class="calc-input-group">
+              <div class="calc-input-label">Width</div>
+              <div class="calc-input-field">4.00<span class="calc-input-unit">m</span></div>
+            </div>
+            <div class="calc-input-group">
+              <div class="calc-input-label">Depth</div>
+              <div class="calc-input-field">150<span class="calc-input-unit">mm</span></div>
+            </div>
+          </div>
+          <div class="calc-formula-row">
+            <span class="formula-label">Formula</span>
+            <span style="color:var(--border-2)">·</span>
+            <span class="formula-text">V = <strong>L</strong> × <strong>W</strong> × <strong>D</strong></span>
+            <span style="color:var(--border-2)">·</span>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--text-muted)">5.00 × 4.00 × 0.150</span>
+          </div>
+          <div class="calc-result-row">
+            <div>
+              <div class="result-label">Result</div>
+              <div class="result-value">3.00 <span class="result-unit">m³</span></div>
+            </div>
+            <div class="result-actions">
+              <button class="result-action-btn" title="Save">💾</button>
+              <button class="result-action-btn" title="PDF">📄</button>
+              <button class="result-action-btn" title="Excel">📊</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom mini cards -->
+        <div style="display:flex;gap:10px;padding-bottom:28px">
+          <div style="flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px">
+            <div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Brickwork</div>
+            <div style="font-size:17px;font-weight:900;font-family:var(--mono);letter-spacing:-0.03em;color:var(--text-primary)">1,245</div>
+            <div style="font-size:10px;color:var(--text-muted)">Bricks</div>
+          </div>
+          <div style="flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px">
+            <div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Concrete</div>
+            <div style="font-size:17px;font-weight:900;font-family:var(--mono);letter-spacing:-0.03em;color:var(--accent)">3.24</div>
+            <div style="font-size:10px;color:var(--text-muted)">m³</div>
+          </div>
+          <div style="flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px">
+            <div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Wall Area</div>
+            <div style="font-size:17px;font-weight:900;font-family:var(--mono);letter-spacing:-0.03em;color:var(--text-primary)">84.5</div>
+            <div style="font-size:10px;color:var(--text-muted)">m²</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CALCULATOR CAROUSEL -->
+<section class="calc-carousel-section">
+  <div class="carousel-wrapper">
+    <button class="carousel-arrow left" id="carouselLeft" aria-label="Scroll left">←</button>
+    <div class="carousel-track" id="carouselTrack">
+      <div class="carousel-item active"><span class="carousel-item-icon">🧱</span><span class="carousel-item-name">Concrete</span></div>
+      <div class="carousel-item"><span class="carousel-item-icon">🏠</span><span class="carousel-item-name">Brickwork</span></div>
+      <div class="carousel-item"><span class="carousel-item-icon">🪟</span><span class="carousel-item-name">Plaster</span></div>
+      <div class="carousel-item"><span class="carousel-item-icon">🔷</span><span class="carousel-item-name">Tile</span></div>
+      <div class="carousel-item"><span class="carousel-item-icon">🪜</span><span class="carousel-item-name">Staircase</span></div>
+      <div class="carousel-item"><span class="carousel-item-icon">⬛</span><span class="carousel-item-name">Footing</span></div>
+      <div class="carousel-item"><span class="carousel-item-icon">🔲</span><span class="carousel-item-name">Slab</span></div>
+      <div class="carousel-item"><span class="carousel-item-icon">📐</span><span class="carousel-item-name">Beam</span></div>
+      <div class="carousel-item"><span class="carousel-item-icon">⛰️</span><span class="carousel-item-name">Earthwork</span></div>
+      <div class="carousel-item"><span class="carousel-item-icon">🏗️</span><span class="carousel-item-name">Column</span></div>
+      <div class="carousel-item"><span class="carousel-item-icon">📏</span><span class="carousel-item-name">BBS</span></div>
+    </div>
+    <button class="carousel-arrow right" id="carouselRight" aria-label="Scroll right">→</button>
+  </div>
+</section>
+
+<!-- CATEGORY PILLS -->
+<section class="category-section">
+  <div class="container-wide">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px">
+      <div>
+        <div class="label-tag" style="margin-bottom:12px">Explore by category</div>
+        <h2 class="section-title" style="font-size:28px">Find the right tool for your project</h2>
+      </div>
+    </div>
+    <div class="category-pills">
+      <button class="cat-pill active">All Tools</button>
+      <button class="cat-pill">Civil Engineering</button>
+      <button class="cat-pill">Construction</button>
+      <button class="cat-pill">Structural</button>
+      <button class="cat-pill">Quantity Surveying</button>
+      <button class="cat-pill">Surveying</button>
+      <button class="cat-pill">Mathematics</button>
+    </div>
+  </div>
+</section>
+
+<!-- POPULAR CALCULATORS -->
+<section class="popular-section">
+  <div class="container-wide">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Popular Calculators</h2>
+        <p class="section-subtitle">Tools built for everyday engineering and construction work.</p>
+      </div>
+      <a href="#" class="view-all-link">View All <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+    </div>
+
+    <div class="calc-cards-grid">
+      <!-- Concrete -->
+      <article class="calc-card reveal">
+        <div class="calc-card-illus">
+          <svg viewBox="0 0 120 80" fill="none">
+            <path d="M20 55 L60 40 L100 55 L60 70 Z" fill="var(--bg-3)" stroke="var(--border-2)" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M20 55 L20 63 L60 78 L60 70 Z" fill="var(--bg-2)" stroke="var(--border-2)" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M100 55 L100 63 L60 78 L60 70 Z" fill="var(--border)" stroke="var(--border-2)" stroke-width="1.5" stroke-linejoin="round"/>
+            <text x="48" y="37" fill="var(--accent)" font-size="7" font-family="monospace" font-weight="700">5.00m</text>
+          </svg>
+        </div>
+        <div class="calc-card-info">
+          <div class="calc-card-name">Concrete Calculator</div>
+          <div class="calc-card-desc">Volume & material estimation for slabs, columns, beams</div>
+        </div>
+        <div class="calc-card-footer">
+          <span style="font-size:10px;color:var(--text-muted);font-weight:600">ACI 318</span>
+          <button class="calc-card-open" aria-label="Open Concrete Calculator">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </article>
+
+      <!-- Brickwork -->
+      <article class="calc-card reveal reveal-delay-1">
+        <div class="calc-card-illus">
+          <svg viewBox="0 0 120 80" fill="none">
+            <rect x="15" y="22" width="22" height="10" rx="1" fill="#d97706" opacity="0.7" stroke="#b45309" stroke-width="0.8"/>
+            <rect x="39" y="22" width="22" height="10" rx="1" fill="#d97706" opacity="0.7" stroke="#b45309" stroke-width="0.8"/>
+            <rect x="63" y="22" width="22" height="10" rx="1" fill="#d97706" opacity="0.7" stroke="#b45309" stroke-width="0.8"/>
+            <rect x="85" y="22" width="18" height="10" rx="1" fill="#d97706" opacity="0.6" stroke="#b45309" stroke-width="0.8"/>
+            <rect x="27" y="34" width="22" height="10" rx="1" fill="#ca8a04" opacity="0.8" stroke="#92400e" stroke-width="0.8"/>
+            <rect x="51" y="34" width="22" height="10" rx="1" fill="#ca8a04" opacity="0.8" stroke="#92400e" stroke-width="0.8"/>
+            <rect x="75" y="34" width="22" height="10" rx="1" fill="#ca8a04" opacity="0.8" stroke="#92400e" stroke-width="0.8"/>
+            <rect x="15" y="46" width="22" height="10" rx="1" fill="#d97706" opacity="0.7" stroke="#b45309" stroke-width="0.8"/>
+            <rect x="39" y="46" width="22" height="10" rx="1" fill="#d97706" opacity="0.7" stroke="#b45309" stroke-width="0.8"/>
+            <rect x="63" y="46" width="22" height="10" rx="1" fill="#d97706" opacity="0.7" stroke="#b45309" stroke-width="0.8"/>
+          </svg>
+        </div>
+        <div class="calc-card-info">
+          <div class="calc-card-name">Brickwork Calculator</div>
+          <div class="calc-card-desc">Bricks & mortar calculation for walls and partitions</div>
+        </div>
+        <div class="calc-card-footer">
+          <span style="font-size:10px;color:var(--text-muted);font-weight:600">BS 5628</span>
+          <button class="calc-card-open" aria-label="Open Brickwork Calculator">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </article>
+
+      <!-- Plaster -->
+      <article class="calc-card reveal reveal-delay-2">
+        <div class="calc-card-illus">
+          <svg viewBox="0 0 120 80" fill="none">
+            <rect x="18" y="16" width="84" height="52" rx="4" fill="var(--bg-3)" stroke="var(--border-2)" stroke-width="1.5"/>
+            <line x1="18" y1="33" x2="102" y2="33" stroke="var(--border)" stroke-width="0.8" stroke-dasharray="4,3"/>
+            <line x1="18" y1="50" x2="102" y2="50" stroke="var(--border)" stroke-width="0.8" stroke-dasharray="4,3"/>
+            <line x1="55" y1="16" x2="55" y2="68" stroke="var(--border)" stroke-width="0.8" stroke-dasharray="4,3"/>
+            <text x="26" y="45" fill="var(--accent)" font-size="9" font-family="monospace" font-weight="700">84.5 m²</text>
+          </svg>
+        </div>
+        <div class="calc-card-info">
+          <div class="calc-card-name">Plaster Calculator</div>
+          <div class="calc-card-desc">Plaster area and material quantity estimation</div>
+        </div>
+        <div class="calc-card-footer">
+          <span style="font-size:10px;color:var(--text-muted);font-weight:600">IS 1661</span>
+          <button class="calc-card-open" aria-label="Open Plaster Calculator">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </article>
+
+      <!-- Tile -->
+      <article class="calc-card reveal reveal-delay-3">
+        <div class="calc-card-illus">
+          <svg viewBox="0 0 120 80" fill="none">
+            <rect x="18" y="14" width="19" height="19" rx="2" fill="var(--bg-3)" stroke="var(--border-2)" stroke-width="1"/>
+            <rect x="39" y="14" width="19" height="19" rx="2" fill="var(--bg-2)" stroke="var(--border-2)" stroke-width="1"/>
+            <rect x="60" y="14" width="19" height="19" rx="2" fill="var(--bg-3)" stroke="var(--border-2)" stroke-width="1"/>
+            <rect x="81" y="14" width="19" height="19" rx="2" fill="var(--bg-2)" stroke="var(--border-2)" stroke-width="1"/>
+            <rect x="18" y="35" width="19" height="19" rx="2" fill="var(--bg-2)" stroke="var(--border-2)" stroke-width="1"/>
+            <rect x="39" y="35" width="19" height="19" rx="2" fill="rgba(249,115,22,0.1)" stroke="rgba(249,115,22,0.3)" stroke-width="1"/>
+            <rect x="60" y="35" width="19" height="19" rx="2" fill="var(--bg-2)" stroke="var(--border-2)" stroke-width="1"/>
+            <rect x="81" y="35" width="19" height="19" rx="2" fill="var(--bg-3)" stroke="var(--border-2)" stroke-width="1"/>
+            <rect x="18" y="56" width="19" height="12" rx="2" fill="var(--bg-3)" stroke="var(--border-2)" stroke-width="1"/>
+            <rect x="39" y="56" width="19" height="12" rx="2" fill="var(--bg-2)" stroke="var(--border-2)" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="calc-card-info">
+          <div class="calc-card-name">Tile Calculator</div>
+          <div class="calc-card-desc">Tiles, area & wastage calculation with grout spacing</div>
+        </div>
+        <div class="calc-card-footer">
+          <span style="font-size:10px;color:var(--text-muted);font-weight:600">Incl. Wastage</span>
+          <button class="calc-card-open" aria-label="Open Tile Calculator">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </article>
+
+      <!-- Staircase -->
+      <article class="calc-card reveal">
+        <div class="calc-card-illus">
+          <svg viewBox="0 0 120 80" fill="none">
+            <polygon points="10,65 25,65 25,55 10,55" fill="var(--bg-3)" stroke="var(--border)" stroke-width="1"/>
+            <polygon points="25,65 40,65 40,55 25,55" fill="var(--bg-2)" stroke="var(--border)" stroke-width="1"/>
+            <polygon points="40,65 55,65 55,55 40,55" fill="var(--bg-3)" stroke="var(--border)" stroke-width="1"/>
+            <polygon points="55,65 70,65 70,55 55,55" fill="var(--bg-2)" stroke="var(--border)" stroke-width="1"/>
+            <path d="M10 55 L10 45 L25 45 L25 35 L40 35 L40 25 L55 25 L55 15 L70 15" fill="none" stroke="var(--border-2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 55 L10 45 L25 45 L25 35 L40 35 L40 25 L55 25 L55 15 L100 15" fill="none" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3,2" stroke-linecap="round"/>
+            <text x="72" y="20" fill="var(--accent)" font-size="7" font-family="monospace" font-weight="700">18 steps</text>
+          </svg>
+        </div>
+        <div class="calc-card-info">
+          <div class="calc-card-name">Staircase Calculator</div>
+          <div class="calc-card-desc">Steps, risers & treads for all staircase types</div>
+        </div>
+        <div class="calc-card-footer">
+          <span style="font-size:10px;color:var(--text-muted);font-weight:600">IRC</span>
+          <button class="calc-card-open" aria-label="Open Staircase Calculator">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </article>
+
+      <!-- Earthwork -->
+      <article class="calc-card reveal reveal-delay-1">
+        <div class="calc-card-illus">
+          <svg viewBox="0 0 120 80" fill="none">
+            <path d="M8 65 Q22 55 38 58 Q54 61 64 44 Q74 28 88 36 Q100 42 112 32 L112 70 L8 70 Z" fill="var(--bg-3)" opacity="0.8"/>
+            <path d="M8 65 Q22 55 38 58 Q54 61 64 44 Q74 28 88 36 Q100 42 112 32" fill="none" stroke="var(--border-2)" stroke-width="2" stroke-linecap="round"/>
+            <line x1="8" y1="50" x2="112" y2="50" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5,3" stroke-linecap="round"/>
+            <text x="32" y="47" fill="var(--accent)" font-size="7" font-family="monospace" font-weight="700">Cut Level</text>
+          </svg>
+        </div>
+        <div class="calc-card-info">
+          <div class="calc-card-name">Earthwork Calculator</div>
+          <div class="calc-card-desc">Cut & fill volume calculation for site grading</div>
+        </div>
+        <div class="calc-card-footer">
+          <span style="font-size:10px;color:var(--text-muted);font-weight:600">Prismoidal</span>
+          <button class="calc-card-open" aria-label="Open Earthwork Calculator">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- WHY CIVILMATH -->
+<section class="why-section">
+  <div class="container-wide">
+    <div class="why-inner">
+      <div class="why-col">
+        <div class="label-tag" style="margin-bottom:16px">Why CivilMath?</div>
+        <h2 class="section-title">Designed for engineers,<br>built for real work.</h2>
+        <div class="why-features">
+          <div class="why-feature-card reveal">
+            <div class="why-feature-icon" style="background:rgba(249,115,22,0.08)">⚡</div>
+            <div class="why-feature-title">Accurate Results</div>
+            <div class="why-feature-desc">Engineering-focused formulas aligned with international codes</div>
+          </div>
+          <div class="why-feature-card reveal reveal-delay-1">
+            <div class="why-feature-icon" style="background:rgba(59,130,246,0.08)">⏱️</div>
+            <div class="why-feature-title">Fast Calculations</div>
+            <div class="why-feature-desc">Get results instantly, no waiting or page reloads</div>
+          </div>
+          <div class="why-feature-card reveal reveal-delay-2">
+            <div class="why-feature-icon" style="background:rgba(34,197,94,0.08)">📋</div>
+            <div class="why-feature-title">Clear Formulas</div>
+            <div class="why-feature-desc">Step-by-step breakdown so you understand every result</div>
+          </div>
+          <div class="why-feature-card reveal reveal-delay-3">
+            <div class="why-feature-icon" style="background:rgba(139,92,246,0.08)">📤</div>
+            <div class="why-feature-title">Export Reports</div>
+            <div class="why-feature-desc">PDF and Excel export ready for site use and client reports</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="why-col" style="padding:0">
+        <div class="engineering-diagram">
+          <div class="label-tag" style="margin-bottom:8px">See the Engineering</div>
+          <p style="font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:20px">Interactive visualizations for better understanding.</p>
+          <svg viewBox="0 0 300 200" width="100%" max-width="320" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 120 L150 80 L250 120 L150 160 Z" fill="var(--bg-2)" stroke="var(--border-2)" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M50 120 L50 140 L150 180 L150 160 Z" fill="var(--bg-3)" stroke="var(--border-2)" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M250 120 L250 140 L150 180 L150 160 Z" fill="var(--border)" stroke="var(--border-2)" stroke-width="1.5" stroke-linejoin="round"/>
+            <line x1="150" y1="72" x2="250" y2="112" stroke="var(--accent)" stroke-width="1.2"/>
+            <text x="205" y="82" fill="var(--accent)" font-size="10" font-family="monospace" font-weight="700" text-anchor="middle">5.00 m</text>
+            <line x1="50" y1="120" x2="148" y2="76" stroke="var(--accent)" stroke-width="1.2"/>
+            <text x="82" y="92" fill="var(--accent)" font-size="10" font-family="monospace" font-weight="700" text-anchor="middle">4.00 m</text>
+            <line x1="50" y1="120" x2="50" y2="140" stroke="var(--text-muted)" stroke-width="1"/>
+            <line x1="44" y1="120" x2="56" y2="120" stroke="var(--text-muted)" stroke-width="1"/>
+            <line x1="44" y1="140" x2="56" y2="140" stroke="var(--text-muted)" stroke-width="1"/>
+            <text x="30" y="135" fill="var(--text-muted)" font-size="8" font-family="monospace" text-anchor="middle">150 mm</text>
+          </svg>
+          <div style="text-align:center;font-family:var(--mono)">
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:6px">V = L × W × D = 5 × 4 × 0.15</div>
+            <div style="width:160px;height:1px;background:var(--border);margin:8px auto"></div>
+            <div class="formula-result">3.00 <span>m³</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="why-col">
+        <div class="label-tag" style="margin-bottom:16px">Recent Calculations</div>
+        <h3 style="font-size:18px;font-weight:800;letter-spacing:-0.02em">Your latest activity</h3>
+        <div class="recent-list">
+          <div class="recent-item">
+            <div class="recent-item-icon">🧱</div>
+            <div class="recent-item-info">
+              <div class="recent-item-name">Concrete Slab</div>
+              <div class="recent-item-meta">5m × 4m × 150mm</div>
+            </div>
+            <div class="recent-item-value">3.00 m³</div>
+            <div class="recent-item-more">⋮</div>
+          </div>
+          <div class="recent-item">
+            <div class="recent-item-icon">🏠</div>
+            <div class="recent-item-info">
+              <div class="recent-item-name">Brick Wall</div>
+              <div class="recent-item-meta">10m × 3m × 230mm</div>
+            </div>
+            <div class="recent-item-value">1,245</div>
+            <div class="recent-item-more">⋮</div>
+          </div>
+          <div class="recent-item">
+            <div class="recent-item-icon">🔷</div>
+            <div class="recent-item-info">
+              <div class="recent-item-name">Floor Tiles</div>
+              <div class="recent-item-meta">4m × 3m</div>
+            </div>
+            <div class="recent-item-value">286</div>
+            <div class="recent-item-more">⋮</div>
+          </div>
+          <div class="recent-item">
+            <div class="recent-item-icon">⛰️</div>
+            <div class="recent-item-info">
+              <div class="recent-item-name">Earthwork</div>
+              <div class="recent-item-meta">Cut Volume</div>
+            </div>
+            <div class="recent-item-value">125.4 m³</div>
+            <div class="recent-item-more">⋮</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="category-grid-section">
+  <div class="container-wide">
+    <div class="section-header">
+      <div>
+        <div class="label-tag" style="margin-bottom:12px">All Categories</div>
+        <h2 class="section-title">Every tool you need,<br>organized by discipline.</h2>
+      </div>
+    </div>
+    <div class="category-grid">
+      <div class="cat-grid-card reveal">
+        <div class="cat-grid-icon">📐</div>
+        <div><div class="cat-grid-name">Civil Engineering</div><div class="cat-grid-count">24+ Tools available</div></div>
+        <div class="cat-grid-row"><div style="font-size:11px;color:var(--text-muted)">Concrete · Brickwork · Earthwork</div><div class="cat-grid-arrow">→</div></div>
+      </div>
+      <div class="cat-grid-card reveal reveal-delay-1">
+        <div class="cat-grid-icon">🏗️</div>
+        <div><div class="cat-grid-name">Construction</div><div class="cat-grid-count">18+ Tools available</div></div>
+        <div class="cat-grid-row"><div style="font-size:11px;color:var(--text-muted)">BOQ · Plaster · Tile · Staircase</div><div class="cat-grid-arrow">→</div></div>
+      </div>
+      <div class="cat-grid-card reveal reveal-delay-2">
+        <div class="cat-grid-icon">🔩</div>
+        <div><div class="cat-grid-name">Structural</div><div class="cat-grid-count">12+ Tools available</div></div>
+        <div class="cat-grid-row"><div style="font-size:11px;color:var(--text-muted)">Beam · Column · Slab · Steel</div><div class="cat-grid-arrow">→</div></div>
+      </div>
+      <div class="cat-grid-card reveal">
+        <div class="cat-grid-icon">📊</div>
+        <div><div class="cat-grid-name">Quantity Surveying</div><div class="cat-grid-count">15+ Tools available</div></div>
+        <div class="cat-grid-row"><div style="font-size:11px;color:var(--text-muted)">BBS · Bar Bending · Rebar Schedule</div><div class="cat-grid-arrow">→</div></div>
+      </div>
+      <div class="cat-grid-card reveal reveal-delay-1">
+        <div class="cat-grid-icon">🌐</div>
+        <div><div class="cat-grid-name">Surveying</div><div class="cat-grid-count">10+ Tools available</div></div>
+        <div class="cat-grid-row"><div style="font-size:11px;color:var(--text-muted)">HI Method · Traverse · Levelling</div><div class="cat-grid-arrow">→</div></div>
+      </div>
+      <div class="cat-grid-card reveal reveal-delay-2">
+        <div class="cat-grid-icon">➗</div>
+        <div><div class="cat-grid-name">Mathematics</div><div class="cat-grid-count">20+ Tools available</div></div>
+        <div class="cat-grid-row"><div style="font-size:11px;color:var(--text-muted)">Unit Converter · Area · Statistics</div><div class="cat-grid-arrow">→</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT PREVIEW -->
+<section class="product-section">
+  <div class="container-wide">
+    <div class="product-inner">
+      <div class="reveal">
+        <div class="label-tag" style="margin-bottom:16px">Smart Calculations</div>
+        <h2 class="section-title">From dimensions<br>to accurate results.</h2>
+        <p class="section-subtitle" style="margin-bottom:32px">Enter your measurements and CivilMath handles the formulas, units and material calculations for you — instantly.</p>
+        <div class="product-flow">
+          <div class="flow-step">
+            <div class="flow-num">1</div>
+            <div><div class="flow-step-title">Enter Inputs</div><div class="flow-step-desc">Length · Width · Depth · Mix Ratio</div></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:var(--text-secondary)">2</div>
+            <div><div class="flow-step-title">Apply Formula</div><div class="flow-step-desc">Volume = L × W × D = 5 × 4 × 0.15</div></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num" style="background:var(--text-primary)">3</div>
+            <div><div class="flow-step-title">Get Results</div><div class="flow-step-desc">3.00 m³ · Export PDF or Excel</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-mockup reveal reveal-delay-2">
+        <div class="mockup-header">
+          <div class="mockup-title-area">
+            <div class="mockup-icon">🧱</div>
+            <div>
+              <div class="mockup-title">Concrete Volume Calculator</div>
+              <div class="mockup-subtitle">ACI 318 · Slab, Column, Beam & Footing</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <div class="ws-action">⚙</div>
+            <div class="ws-action">↗</div>
+          </div>
+        </div>
+        <div class="mockup-body">
+          <div>
+            <div class="mockup-section-label">Inputs</div>
+            <div class="mockup-input-grid">
+              <div class="mockup-input-row"><span class="mockup-input-name">Length</span><span class="mockup-input-val">5.00 m</span></div>
+              <div class="mockup-input-row"><span class="mockup-input-name">Width</span><span class="mockup-input-val">4.00 m</span></div>
+              <div class="mockup-input-row"><span class="mockup-input-name">Depth</span><span class="mockup-input-val">150 mm</span></div>
+              <div class="mockup-input-row"><span class="mockup-input-name">Mix Ratio</span><span class="mockup-input-val">1:2:4</span></div>
+              <div class="mockup-input-row" style="grid-column:span 2"><span class="mockup-input-name">Wastage</span><span class="mockup-input-val">5%</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="mockup-section-label">Calculation</div>
+            <div class="mockup-formula-box">Volume = L × W × D = <strong>5 × 4 × 0.15 = 3.00 m³</strong></div>
+          </div>
+          <div>
+            <div class="mockup-section-label">Result</div>
+            <div class="mockup-result-box">
+              <div>
+                <div style="font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Volume</div>
+                <div class="mockup-result-num">3.00<span>m³</span></div>
+              </div>
+              <svg viewBox="0 0 80 60" width="80" height="60" fill="none">
+                <path d="M10 40 L40 28 L70 40 L40 52 Z" fill="rgba(249,115,22,0.08)" stroke="rgba(249,115,22,0.4)" stroke-width="1.5" stroke-linejoin="round"/>
+                <path d="M10 40 L10 46 L40 58 L40 52 Z" fill="rgba(249,115,22,0.05)" stroke="rgba(249,115,22,0.2)" stroke-width="1.5"/>
+                <path d="M70 40 L70 46 L40 58 L40 52 Z" fill="rgba(249,115,22,0.1)" stroke="rgba(249,115,22,0.25)" stroke-width="1.5"/>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="mockup-section-label">Materials Required</div>
+            <div class="mockup-materials">
+              <div class="mockup-mat-item"><div class="mockup-mat-name">Cement</div><div class="mockup-mat-val">8.4 bags</div></div>
+              <div class="mockup-mat-item"><div class="mockup-mat-name">Sand</div><div class="mockup-mat-val">0.56 m³</div></div>
+              <div class="mockup-mat-item"><div class="mockup-mat-name">Aggregate</div><div class="mockup-mat-val">1.12 m³</div></div>
+            </div>
+          </div>
+          <div class="mockup-export-row">
+            <button class="mockup-export-btn primary">💾 Save</button>
+            <button class="mockup-export-btn">📄 PDF</button>
+            <button class="mockup-export-btn">📊 Excel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner reveal">
+    <div class="label-tag">Get Started Free</div>
+    <h2 class="cta-title">Your next calculation<br>starts here.</h2>
+    <p class="cta-desc">Choose a tool, enter your dimensions, and get accurate engineering results — in seconds.</p>
+    <a href="#" class="cta-btn-lg">
+      Explore All Calculators
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container-wide">
+    <div class="footer-top">
+      <div>
+        <div class="nav-logo" style="margin-bottom:0">
+          <div class="nav-logo-mark" style="width:28px;height:28px;border-radius:7px">
+            <svg viewBox="0 0 20 20" fill="none" width="16" height="16">
+              <polygon points="10,3 17.5,16 2.5,16" fill="none" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+              <line x1="2.5" y1="16" x2="17.5" y2="16" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="nav-logo-text" style="font-size:15px">Civil<span>Math</span></span>
+        </div>
+        <p class="footer-tagline" style="margin-top:10px">Smart Calculations for Modern Construction.</p>
+        <div class="footer-social">
+          <a href="#" class="social-btn" aria-label="YouTube">▶</a>
+          <a href="#" class="social-btn" aria-label="LinkedIn">in</a>
+          <a href="#" class="social-btn" aria-label="Website">🌐</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Product</div>
+        <ul class="footer-links">
+          <li><a href="#" class="footer-link">Calculators</a></li>
+          <li><a href="#" class="footer-link">Projects</a></li>
+          <li><a href="#" class="footer-link">Reports</a></li>
+          <li><a href="#" class="footer-link">Resources</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Engineering</div>
+        <ul class="footer-links">
+          <li><a href="#" class="footer-link">Civil Engineering</a></li>
+          <li><a href="#" class="footer-link">Construction</a></li>
+          <li><a href="#" class="footer-link">QS Tools</a></li>
+          <li><a href="#" class="footer-link">Surveying</a></li>
+          <li><a href="#" class="footer-link">Mathematics</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <ul class="footer-links">
+          <li><a href="#" class="footer-link">About</a></li>
+          <li><a href="#" class="footer-link">Contact</a></li>
+          <li><a href="#" class="footer-link">Privacy</a></li>
+          <li><a href="#" class="footer-link">Terms</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Stay Updated</div>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.6">Get the latest tools and engineering updates.</p>
+        <div class="footer-email-form">
+          <input class="footer-email-input" type="email" placeholder="Your email" />
+          <button class="footer-email-btn" aria-label="Subscribe">→</button>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2026 CivilMath. All rights reserved.</p>
+      <div style="display:flex;gap:20px">
+        <a href="#" class="footer-link" style="font-size:12px">Privacy Policy</a>
+        <a href="#" class="footer-link" style="font-size:12px">Terms of Service</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Theme toggle
+  const html = document.documentElement;
+  const btn = document.getElementById('themeToggle');
+  const icon = document.getElementById('themeIcon');
+  const saved = localStorage.getItem('cm-theme') || 'light';
+  html.setAttribute('data-theme', saved);
+  icon.textContent = saved === 'dark' ? '☀' : '☾';
+  btn.addEventListener('click', () => {
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    icon.textContent = next === 'dark' ? '☀' : '☾';
+    localStorage.setItem('cm-theme', next);
+  });
+
+  // Carousel
+  const track = document.getElementById('carouselTrack');
+  document.getElementById('carouselLeft').addEventListener('click', () => track.scrollBy({ left: -240, behavior: 'smooth' }));
+  document.getElementById('carouselRight').addEventListener('click', () => track.scrollBy({ left: 240, behavior: 'smooth' }));
+  track.querySelectorAll('.carousel-item').forEach(item => {
+    item.addEventListener('click', () => {
+      track.querySelectorAll('.carousel-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+
+  // Category pills
+  document.querySelectorAll('.cat-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+    });
+  });
+
+  // Scroll reveal
+  const revealObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+  // Navbar scroll shadow
+  const nav = document.querySelector('.navbar');
+  window.addEventListener('scroll', () => {
+    nav.style.boxShadow = window.scrollY > 8 ? '0 4px 24px rgba(0,0,0,0.08)' : 'none';
+  }, { passive: true });
+</script>
+</body>
+</html>

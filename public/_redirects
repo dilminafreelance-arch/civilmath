@@ -1,0 +1,4 @@
+/api/health  /.netlify/functions/health  200
+/api/explain /.netlify/functions/explain 200
+/api/chat    /.netlify/functions/chat    200
+/*    /index.html   200

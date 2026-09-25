@@ -1,0 +1,13 @@
+{
+  "name": "CivilMath — Civil Engineering Calculator Suite",
+  "short_name": "CivilMath",
+  "description": "Free online civil engineering calculators for concrete volume, structural beam analysis, bar bending schedules, column design, rebar estimation, geotechnical bearing capacity, surveying, and unit conversion.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080d19",
+  "theme_color": "#f97316",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "192x192", "type": "image/svg+xml" },
+    { "src": "/favicon.svg", "sizes": "512x512", "type": "image/svg+xml" }
+  ]
+}
