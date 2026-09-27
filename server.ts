@@ -8,6 +8,8 @@ import rateLimit from "express-rate-limit";
 import { createServer as createViteServer } from "vite";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { rowToArticle, articleToRow } from "./api/_lib/articleMapper.js";
+import { STATIC_ROUTES } from "./api/_lib/staticRoutes.js";
+import { notifySearchEngines } from "./api/_lib/indexnow.js";
 
 // Load environment variables (.env.local overrides .env when present)
 dotenv.config();
@@ -320,6 +322,84 @@ function writeStoredArticles(articles: any[]) {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Dynamic XML Sitemap Endpoint (Real-Time Search Engine Feed)
+// ─────────────────────────────────────────────────────────────
+app.get("/sitemap.xml", async (req, res) => {
+  const SITE_URL = "https://civilmath.com";
+  const today = new Date().toISOString().split("T")[0];
+  let articleUrls: string[] = [];
+
+  const supabase = getSupabaseServer();
+  if (supabase) {
+    try {
+      const { data: articles, error } = await supabase
+        .from("articles")
+        .select("slug, updated_at, published_at, status")
+        .or("status.eq.published,status.is.null")
+        .order("published_at", { ascending: false });
+
+      if (!error && Array.isArray(articles)) {
+        articleUrls = articles
+          .filter((art) => art && art.slug)
+          .map((art) => {
+            const rawDate = art.updated_at || art.published_at || today;
+            const lastmod = String(rawDate).split("T")[0] || today;
+            const cleanSlug = String(art.slug).replace(/[<>&'"]/g, "");
+            return `  <url>
+    <loc>${SITE_URL}/articles/${cleanSlug}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+          });
+      }
+    } catch (err: any) {
+      console.warn("Dynamic sitemap Supabase lookup error:", err?.message);
+    }
+  }
+
+  // If Supabase returned no articles or was unavailable, use local backup store
+  if (articleUrls.length === 0) {
+    const localArticles = readStoredArticles();
+    if (Array.isArray(localArticles) && localArticles.length > 0) {
+      articleUrls = localArticles
+        .filter((art: any) => art && art.slug && art.status !== "draft")
+        .map((art: any) => {
+          const rawDate = art.updatedAt || art.publishedAt || today;
+          const lastmod = String(rawDate).split("T")[0] || today;
+          const cleanSlug = String(art.slug).replace(/[<>&'"]/g, "");
+          return `  <url>
+    <loc>${SITE_URL}/articles/${cleanSlug}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+        });
+    }
+  }
+
+  const staticUrls = STATIC_ROUTES.map((route) => {
+    const loc = route.path === "/" ? `${SITE_URL}/` : `${SITE_URL}${route.path}`;
+    return `  <url>
+    <loc>${loc}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${route.changefreq || "weekly"}</changefreq>
+    <priority>${Number(route.priority || 0.7).toFixed(1)}</priority>
+  </url>`;
+  });
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${[...staticUrls, ...articleUrls].join("\n")}
+</urlset>
+`;
+
+  res.setHeader("Content-Type", "application/xml; charset=utf-8");
+  res.setHeader("Cache-Control", "public, max-age=1800, s-maxage=3600, stale-while-revalidate=86400");
+  res.status(200).send(xml);
+});
+
 // Articles API - Get all custom articles
 app.get("/api/articles", async (req, res) => {
   const supabase = getSupabaseServer();
@@ -406,12 +486,19 @@ app.post("/api/articles", requireAdminAuth, async (req, res) => {
       if (error) {
         console.error("Supabase upsert error in server.ts:", error);
       } else if (data) {
+        notifySearchEngines(data.slug || article.slug).catch((err) =>
+          console.warn("Auto-index ping error:", err?.message || err)
+        );
         return res.json({ status: "success", article: rowToArticle(data) });
       }
     } catch (err) {
       console.error("Supabase upsert exception in server.ts:", err);
     }
   }
+
+  notifySearchEngines(article.slug).catch((err) =>
+    console.warn("Auto-index ping error:", err?.message || err)
+  );
 
   res.json({ status: "success", article });
 });
@@ -459,6 +546,10 @@ app.post("/api/articles/bulk", requireAdminAuth, async (req, res) => {
       console.error("Supabase bulk upsert exception in server.ts:", err);
     }
   }
+
+  notifySearchEngines(items.map((i: any) => i?.slug).filter(Boolean)).catch((err) =>
+    console.warn("Auto-index bulk ping error:", err?.message || err)
+  );
 
   res.json({ status: "success", added, updated, total: articles.length });
 });

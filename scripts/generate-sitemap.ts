@@ -30,12 +30,14 @@ ${urls}
   fs.writeFileSync(publicSitemapPath, xml, 'utf8');
   console.log(`Updated ${publicSitemapPath} (${ALL_ROUTES_SEO.length} URLs)`);
 
-  // If dist exists, also copy to dist/sitemap.xml
+  // Ensure dist does NOT have static sitemap.xml so Vercel evaluates /sitemap.xml rewrite to /api/sitemap
   const distDir = path.resolve(process.cwd(), 'dist');
   if (fs.existsSync(distDir)) {
     const distSitemapPath = path.join(distDir, 'sitemap.xml');
-    fs.writeFileSync(distSitemapPath, xml, 'utf8');
-    console.log(`Updated ${distSitemapPath}`);
+    if (fs.existsSync(distSitemapPath)) {
+      fs.unlinkSync(distSitemapPath);
+      console.log(`Cleaned up static ${distSitemapPath} to enable dynamic /api/sitemap`);
+    }
   }
 
   // Ensure robots.txt is in place and up to date

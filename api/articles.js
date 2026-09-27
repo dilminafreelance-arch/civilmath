@@ -2,6 +2,7 @@ import { setCors } from "./_lib/openrouter.js";
 import { requireAdminAuth } from "./_lib/auth.js";
 import { getSupabase } from "./_lib/supabase.js";
 import { rowToArticle, articleToRow } from "./_lib/articleMapper.js";
+import { notifySearchEngines } from "./_lib/indexnow.js";
 
 export default async function handler(req, res) {
   setCors(res);
@@ -75,6 +76,11 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Failed to save articles." });
       }
 
+      // Asynchronously notify search engines (IndexNow & Google ping) without blocking
+      notifySearchEngines(rows.map((r) => r.slug)).catch((err) =>
+        console.warn("Auto-index ping error:", err?.message || err)
+      );
+
       return res.status(200).json({
         status: "success",
         total: data.length,
@@ -98,6 +104,12 @@ export default async function handler(req, res) {
       console.error("Supabase POST error:", error);
       return res.status(500).json({ error: "Failed to save article." });
     }
+
+    // Asynchronously notify search engines (IndexNow & Google ping) without blocking
+    notifySearchEngines(data.slug || article.slug).catch((err) =>
+      console.warn("Auto-index ping error:", err?.message || err)
+    );
+
     return res.status(200).json({ status: "success", article: rowToArticle(data) });
   }
 
