@@ -20,7 +20,12 @@ export default async function handler(req, res) {
       : null;
   const id = req.query.id || pathId;
 
-  const supabase = getSupabase();
+  let supabase = null;
+  try {
+    supabase = getSupabase();
+  } catch (err) {
+    console.warn("Supabase not configured:", err.message);
+  }
 
   if (req.method === "GET") {
     if (!supabase) {
@@ -37,7 +42,9 @@ export default async function handler(req, res) {
       if (error || !data) {
         return res.status(404).json({ error: "Inquiry not found" });
       }
-      return res.status(200).json(data);
+      // Normalize timestamps
+      const record = { ...data, createdAt: data.createdAt || data.created_at };
+      return res.status(200).json(record);
     }
 
     const { data, error } = await supabase
@@ -46,7 +53,9 @@ export default async function handler(req, res) {
       .order("created_at", { ascending: false });
 
     if (!error && Array.isArray(data)) {
-      return res.status(200).json(data);
+      // Normalize timestamps so client always gets createdAt
+      const normalized = data.map(r => ({ ...r, createdAt: r.createdAt || r.created_at }));
+      return res.status(200).json(normalized);
     }
     return res.status(200).json([]);
   }

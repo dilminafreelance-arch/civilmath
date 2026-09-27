@@ -36,9 +36,16 @@ export default async function handler(req, res) {
     message: message.trim().slice(0, 5000),
     status: "unread",
     createdAt: now,
+    created_at: now,
   };
 
-  const supabase = getSupabase();
+  let supabase = null;
+  try {
+    supabase = getSupabase();
+  } catch (err) {
+    console.warn("Supabase not configured, skipping DB insert:", err.message);
+  }
+
   if (supabase) {
     try {
       await supabase.from("inquiries").insert([newInquiry]);
