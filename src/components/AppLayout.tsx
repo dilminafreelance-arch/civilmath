@@ -4,21 +4,21 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Sun, Moon, Menu, X, Bell,
   Home, Calculator, Search as SearchIcon, Keyboard,
-  BookOpen
+  BookOpen, LayoutDashboard
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import GlobalSearch from './GlobalSearch';
 import LeftSidebar from './LeftSidebar';
 import RightUtilityPanel from './RightUtilityPanel';
 import { ChatBot } from './ChatBot';
-import ProfileDropdown from './ProfileDropdown';
+
 import NotificationsPanel from './NotificationsPanel';
 import ShortcutHelpModal from './ShortcutHelpModal';
 import SiteFooter from './SiteFooter';
 import { Button } from './ui';
 
 export default function AppLayout() {
-  const { theme, toggleTheme, activeCalcId, unitSystem, notificationCount } = useApp();
+  const { theme, toggleTheme, activeCalcId, unitSystem, setUnitSystem, currency, setCurrency, notificationCount } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -129,10 +129,53 @@ export default function AppLayout() {
               <BookOpen className={`w-3.5 h-3.5 ${isArticlesActive ? 'text-brand dark:text-brand-light' : 'text-[#7A8981]'}`} />
               <span>Articles</span>
             </Link>
+
+            {/* Dashboard Link */}
+            <Link
+              to="/dashboard"
+              className={`hidden md:inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors no-underline shadow-2xs ${
+                location.pathname === '/dashboard'
+                  ? 'border-brand/60 bg-brand/10 text-brand dark:text-brand-light font-semibold'
+                  : 'border-[#E2E6E2] dark:border-white/10 bg-white dark:bg-[#131715] text-[#526058] dark:text-[#97A69E] hover:text-[#141A16] dark:hover:text-[#ECF2EE] hover:border-[#2E6B56]/50 dark:hover:border-[#34D399]/40'
+              }`}
+              title="My Dashboard & Saved Calcs"
+            >
+              <LayoutDashboard className="w-3.5 h-3.5 text-[#7A8981]" />
+              <span>Dashboard</span>
+            </Link>
           </div>
 
           {/* Right Header Controls */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+
+            {/* Unit System Toggle — inline */}
+            <div className="hidden sm:flex rounded-lg overflow-hidden border border-border-subtle shadow-2xs">
+              {(['metric', 'imperial'] as const).map(u => (
+                <button
+                  key={u}
+                  onClick={() => setUnitSystem(u)}
+                  className={`px-2.5 py-1.5 text-[10px] font-bold transition-colors cursor-pointer capitalize ${
+                    unitSystem === u
+                      ? 'bg-brand text-white'
+                      : 'bg-surface-1 dark:bg-surface-2 text-ink-muted dark:text-ink-muted-dark hover:text-ink dark:hover:text-ink-dark'
+                  }`}
+                >
+                  {u}
+                </button>
+              ))}
+            </div>
+
+            {/* Currency Select — inline */}
+            <select
+              value={currency}
+              onChange={e => setCurrency(e.target.value)}
+              className="hidden sm:block text-[10px] font-bold bg-surface-1 dark:bg-surface-2 border border-border-subtle rounded-lg px-2 py-1.5 text-ink dark:text-ink-dark cursor-pointer outline-none shadow-2xs"
+            >
+              {['USD','INR','EUR','GBP','AED','SGD'].map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+
             {/* Shortcut Help Button */}
             <button
               onClick={() => setShortcutHelpOpen(true)}
@@ -147,7 +190,7 @@ export default function AppLayout() {
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg border border-border-subtle bg-surface-1 dark:bg-surface-2 text-ink-muted dark:text-ink-muted-dark hover:text-ink dark:hover:text-ink-dark hover:border-brand/50 transition-colors cursor-pointer shadow-2xs"
-              title={theme === 'light' ? 'Switch to Obsidian Dark Mode' : 'Switch to Architectural Chalk Light Mode'}
+              title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
               aria-label="Toggle theme"
             >
               {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-[#F59E0B]" />}
@@ -168,11 +211,9 @@ export default function AppLayout() {
               </button>
               <NotificationsPanel open={notifOpen} onClose={() => setNotifOpen(false)} />
             </div>
-
-            {/* User Profile Pill */}
-            <ProfileDropdown />
           </div>
         </header>
+
 
         {/* Main Workspace Canvas */}
         <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 pb-24 lg:pb-8">
