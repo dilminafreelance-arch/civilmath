@@ -103,7 +103,7 @@ export default function ProfileDropdown() {
                       </button>
                     </div>
                   )}
-                  <p className="text-[10px] text-[#7A8981] mt-0.5">Civil Engineer &bull; CivilMath</p>
+
                 </div>
               </div>
             </div>
