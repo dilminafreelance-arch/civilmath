@@ -3717,7 +3717,9 @@ export default function CalculatorWorkspace({
                   <button
                     type="button"
                     onClick={() => {
-                      document.getElementById('calculator-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      if (window.innerWidth < 1024) {
+                        document.getElementById('calculator-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
                     }}
                     className="flex-1 py-2.5 px-4 rounded-xl bg-brand hover:bg-primary-dark text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
                   >

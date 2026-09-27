@@ -55,12 +55,24 @@ function AnalyticsTracker() {
   return null;
 }
 
+function ScrollToTop() {
+  const { pathname, search } = useLocation();
+
+  useEffect(() => {
+    // Reset scroll to top on route change so new page doesn't appear scrolled to the bottom
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [pathname, search]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <HelmetProvider>
       <BrowserRouter>
         <AppProvider>
           <ProjectProvider>
+            <ScrollToTop />
             <AnalyticsTracker />
             <Routes>
               {/* ── Admin Content Management Studio (Dedicated Standalone Layout) ── */}
