@@ -46,6 +46,7 @@ export function rowToArticle(row) {
     faqs: meta.faqs || [],
     relatedCalculators: meta.relatedCalculators || [],
     references: meta.references || [],
+    blocks: Array.isArray(meta.blocks) ? meta.blocks : [],
     seo: {
       seoTitle: meta.seo?.seoTitle || (title + ' | CivilMath'),
       metaDescription: meta.seo?.metaDescription || excerpt,
@@ -81,6 +82,7 @@ export function articleToRow(article) {
     faqs: article.faqs || [],
     relatedCalculators: article.relatedCalculators || [],
     references: article.references || [],
+    blocks: Array.isArray(article.blocks) ? article.blocks : [],
     seo: article.seo || {
       seoTitle: (article.title || 'Untitled Article') + ' | CivilMath',
       metaDescription: article.excerpt || '',

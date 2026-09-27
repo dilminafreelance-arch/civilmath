@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ArticleData, getArticleLoader } from '../data/articles';
 import { BookOpen, FileText, AlertTriangle, CheckCircle, HelpCircle, ArrowRight } from 'lucide-react';
+import MathFormula from './article/MathFormula';
+import CalculationCard from './article/CalculationCard';
 
 interface ArticleSectionProps {
   calculatorId: string;
@@ -141,56 +143,28 @@ export default function ArticleSection({ calculatorId }: ArticleSectionProps) {
       <div className={`${cardClass} p-6 mb-6`}>
         <h3 className={headingClass}>Engineering Formulas</h3>
         <p className={`${textClass} mt-2 mb-4`}>The following formulas are used in this calculator. Each variable is explained with its engineering meaning and unit.</p>
-        {article.formulas.map((formula, fi) => (
-          <div key={fi} className="mb-6 last:mb-0 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-xl p-4">
-            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2">{formula.name}</h4>
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-3 mb-3 font-mono text-[12px] text-center text-slate-800 dark:text-slate-200 italic">
-              {formula.equation}
-            </div>
-            <div className="space-y-1">
-              {formula.variables.map((v, vi) => (
-                <div key={vi} className="flex items-start gap-2 text-[10px] font-mono">
-                  <span className="font-bold text-[#0A84FF] min-w-[24px]">{v.symbol}</span>
-                  <span className="text-slate-600 dark:text-slate-400">{v.meaning}</span>
-                  <span className="text-slate-400 ml-auto">[{v.unit}]</span>
-                </div>
-              ))}
-            </div>
-            <p className={`${labelClass} mt-2`}>Reference: {formula.reference}</p>
-          </div>
-        ))}
+        <div className="space-y-4">
+          {article.formulas.map((formula, fi) => (
+            <MathFormula
+              key={fi}
+              title={formula.name}
+              equation={formula.equation}
+              variables={formula.variables}
+              reference={formula.reference}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Step-by-Step Example */}
-      <div className={`${cardClass} p-6 mb-6`}>
-        <h3 className={headingClass}>Step-by-Step Calculation Example</h3>
-        <div className="mt-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200/50 dark:border-blue-900/30 rounded-xl p-4 mb-4">
-          <h4 className="text-[11px] font-bold text-blue-800 dark:text-blue-300 mb-1">Scenario</h4>
-          <p className="text-[10px] font-mono text-blue-700 dark:text-blue-400">{article.stepByStepExample.scenario}</p>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {Object.entries(article.stepByStepExample.given).map(([key, val]) => (
-              <div key={key} className="flex items-center gap-1.5">
-                <span className="text-[10px] font-bold text-blue-800 dark:text-blue-300">{key}:</span>
-                <span className="text-[10px] font-mono text-blue-700 dark:text-blue-400">{val}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="space-y-3">
-          {article.stepByStepExample.steps.map((step, i) => (
-            <div key={i} className="flex gap-3 bg-white dark:bg-slate-800/30 border border-slate-100 dark:border-slate-700/50 rounded-xl p-3">
-              <span className="w-6 h-6 rounded-full bg-[#0A84FF] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
-              <div>
-                <h4 className="text-[11px] font-bold text-slate-800 dark:text-slate-200">{step.title}</h4>
-                <p className="text-[10px] font-mono text-slate-500 dark:text-slate-400 mt-0.5">{step.explanation}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-4 bg-green-50 dark:bg-green-950/30 border border-green-200/50 dark:border-green-900/30 rounded-xl p-4">
-          <h4 className="text-[11px] font-bold text-green-800 dark:text-green-300">Final Answer</h4>
-          <p className="text-[10px] font-mono text-green-700 dark:text-green-400 mt-0.5">{article.stepByStepExample.finalAnswer}</p>
-        </div>
+      <div className="mb-6">
+        <CalculationCard
+          title="Worked Numerical Example"
+          scenario={article.stepByStepExample.scenario}
+          inputs={Object.entries(article.stepByStepExample.given).map(([label, value]) => ({ label, value: String(value ?? '') }))}
+          calculation={article.stepByStepExample.steps.map(s => `${s.title}: ${s.explanation}`).join('\n\n')}
+          result={article.stepByStepExample.finalAnswer}
+        />
       </div>
 
       {/* Result Explanation */}

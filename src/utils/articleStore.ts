@@ -110,6 +110,7 @@ export function normalizeArticleData(raw: any, fallbackSlug?: string): Article {
       faqs: [],
       relatedCalculators: [],
       references: [],
+      blocks: [],
       seo: {
         seoTitle: 'Untitled Article | CivilMath',
         metaDescription: '',
@@ -202,6 +203,7 @@ export function normalizeArticleData(raw: any, fallbackSlug?: string): Article {
     faqs: Array.isArray(raw.faqs) ? raw.faqs : [],
     relatedCalculators: Array.isArray(raw.relatedCalculators) ? raw.relatedCalculators : [],
     references: Array.isArray(raw.references) ? raw.references : [],
+    blocks: Array.isArray(raw.blocks) ? raw.blocks : [],
     seo,
     isBuiltin: Boolean(raw.isBuiltin),
   };
