@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Sun, Moon, Menu, X, Bell,
   Home, Calculator, Search as SearchIcon, Keyboard,
-  BookOpen, LayoutDashboard
+  BookOpen, LayoutDashboard, MessageSquare
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import GlobalSearch from './GlobalSearch';
@@ -37,6 +37,7 @@ export default function AppLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const notifButtonRef = useRef<HTMLDivElement>(null);
 
   // Close mobile drawer on Escape / route change
@@ -61,6 +62,7 @@ export default function AppLayout() {
   useEffect(() => {
     setMobileMenuOpen(false);
     setNotifOpen(false);
+    setChatOpen(false);
   }, [location.pathname]);
 
   return (
@@ -275,10 +277,28 @@ export default function AppLayout() {
           <BookOpen className="w-4 h-4 mb-0.5" />
           <span>Articles</span>
         </Link>
+        <button
+          onClick={() => setChatOpen(prev => !prev)}
+          className={`flex flex-col items-center px-2.5 sm:px-3 py-1 rounded-xl text-[10px] font-bold transition-colors cursor-pointer ${
+            chatOpen ? 'text-brand dark:text-brand-light bg-brand/10' : 'text-ink-muted dark:text-ink-muted-dark'
+          }`}
+          aria-label="Toggle Engineering Assistant AI"
+        >
+          <div className="relative">
+            <MessageSquare className="w-4 h-4 mb-0.5" />
+            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-brand rounded-full" />
+          </div>
+          <span>Chat AI</span>
+        </button>
       </div>
 
-      {/* Floating ChatBot Assistant */}
-      <ChatBot activeCalcId={activeCalcId} unitSystem={unitSystem} />
+      {/* Floating ChatBot Assistant (Controlled from Mobile Bottom Bar or Desktop Floating Bubble) */}
+      <ChatBot
+        activeCalcId={activeCalcId}
+        unitSystem={unitSystem}
+        isOpen={chatOpen}
+        onOpenChange={setChatOpen}
+      />
 
       {/* Keyboard Shortcut Help Modal */}
       <ShortcutHelpModal open={shortcutHelpOpen} onClose={() => setShortcutHelpOpen(false)} />

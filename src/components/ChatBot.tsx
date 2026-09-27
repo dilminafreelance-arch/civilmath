@@ -21,6 +21,8 @@ interface Message {
 interface ChatBotProps {
   activeCalcId: string;
   unitSystem: string;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const QUICK_SUGGESTIONS = [
@@ -30,8 +32,22 @@ const QUICK_SUGGESTIONS = [
   "How to calculate beam deflection limits"
 ];
 
-export const ChatBot: React.FC<ChatBotProps> = ({ activeCalcId, unitSystem }) => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+export const ChatBot: React.FC<ChatBotProps> = ({
+  activeCalcId,
+  unitSystem,
+  isOpen: externalIsOpen,
+  onOpenChange,
+}) => {
+  const [internalIsOpen, setInternalIsOpen] = useState<boolean>(false);
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+
+  const setIsOpen = (next: boolean | ((prev: boolean) => boolean)) => {
+    const value = typeof next === 'function' ? next(isOpen) : next;
+    setInternalIsOpen(value);
+    if (onOpenChange) {
+      onOpenChange(value);
+    }
+  };
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -205,8 +221,8 @@ export const ChatBot: React.FC<ChatBotProps> = ({ activeCalcId, unitSystem }) =>
 
   return (
     <>
-      {/* Floating Chat Bubble Button */}
-      <div className="fixed top-[250px] right-4 md:top-auto md:bottom-6 md:right-6 z-50">
+      {/* Floating Chat Bubble Button — hidden on mobile/tablet since it is integrated into the bottom navigation bar */}
+      <div className="hidden xl:block fixed bottom-6 right-6 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="relative w-13 h-13 bg-brand text-white hover:bg-primary-dark rounded-full flex items-center justify-center shadow-md shadow-brand/25 cursor-pointer border border-[#7A8981]/40 transition-transform duration-200 hover:scale-105 active:scale-95 group focus:outline-none"
@@ -245,11 +261,11 @@ export const ChatBot: React.FC<ChatBotProps> = ({ activeCalcId, unitSystem }) =>
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 260 }}
-            className="fixed top-[180px] right-4 md:top-auto md:bottom-24 md:right-6 z-50 w-[380px] h-[520px] max-h-[calc(100vh-16rem)] md:max-h-none max-w-[calc(100vw-2rem)] bg-[#F2F5F3]/98 dark:bg-[#0D100E]/98 border border-[#E2E6E2] dark:border-[#1A211D] rounded-3xl shadow-xl backdrop-blur-md flex flex-col overflow-hidden text-left"
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 280 }}
+            className="fixed inset-x-3 bottom-16 sm:inset-x-auto sm:right-6 sm:bottom-20 xl:bottom-22 z-50 sm:w-[380px] h-[520px] max-h-[calc(100vh-5.5rem)] bg-[#F2F5F3]/98 dark:bg-[#0D100E]/98 border border-[#E2E6E2] dark:border-[#1A211D] rounded-3xl shadow-2xl backdrop-blur-md flex flex-col overflow-hidden text-left"
           >
             {/* Header */}
             <div className="bg-[#141A16] dark:bg-[#161916] p-4 text-white flex items-center justify-between border-b border-[#E2E6E2]/20 shadow-xs relative">
