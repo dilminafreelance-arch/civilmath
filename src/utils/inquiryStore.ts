@@ -108,12 +108,13 @@ export async function fetchAndSyncInquiries(): Promise<ContactInquiry[]> {
     if (res.ok) {
       const serverInquiries = await res.json();
       if (Array.isArray(serverInquiries)) {
-        // Merge with local offline-created ones if any
+        // Keep ALL local items not yet confirmed on server (not just inq_offline_ prefix)
+        // so messages saved locally don't vanish when Supabase insert was delayed or failed
         const local = getAllLocalInquiries();
         const serverIds = new Set(serverInquiries.map(i => i.id));
-        const offlineOnly = local.filter(l => !serverIds.has(l.id) && l.id.startsWith('inq_offline_'));
+        const localOnly = local.filter(l => !serverIds.has(l.id));
 
-        const combined = [...offlineOnly, ...serverInquiries];
+        const combined = [...localOnly, ...serverInquiries];
         saveLocalInquiries(combined);
         return combined;
       }
