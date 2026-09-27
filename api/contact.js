@@ -42,16 +42,20 @@ export default async function handler(req, res) {
   let supabase = null;
   try {
     supabase = getSupabase();
+    console.log("[contact] Supabase client initialized OK");
   } catch (err) {
-    console.warn("Supabase not configured, skipping DB insert:", err.message);
+    console.error("[contact] Supabase init FAILED — env vars missing?:", err.message);
   }
 
   if (supabase) {
-    try {
-      await supabase.from("inquiries").insert([newInquiry]);
-    } catch (err) {
-      console.warn("Supabase insert error on contact endpoint:", err);
+    const { data, error } = await supabase.from("inquiries").insert([newInquiry]).select();
+    if (error) {
+      console.error("[contact] Supabase INSERT failed:", JSON.stringify(error));
+    } else {
+      console.log("[contact] Supabase INSERT success. Row:", JSON.stringify(data));
     }
+  } else {
+    console.warn("[contact] Supabase not available — message saved locally only (ID:", newInquiry.id, ")");
   }
 
   return res.status(200).json({
