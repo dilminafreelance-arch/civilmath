@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Sun, Moon, Menu, X, Bell,
   Home, Calculator, Search as SearchIcon, Keyboard,
-  BookOpen, LayoutDashboard, MessageSquare
+  BookOpen, LayoutDashboard, MessageSquare, Sparkles
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import GlobalSearch from './GlobalSearch';
@@ -285,10 +285,10 @@ export default function AppLayout() {
           aria-label="Toggle Engineering Assistant AI"
         >
           <div className="relative">
-            <MessageSquare className="w-4 h-4 mb-0.5" />
+            <Sparkles className="w-4 h-4 mb-0.5" />
             <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-brand rounded-full" />
           </div>
-          <span>Chat AI</span>
+          <span>AI</span>
         </button>
       </div>
 
