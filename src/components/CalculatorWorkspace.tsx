@@ -3348,7 +3348,7 @@ export default function CalculatorWorkspace({
               <button
                 type="button"
                 onClick={onToggleSidebar}
-                className={`px-2 py-1 rounded-md cursor-pointer transition-all text-[9.5px] font-bold ${
+                className={`hidden xl:inline-block px-2 py-1 rounded-md cursor-pointer transition-all text-[9.5px] font-bold ${
                   isSidebarCollapsed
                     ? 'bg-amber-400 text-white font-extrabold shadow-3xs'
                     : 'text-slate-650 hover:bg-slate-50 hover:text-[#0F172A]'
@@ -5163,14 +5163,14 @@ export default function CalculatorWorkspace({
         </div>
       </div>
 
-      {/* RIGHT: Results Display */}
+      {/* RIGHT: Results Display (Sticky on desktop, clean responsive on mobile) */}
       <div className={`${
         calculatorId === 'survey-hi'
           ? 'md:col-span-12 lg:col-span-4 w-full'
           : calculatorId === 'utility-convert'
           ? 'col-span-12 lg:col-span-6 w-full'
           : 'col-span-12 lg:col-span-5 xl:col-span-4 w-full'
-      } bg-white/70 border border-slate-200 rounded-3xl p-4 sm:p-5 backdrop-blur-xl flex flex-col justify-between shadow-xs`} id="calculator-results">
+      } bg-white/70 border border-slate-200 rounded-3xl p-4 sm:p-5 backdrop-blur-xl flex flex-col justify-between shadow-xs lg:sticky lg:top-20`} id="calculator-results">
         <div>
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 flex-wrap gap-2">
             <div className="flex items-center space-x-2">
@@ -5218,7 +5218,7 @@ export default function CalculatorWorkspace({
           </div>
           
           {calculatorId === 'survey-hi' && (
-            <div className="mb-4 h-[240px] relative rounded-2xl bg-slate-900 border border-slate-950 overflow-hidden shadow-inner print-hide">
+            <div className="mb-4 h-[200px] sm:h-[240px] relative rounded-2xl bg-slate-900 border border-slate-950 overflow-hidden shadow-inner print-hide">
               <Visual3DPreview 
                 calculatorId={calculatorId}
                 inputs={inputs}
@@ -5229,7 +5229,7 @@ export default function CalculatorWorkspace({
           )}
 
           {calculatorId !== 'survey-hi' && calculatorId !== 'utility-convert' && !isVisualPreviewHidden && (
-            <div className="mb-5 h-[300px] relative rounded-2xl bg-slate-900 border border-slate-950 overflow-hidden shadow-inner print-hide">
+            <div className="mb-4 sm:mb-5 h-[220px] sm:h-[300px] relative rounded-2xl bg-slate-900 border border-slate-950 overflow-hidden shadow-inner print-hide">
               <Visual3DPreview 
                 calculatorId={calculatorId}
                 inputs={inputs}

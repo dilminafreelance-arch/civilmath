@@ -2,8 +2,9 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   Home, Box, Grid, Compass,
   Layers, ArrowLeftRight, ClipboardList,
-  FileText, Bookmark, BookOpen, ChevronRight
+  FileText, Bookmark, BookOpen, ChevronRight, Settings2
 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 interface CategoryItem {
   id: string;
@@ -39,6 +40,7 @@ interface LeftSidebarProps {
 
 export default function LeftSidebar({ onItemClick, className = '' }: LeftSidebarProps) {
   const location = useLocation();
+  const { unitSystem, setUnitSystem, currency, setCurrency } = useApp();
 
   const isCategoryActive = (item: CategoryItem) => {
     if (item.id === 'concrete') {
@@ -68,7 +70,7 @@ export default function LeftSidebar({ onItemClick, className = '' }: LeftSidebar
   // Sidebar is intentionally always dark (independent of the light/dark theme toggle),
   // matching the dark nav-rail look of the reference dashboard.
   return (
-    <aside className={`w-64 shrink-0 flex flex-col justify-between py-6 px-4 bg-[#0D100E] border-r border-white/8 select-none text-left ${className}`}>
+    <aside className={`w-64 shrink-0 flex flex-col justify-between py-6 px-4 bg-[#0D100E] border-r border-white/8 select-none text-left overflow-y-auto overflow-x-hidden ${className}`}>
       {/* Top Section */}
       <div className="space-y-6">
         {/* Geometric Engineering Logo */}
@@ -178,6 +180,51 @@ export default function LeftSidebar({ onItemClick, className = '' }: LeftSidebar
             </Link>
           );
         })}
+      </div>
+
+      {/* Quick Preferences Bar (Unit System & Currency for mobile and desktop) */}
+      <div className="pt-3.5 mt-3 border-t border-white/8 space-y-2.5">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-1.5 text-[9.5px] font-mono font-bold uppercase tracking-wider text-[#64736B]">
+            <Settings2 className="w-3 h-3 text-[#34D399]" />
+            <span>UNITS</span>
+          </div>
+          <div className="flex rounded-md overflow-hidden border border-white/10 bg-[#131715]">
+            <button
+              type="button"
+              onClick={() => setUnitSystem('metric')}
+              className={`px-2 py-0.5 text-[9.5px] font-mono font-bold transition-colors cursor-pointer ${
+                unitSystem === 'metric' ? 'bg-[#34D399] text-[#0D100E]' : 'text-[#7A8981] hover:text-white'
+              }`}
+            >
+              Metric
+            </button>
+            <button
+              type="button"
+              onClick={() => setUnitSystem('imperial')}
+              className={`px-2 py-0.5 text-[9.5px] font-mono font-bold transition-colors cursor-pointer ${
+                unitSystem === 'imperial' ? 'bg-[#34D399] text-[#0D100E]' : 'text-[#7A8981] hover:text-white'
+              }`}
+            >
+              Imp
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between px-1">
+          <span className="text-[9.5px] font-mono font-bold uppercase tracking-wider text-[#64736B]">CURRENCY</span>
+          <select
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
+            className="bg-[#131715] text-[#ECF2EE] border border-white/10 rounded-md px-1.5 py-0.5 text-[9.5px] font-mono font-bold outline-none cursor-pointer"
+          >
+            {['USD', 'INR', 'EUR', 'GBP', 'AED', 'SGD'].map((c) => (
+              <option key={c} value={c} className="bg-[#0D100E] text-[#ECF2EE]">
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
     </aside>
   );

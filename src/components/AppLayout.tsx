@@ -148,19 +148,28 @@ export default function AppLayout() {
           {/* Right Header Controls */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
 
-            {/* Unit System Toggle — inline */}
-            <div className="hidden sm:flex rounded-lg overflow-hidden border border-border-subtle shadow-2xs">
+            {/* Unit System Toggle — responsive pill */}
+            <div className="flex rounded-lg overflow-hidden border border-border-subtle shadow-2xs">
               {(['metric', 'imperial'] as const).map(u => (
                 <button
                   key={u}
+                  type="button"
                   onClick={() => setUnitSystem(u)}
-                  className={`px-2.5 py-1.5 text-[10px] font-bold transition-colors cursor-pointer capitalize ${
+                  className={`px-2 sm:px-2.5 py-1 sm:py-1.5 text-[10px] font-bold transition-colors cursor-pointer capitalize ${
                     unitSystem === u
                       ? 'bg-brand text-white'
                       : 'bg-surface-1 dark:bg-surface-2 text-ink-muted dark:text-ink-muted-dark hover:text-ink dark:hover:text-ink-dark'
                   }`}
+                  title={`${u === 'metric' ? 'Metric (SI: m, mm, kg, kN)' : 'Imperial (US: ft, in, lbs, kips)'}`}
                 >
-                  {u}
+                  {u === 'imperial' ? (
+                    <>
+                      <span className="hidden sm:inline">Imperial</span>
+                      <span className="sm:hidden">Imp</span>
+                    </>
+                  ) : (
+                    'Metric'
+                  )}
                 </button>
               ))}
             </div>
@@ -169,7 +178,8 @@ export default function AppLayout() {
             <select
               value={currency}
               onChange={e => setCurrency(e.target.value)}
-              className="hidden sm:block text-[10px] font-bold bg-surface-1 dark:bg-surface-2 border border-border-subtle rounded-lg px-2 py-1.5 text-ink dark:text-ink-dark cursor-pointer outline-none shadow-2xs"
+              className="hidden md:block text-[10px] font-bold bg-surface-1 dark:bg-surface-2 border border-border-subtle rounded-lg px-2 py-1.5 text-ink dark:text-ink-dark cursor-pointer outline-none shadow-2xs"
+              title="Change active currency"
             >
               {['USD','INR','EUR','GBP','AED','SGD'].map(c => (
                 <option key={c} value={c}>{c}</option>
@@ -179,7 +189,7 @@ export default function AppLayout() {
             {/* Shortcut Help Button */}
             <button
               onClick={() => setShortcutHelpOpen(true)}
-              className="hidden sm:flex p-2 rounded-lg border border-border-subtle bg-surface-1 dark:bg-surface-2 text-ink-muted dark:text-ink-muted-dark hover:text-ink dark:hover:text-ink-dark hover:border-brand/50 transition-colors cursor-pointer shadow-2xs"
+              className="hidden lg:flex p-2 rounded-lg border border-border-subtle bg-surface-1 dark:bg-surface-2 text-ink-muted dark:text-ink-muted-dark hover:text-ink dark:hover:text-ink-dark hover:border-brand/50 transition-colors cursor-pointer shadow-2xs"
               title="Keyboard shortcuts (?)"
               aria-label="Keyboard shortcuts"
             >
@@ -228,7 +238,7 @@ export default function AppLayout() {
       <RightUtilityPanel className="hidden 2xl:flex sticky top-0 h-screen" />
 
       {/* Floating Bottom Mobile Navigation Bar */}
-      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 xl:hidden flex items-center gap-1 px-3 py-1.5 bg-surface-1/90 dark:bg-surface-2/95 backdrop-blur-xl border border-border-subtle rounded-2xl shadow-xl">
+      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 xl:hidden flex items-center gap-1 px-3 py-1.5 bg-surface-1/90 dark:bg-surface-2/95 backdrop-blur-xl border border-border-subtle rounded-2xl shadow-xl select-none touch-manipulation">
         <Link
           to="/"
           className={`flex flex-col items-center px-3 py-1 rounded-xl text-[10px] font-bold no-underline transition-colors ${
