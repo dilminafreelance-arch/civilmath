@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   User, Settings, LayoutDashboard,
-  ChevronDown, Check, X, Edit2
+  ChevronDown
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
@@ -10,43 +10,28 @@ import { useApp } from '../context/AppContext';
 const CURRENCIES = ['USD', 'INR', 'EUR', 'GBP', 'AED', 'SGD'];
 
 export default function ProfileDropdown() {
-  const { userName, setUserName, unitSystem, setUnitSystem, currency, setCurrency, toggleTheme, theme } = useApp();
+  const { userName, unitSystem, setUnitSystem, currency, setCurrency, toggleTheme, theme } = useApp();
   const [open, setOpen] = useState(false);
-  const [editingName, setEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState(userName);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setOpen(false);
-        setEditingName(false);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Focus input when editing
-  useEffect(() => {
-    if (editingName && inputRef.current) inputRef.current.focus();
-  }, [editingName]);
-
   const initials = userName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-
-  const saveName = () => {
-    const trimmed = nameInput.trim();
-    if (trimmed) setUserName(trimmed);
-    setEditingName(false);
-  };
 
   return (
     <div ref={dropdownRef} className="relative">
       {/* Trigger */}
       <button
-        onClick={() => { setOpen(prev => !prev); setEditingName(false); }}
+        onClick={() => { setOpen(prev => !prev); }}
         className="flex items-center gap-2 pl-1 sm:pl-2 rounded-xl hover:bg-[#ECF2EE]/60 dark:hover:bg-[#181E1A] p-1.5 transition-colors cursor-pointer"
         aria-label="Open profile menu"
         aria-expanded={open}
@@ -71,42 +56,6 @@ export default function ProfileDropdown() {
             transition={{ duration: 0.15 }}
             className="absolute right-0 top-full mt-2 w-72 backdrop-blur-xl backdrop-saturate-150 bg-[#F2F5F3]/95 dark:bg-[#131715]/95 border border-[#E2E6E2] dark:border-[#1A211D] rounded-2xl shadow-xl z-50 overflow-hidden text-left"
           >
-            {/* Profile Header */}
-            <div className="p-4 border-b border-[#E2E6E2] dark:border-[#1A211D]">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-brand text-white flex items-center justify-center font-bold text-sm shadow-xs select-none">
-                  {initials}
-                </div>
-                <div className="flex-1 min-w-0">
-                  {editingName ? (
-                    <div className="flex items-center gap-1">
-                      <input
-                        ref={inputRef}
-                        value={nameInput}
-                        onChange={e => setNameInput(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter') saveName(); if (e.key === 'Escape') setEditingName(false); }}
-                        className="flex-1 text-sm font-bold bg-white dark:bg-[#090B0A] border border-brand rounded-lg px-2 py-1 text-[#141A16] dark:text-[#ECF2EE] outline-none"
-                        maxLength={30}
-                      />
-                      <button onClick={saveName} className="p-1 text-brand hover:text-[#245745] cursor-pointer"><Check className="w-3.5 h-3.5" /></button>
-                      <button onClick={() => setEditingName(false)} className="p-1 text-[#7A8981] hover:text-[#141A16] dark:hover:text-white cursor-pointer"><X className="w-3.5 h-3.5" /></button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-bold text-[#141A16] dark:text-[#ECF2EE] truncate">{userName}</span>
-                      <button
-                        onClick={() => { setNameInput(userName); setEditingName(true); }}
-                        className="p-0.5 text-[#7A8981] hover:text-brand cursor-pointer"
-                        title="Edit name"
-                      >
-                        <Edit2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
-
-                </div>
-              </div>
-            </div>
 
             {/* Settings */}
             <div className="p-3 space-y-3 border-b border-[#E2E6E2] dark:border-[#1A211D]">
