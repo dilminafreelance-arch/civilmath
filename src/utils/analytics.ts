@@ -5,7 +5,7 @@ declare global {
   }
 }
 
-const MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined;
+const MEASUREMENT_ID = (import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined) || 'G-C3M2MS2CY8';
 
 let initialized = false;
 
@@ -14,30 +14,35 @@ export function isAnalyticsEnabled(): boolean {
 }
 
 export function initAnalytics(): void {
-  if (!isAnalyticsEnabled() || initialized || typeof window === 'undefined') return;
+  if (initialized || typeof window === 'undefined') return;
 
   initialized = true;
 
   window.dataLayer = window.dataLayer || [];
-  window.gtag = function gtag(...args: unknown[]) {
-    window.dataLayer!.push(args);
-  };
-  window.gtag('js', new Date());
-  window.gtag('config', MEASUREMENT_ID, { send_page_view: false });
+  if (!window.gtag) {
+    window.gtag = function gtag(...args: unknown[]) {
+      window.dataLayer!.push(args);
+    };
+    window.gtag('js', new Date());
+    window.gtag('config', MEASUREMENT_ID, { send_page_view: false });
+  }
 
-  const script = document.createElement('script');
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}`;
-  document.head.appendChild(script);
+  const existing = document.querySelector(`script[src*="googletagmanager.com/gtag/js"]`);
+  if (!existing && isAnalyticsEnabled()) {
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}`;
+    document.head.appendChild(script);
+  }
 }
 
 export function trackPageView(pageName: string): void {
-  if (!isAnalyticsEnabled() || !window.gtag) return;
+  if (typeof window === 'undefined' || !window.gtag) return;
 
   window.gtag('event', 'page_view', {
     page_title: pageName,
-    page_location: `${window.location.origin}${window.location.pathname}#${pageName}`,
-    page_path: `/${pageName}`,
+    page_location: `${window.location.origin}${window.location.pathname}`,
+    page_path: window.location.pathname,
   });
 }
 
@@ -45,7 +50,7 @@ export function trackEvent(
   eventName: string,
   params?: Record<string, string | number | boolean | undefined>
 ): void {
-  if (!isAnalyticsEnabled() || !window.gtag) return;
+  if (typeof window === 'undefined' || !window.gtag) return;
   window.gtag('event', eventName, params);
 }
 
