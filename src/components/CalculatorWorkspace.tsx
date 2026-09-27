@@ -992,7 +992,8 @@ export default function CalculatorWorkspace({
         width: unitSystem === 'metric' ? 0.3 : 12,
         thickness: unitSystem === 'metric' ? 10 : 0.5,
         depth: unitSystem === 'metric' ? 200 : 8,
-        quantity: 10
+        quantity: 10,
+        unitCost: unitSystem === 'metric' ? 1.5 : 0.75
       };
     } else if (calculatorId === 'rebar-calculator') {
       defs = {
@@ -1001,7 +1002,8 @@ export default function CalculatorWorkspace({
         barSize: unitSystem === 'metric' ? 12 : 4,
         spacing: unitSystem === 'metric' ? 200 : 8,
         lapSplice: 40,
-        concreteCover: unitSystem === 'metric' ? 50 : 2
+        concreteCover: unitSystem === 'metric' ? 50 : 2,
+        unitCost: unitSystem === 'metric' ? 1.4 : 0.65
       };
     } else if (calculatorId === 'brick-calculator') {
       defs = {
@@ -1203,7 +1205,7 @@ export default function CalculatorWorkspace({
           verticalAngle: Number(inputs.verticalAngle) || 0
         });
       } else if (calculatorId === 'steel-calculator') {
-        results = calculateSteelWeight({
+        const rawRes = calculateSteelWeight({
           steelShape: inputs.steelShape || 'plate',
           length: Number(inputs.length) || 0,
           width: Number(inputs.width) || 0,
@@ -1211,8 +1213,11 @@ export default function CalculatorWorkspace({
           depth: Number(inputs.depth) || 0,
           quantity: Number(inputs.quantity) || 1
         }, unitSystem);
+        const unitCost = Number(inputs.unitCost) || 0;
+        const totalCost = parseFloat(((rawRes.totalWeight || 0) * unitCost).toFixed(2));
+        results = { ...rawRes, unitCost, totalCost };
       } else if (calculatorId === 'rebar-calculator') {
-        results = calculateRebarQuantity({
+        const rawRes = calculateRebarQuantity({
           elementLength: Number(inputs.elementLength) || 0,
           elementWidth: Number(inputs.elementWidth) || 0,
           barSize: Number(inputs.barSize) || 0,
@@ -1220,6 +1225,9 @@ export default function CalculatorWorkspace({
           lapSplice: Number(inputs.lapSplice) || 0,
           concreteCover: Number(inputs.concreteCover) || 0
         }, unitSystem);
+        const unitCost = Number(inputs.unitCost) || 0;
+        const totalCost = parseFloat(((rawRes.totalWeight || 0) * unitCost).toFixed(2));
+        results = { ...rawRes, unitCost, totalCost };
       } else if (calculatorId === 'brick-calculator') {
         results = calculateBrickMasonry({
           wallLength: Number(inputs.wallLength) || 0,
@@ -1583,6 +1591,7 @@ export default function CalculatorWorkspace({
       list.push({ label: 'Single Member Weight', value: outputs.weightPerUnit ?? 0, unit: isMetric ? 'kg' : 'lbs' });
       list.push({ label: 'Total Batch Weight', value: outputs.totalWeight ?? 0, unit: isMetric ? 'kg' : 'lbs' });
       list.push({ label: 'Exposed Surface Area (unit)', value: outputs.surfaceAreaPerUnit ?? 0, unit: isMetric ? 'm²' : 'ft²' });
+      list.push({ label: 'Estimated Material Cost', value: `${currencySymbol}${outputs.totalCost ?? 0}`, unit: currency });
     } else if (calculatorId === 'rebar-calculator') {
       list.push({ label: 'L-Direction Bars Count', value: outputs.barsAlongLengthCount ?? 0, unit: 'bars' });
       list.push({ label: 'W-Direction Bars Count', value: outputs.barsAlongWidthCount ?? 0, unit: 'bars' });
@@ -1592,6 +1601,7 @@ export default function CalculatorWorkspace({
       list.push({ label: 'Total Rebar Length', value: outputs.totalLength ?? 0, unit: isMetric ? 'm' : 'ft' });
       list.push({ label: 'Nominal Unit Weight', value: outputs.unitWeight ?? 0, unit: isMetric ? 'kg/m' : 'lbs/ft' });
       list.push({ label: 'Total Rebar Weight', value: outputs.totalWeight ?? 0, unit: isMetric ? 'kg' : 'lbs' });
+      list.push({ label: 'Estimated Material Cost', value: `${currencySymbol}${outputs.totalCost ?? 0}`, unit: currency });
     } else if (calculatorId === 'brick-calculator') {
       list.push({ label: 'Gross Wall Volume', value: outputs.wallVolumeGross ?? 0, unit: isMetric ? 'm³' : 'ft³' });
       list.push({ label: 'Net Wall Volume', value: outputs.wallVolumeNet ?? 0, unit: isMetric ? 'm³' : 'ft³' });
@@ -3685,18 +3695,21 @@ export default function CalculatorWorkspace({
                     <p className="text-[9px] text-slate-400 mt-1">Site waste (Std 10%)</p>
                   </div>
                 </div>
-                <div>
-                  <div className="flex justify-between text-slate-600 mb-1">
-                    <label htmlFor="unitcost-input">Unit Cost</label>
-                    <span className="text-slate-500">{currencySymbol} / {unitSystem === 'metric' ? 'm³' : 'yd³'}</span>
+                <div className="bg-emerald-50/50 dark:bg-emerald-950/20 p-3 rounded-2xl border border-emerald-200/80 dark:border-emerald-800/40">
+                  <div className="flex justify-between items-center text-slate-700 dark:text-slate-200 mb-1">
+                    <label htmlFor="unitcost-input" className="font-semibold text-xs">Material Cost Rate (Concrete)</label>
+                    <span className="text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400">{currencySymbol} / {unitSystem === 'metric' ? 'm³' : 'yd³'}</span>
                   </div>
                   <NumericInput 
                     key={`${calculatorId}-unitCost`}
                     id="unitcost-input" 
                     value={inputs.unitCost ?? ''} 
                     onChange={(raw, num) => handleInputChange('unitCost', num)}
-                    variant="none" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-emerald-600 font-bold outline-none focus:border-[#0A84FF] focus:ring-1 focus:ring-[#0A84FF] shadow-2xs"
+                    variant="none" 
+                    className="w-full bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700/60 rounded-xl px-3 py-2 text-emerald-700 dark:text-emerald-300 font-bold outline-none focus:border-brand focus:ring-1 focus:ring-brand shadow-2xs"
+                    placeholder={`e.g. ${unitSystem === 'metric' ? '120.00' : '90.00'}`}
                   />
+                  <p className="text-[9.5px] text-slate-400 dark:text-slate-500 mt-1">Purchase rate of ready-mix or site-batch concrete per unit volume</p>
                 </div>
 
                 {/* Calculate & Reset Controls */}
@@ -4778,6 +4791,22 @@ export default function CalculatorWorkspace({
                     variant="calcPlain"
                   />
                 </div>
+
+                <div className="bg-emerald-50/50 dark:bg-emerald-950/20 p-3 rounded-2xl border border-emerald-200/80 dark:border-emerald-800/40">
+                  <div className="flex justify-between items-center text-slate-700 dark:text-slate-200 mb-1">
+                    <label htmlFor="sc-unitcost" className="font-semibold text-xs">Steel Material Rate</label>
+                    <span className="text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400">{currencySymbol} / {unitSystem === 'metric' ? 'kg' : 'lbs'}</span>
+                  </div>
+                  <NumericInput 
+                    id="sc-unitcost" 
+                    value={inputs.unitCost ?? ''} 
+                    onChange={(raw, num) => handleInputChange('unitCost', raw === '' ? '' : num)}
+                    variant="none" 
+                    className="w-full bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700/60 rounded-xl px-3 py-2 text-emerald-700 dark:text-emerald-300 font-bold outline-none focus:border-brand focus:ring-1 focus:ring-brand shadow-2xs"
+                    placeholder={`e.g. ${unitSystem === 'metric' ? '1.50' : '0.75'}`}
+                  />
+                  <p className="text-[9.5px] text-slate-400 dark:text-slate-500 mt-1">Purchase unit price per weight to calculate total material cost</p>
+                </div>
               </>
             )}
 
@@ -4882,6 +4911,22 @@ export default function CalculatorWorkspace({
                       variant="calcPlain"
                     />
                   </div>
+                </div>
+
+                <div className="bg-emerald-50/50 dark:bg-emerald-950/20 p-3 rounded-2xl border border-emerald-200/80 dark:border-emerald-800/40">
+                  <div className="flex justify-between items-center text-slate-700 dark:text-slate-200 mb-1">
+                    <label htmlFor="rc-unitcost" className="font-semibold text-xs">Rebar Steel Rate</label>
+                    <span className="text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400">{currencySymbol} / {unitSystem === 'metric' ? 'kg' : 'lbs'}</span>
+                  </div>
+                  <NumericInput 
+                    id="rc-unitcost" 
+                    value={inputs.unitCost ?? ''} 
+                    onChange={(raw, num) => handleInputChange('unitCost', raw === '' ? '' : num)}
+                    variant="none" 
+                    className="w-full bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700/60 rounded-xl px-3 py-2 text-emerald-700 dark:text-emerald-300 font-bold outline-none focus:border-brand focus:ring-1 focus:ring-brand shadow-2xs"
+                    placeholder={`e.g. ${unitSystem === 'metric' ? '1.40' : '0.65'}`}
+                  />
+                  <p className="text-[9.5px] text-slate-400 dark:text-slate-500 mt-1">Rebar steel unit price per weight to calculate total material cost</p>
                 </div>
               </>
             )}
@@ -5011,6 +5056,85 @@ export default function CalculatorWorkspace({
                     onChange={(raw, num) => handleInputChange('wastePercent', raw === '' ? '' : parseInt(raw))}
                     variant="calcPlain"
                   />
+                </div>
+
+                {/* Material & Labor Rates Section */}
+                <div className="bg-emerald-50/50 dark:bg-emerald-950/20 p-3.5 rounded-2xl border border-emerald-200/80 dark:border-emerald-800/40 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-300 uppercase font-black tracking-wider block font-sans">Material &amp; Labor Rates</span>
+                    <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">({currencySymbol})</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div>
+                      <div className="flex justify-between text-slate-600 dark:text-slate-300 mb-1">
+                        <label htmlFor="bc-brickprice" className="text-[10px] font-semibold">Brick Price</label>
+                        <span className="text-[9px] font-mono text-slate-400">{currencySymbol}/ea</span>
+                      </div>
+                      <NumericInput 
+                        id="bc-brickprice" 
+                        value={inputs.brickPrice ?? 0.6} 
+                        onChange={(raw, num) => handleInputChange('brickPrice', raw === '' ? '' : num)}
+                        variant="none"
+                        className="w-full bg-white dark:bg-slate-900 border border-emerald-300/70 dark:border-emerald-700/60 rounded-xl px-2.5 py-1.5 text-xs text-emerald-700 dark:text-emerald-300 font-bold outline-none"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-slate-600 dark:text-slate-300 mb-1">
+                        <label htmlFor="bc-cementprice" className="text-[10px] font-semibold">Cement Bag</label>
+                        <span className="text-[9px] font-mono text-slate-400">{currencySymbol}/bag</span>
+                      </div>
+                      <NumericInput 
+                        id="bc-cementprice" 
+                        value={inputs.cementPrice ?? 8.5} 
+                        onChange={(raw, num) => handleInputChange('cementPrice', raw === '' ? '' : num)}
+                        variant="none"
+                        className="w-full bg-white dark:bg-slate-900 border border-emerald-300/70 dark:border-emerald-700/60 rounded-xl px-2.5 py-1.5 text-xs text-emerald-700 dark:text-emerald-300 font-bold outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <div className="flex justify-between text-slate-600 dark:text-slate-300 mb-1">
+                        <label htmlFor="bc-sandprice" className="text-[9.5px] font-semibold">Sand</label>
+                        <span className="text-[8px] font-mono text-slate-400">{currencySymbol}/{unitSystem === 'metric' ? 'm³' : 'ft³'}</span>
+                      </div>
+                      <NumericInput 
+                        id="bc-sandprice" 
+                        value={inputs.sandPrice ?? 35} 
+                        onChange={(raw, num) => handleInputChange('sandPrice', raw === '' ? '' : num)}
+                        variant="none"
+                        className="w-full bg-white dark:bg-slate-900 border border-emerald-300/70 dark:border-emerald-700/60 rounded-xl px-2 py-1.5 text-xs text-emerald-700 dark:text-emerald-300 font-bold outline-none"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-slate-600 dark:text-slate-300 mb-1">
+                        <label htmlFor="bc-labourprice" className="text-[9.5px] font-semibold">Labour</label>
+                        <span className="text-[8px] font-mono text-slate-400">{currencySymbol}/{unitSystem === 'metric' ? 'm³' : 'ft³'}</span>
+                      </div>
+                      <NumericInput 
+                        id="bc-labourprice" 
+                        value={inputs.labourCost ?? 20} 
+                        onChange={(raw, num) => handleInputChange('labourCost', raw === '' ? '' : num)}
+                        variant="none"
+                        className="w-full bg-white dark:bg-slate-900 border border-emerald-300/70 dark:border-emerald-700/60 rounded-xl px-2 py-1.5 text-xs text-emerald-700 dark:text-emerald-300 font-bold outline-none"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-slate-600 dark:text-slate-300 mb-1">
+                        <label htmlFor="bc-transportprice" className="text-[9.5px] font-semibold">Transport</label>
+                        <span className="text-[8px] font-mono text-slate-400">{currencySymbol}</span>
+                      </div>
+                      <NumericInput 
+                        id="bc-transportprice" 
+                        value={inputs.transportCost ?? 45} 
+                        onChange={(raw, num) => handleInputChange('transportCost', raw === '' ? '' : num)}
+                        variant="none"
+                        className="w-full bg-white dark:bg-slate-900 border border-emerald-300/70 dark:border-emerald-700/60 rounded-xl px-2 py-1.5 text-xs text-emerald-700 dark:text-emerald-300 font-bold outline-none"
+                      />
+                    </div>
+                  </div>
                 </div>
               </>
             )}
@@ -5337,12 +5461,30 @@ export default function CalculatorWorkspace({
                   </div>
                 </div>
                 
-                <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-130 flex justify-between items-center">
+                <div className="bg-emerald-50/80 dark:bg-emerald-950/30 p-3.5 rounded-2xl border border-emerald-200 dark:border-emerald-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
                   <div>
-                    <span className="text-[9px] text-emerald-600 block uppercase font-bold">Estimated Material Cost</span>
-                    <span className="text-md font-bold text-emerald-600">{currencySymbol}{outputs.totalCost ?? 0}</span>
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-300 block uppercase font-bold tracking-wider">Estimated Material Cost</span>
+                    <span className="text-xl font-black text-emerald-700 dark:text-emerald-300">
+                      {currencySymbol}{outputs.totalCost !== undefined ? Number(outputs.totalCost).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                    </span>
+                    <span className="text-[10px] text-emerald-600/80 dark:text-emerald-400 block mt-0.5">
+                      {outputs.volumeTotal ?? 0} {unitSystem === 'metric' ? 'm³' : 'yd³'} ordered
+                    </span>
                   </div>
-                  <span className="text-[10px] font-sans text-emerald-500 font-semibold">{currency}</span>
+                  <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-emerald-300/80 dark:border-emerald-700/60 rounded-xl px-2.5 py-1.5 shadow-2xs">
+                    <label htmlFor="card-concrete-unitcost" className="text-[10px] font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                      Rate ({currencySymbol}):
+                    </label>
+                    <NumericInput 
+                      id="card-concrete-unitcost"
+                      value={inputs.unitCost ?? ''} 
+                      onChange={(raw, num) => handleInputChange('unitCost', num)}
+                      variant="none" 
+                      className="w-20 text-xs font-bold text-emerald-700 dark:text-emerald-300 outline-none bg-transparent"
+                      placeholder="Rate"
+                    />
+                    <span className="text-[10px] text-slate-400 font-mono font-semibold">/{unitSystem === 'metric' ? 'm³' : 'yd³'}</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -5641,6 +5783,125 @@ export default function CalculatorWorkspace({
                   <span className="text-[10px] text-emerald-600 block uppercase font-bold mb-2">CONVERTED VALUE OUTPUT</span>
                   <span className="text-2xl font-black text-emerald-600 break-words">{outputs.convertedValue ?? 0}</span>
                   <span className="text-xs text-slate-500 ml-1 font-bold">{convTo}</span>
+                </div>
+              </div>
+            )}
+
+            {calculatorId === 'steel-calculator' && (
+              <div className="space-y-3 font-mono text-left">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-white dark:bg-surface-2 p-3 rounded-xl border border-slate-100 dark:border-border-subtle shadow-2xs">
+                    <span className="text-[10px] text-slate-500 block uppercase font-bold">Total Batch Weight</span>
+                    <span className="text-lg font-black text-slate-800 dark:text-slate-100">{outputs.totalWeight ?? 0}</span>
+                    <span className="text-[10px] text-slate-400 ml-1">{unitSystem === 'metric' ? 'kg' : 'lbs'}</span>
+                  </div>
+                  <div className="bg-white dark:bg-surface-2 p-3 rounded-xl border border-slate-100 dark:border-border-subtle shadow-2xs">
+                    <span className="text-[10px] text-slate-500 block uppercase font-bold">Single Member</span>
+                    <span className="text-lg font-bold text-slate-800 dark:text-slate-100">{outputs.weightPerUnit ?? 0}</span>
+                    <span className="text-[10px] text-slate-400 ml-1">{unitSystem === 'metric' ? 'kg' : 'lbs'}</span>
+                  </div>
+                </div>
+
+                <div className="bg-emerald-50/80 dark:bg-emerald-950/30 p-3.5 rounded-2xl border border-emerald-200 dark:border-emerald-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                  <div>
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-300 block uppercase font-bold tracking-wider">Estimated Material Cost</span>
+                    <span className="text-xl font-black text-emerald-700 dark:text-emerald-300">
+                      {currencySymbol}{outputs.totalCost !== undefined ? Number(outputs.totalCost).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                    </span>
+                    <span className="text-[10px] text-emerald-600/80 dark:text-emerald-400 block mt-0.5 font-sans">
+                      {outputs.totalWeight ?? 0} {unitSystem === 'metric' ? 'kg' : 'lbs'} total weight
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-emerald-300/80 dark:border-emerald-700/60 rounded-xl px-2.5 py-1.5 shadow-2xs">
+                    <label htmlFor="card-steel-unitcost" className="text-[10px] font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                      Rate ({currencySymbol}):
+                    </label>
+                    <NumericInput 
+                      id="card-steel-unitcost"
+                      value={inputs.unitCost ?? ''} 
+                      onChange={(raw, num) => handleInputChange('unitCost', num)}
+                      variant="none" 
+                      className="w-20 text-xs font-bold text-emerald-700 dark:text-emerald-300 outline-none bg-transparent"
+                      placeholder="Rate"
+                    />
+                    <span className="text-[10px] text-slate-400 font-mono font-semibold">/{unitSystem === 'metric' ? 'kg' : 'lbs'}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {calculatorId === 'rebar-calculator' && (
+              <div className="space-y-3 font-mono text-left">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-white dark:bg-surface-2 p-3 rounded-xl border border-slate-100 dark:border-border-subtle shadow-2xs">
+                    <span className="text-[10px] text-slate-500 block uppercase font-bold">Total Rebar Weight</span>
+                    <span className="text-lg font-black text-slate-800 dark:text-slate-100">{outputs.totalWeight ?? 0}</span>
+                    <span className="text-[10px] text-slate-400 ml-1">{unitSystem === 'metric' ? 'kg' : 'lbs'}</span>
+                  </div>
+                  <div className="bg-white dark:bg-surface-2 p-3 rounded-xl border border-slate-100 dark:border-border-subtle shadow-2xs">
+                    <span className="text-[10px] text-slate-500 block uppercase font-bold">Total Bars</span>
+                    <span className="text-lg font-bold text-slate-800 dark:text-slate-100">{outputs.totalBarsCount ?? 0}</span>
+                    <span className="text-[10px] text-slate-400 ml-1">bars</span>
+                  </div>
+                </div>
+
+                <div className="bg-emerald-50/80 dark:bg-emerald-950/30 p-3.5 rounded-2xl border border-emerald-200 dark:border-emerald-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                  <div>
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-300 block uppercase font-bold tracking-wider">Estimated Material Cost</span>
+                    <span className="text-xl font-black text-emerald-700 dark:text-emerald-300">
+                      {currencySymbol}{outputs.totalCost !== undefined ? Number(outputs.totalCost).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                    </span>
+                    <span className="text-[10px] text-emerald-600/80 dark:text-emerald-400 block mt-0.5 font-sans">
+                      {outputs.totalWeight ?? 0} {unitSystem === 'metric' ? 'kg' : 'lbs'} total steel
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-emerald-300/80 dark:border-emerald-700/60 rounded-xl px-2.5 py-1.5 shadow-2xs">
+                    <label htmlFor="card-rebar-unitcost" className="text-[10px] font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                      Rate ({currencySymbol}):
+                    </label>
+                    <NumericInput 
+                      id="card-rebar-unitcost"
+                      value={inputs.unitCost ?? ''} 
+                      onChange={(raw, num) => handleInputChange('unitCost', num)}
+                      variant="none" 
+                      className="w-20 text-xs font-bold text-emerald-700 dark:text-emerald-300 outline-none bg-transparent"
+                      placeholder="Rate"
+                    />
+                    <span className="text-[10px] text-slate-400 font-mono font-semibold">/{unitSystem === 'metric' ? 'kg' : 'lbs'}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {calculatorId === 'brick-calculator' && (
+              <div className="space-y-3 font-mono text-left">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-white dark:bg-surface-2 p-3 rounded-xl border border-slate-100 dark:border-border-subtle shadow-2xs">
+                    <span className="text-[10px] text-slate-500 block uppercase font-bold">Total Bricks (+Waste)</span>
+                    <span className="text-lg font-black text-slate-800 dark:text-slate-100">{outputs.totalBricksWithWaste ?? 0}</span>
+                    <span className="text-[10px] text-slate-400 ml-1">pcs</span>
+                  </div>
+                  <div className="bg-white dark:bg-surface-2 p-3 rounded-xl border border-slate-100 dark:border-border-subtle shadow-2xs">
+                    <span className="text-[10px] text-slate-500 block uppercase font-bold">Cement Bags</span>
+                    <span className="text-lg font-bold text-slate-800 dark:text-slate-100">{outputs.cementBagsRequired ?? 0}</span>
+                    <span className="text-[10px] text-slate-400 ml-1">bags</span>
+                  </div>
+                </div>
+
+                <div className="bg-emerald-50/80 dark:bg-emerald-950/30 p-3.5 rounded-2xl border border-emerald-200 dark:border-emerald-800/50 space-y-2 shadow-2xs">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-300 uppercase font-bold tracking-wider">Estimated Material Cost</span>
+                    <span className="text-xl font-black text-emerald-700 dark:text-emerald-300">
+                      {currencySymbol}{outputs.materialCost !== undefined ? Number(outputs.materialCost).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                    </span>
+                  </div>
+
+                  <div className="border-t border-emerald-200/60 dark:border-emerald-800/40 pt-1.5 flex justify-between text-[11px] text-slate-600 dark:text-slate-300 font-sans">
+                    <span>Grand Project Total (incl. labour &amp; transport):</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100 font-mono">
+                      {currencySymbol}{outputs.grandTotal !== undefined ? Number(outputs.grandTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}

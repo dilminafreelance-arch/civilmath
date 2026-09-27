@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Home, Box, Grid, Compass, HardHat,
+  Home, Box, Grid, Compass,
   Layers, ArrowLeftRight, ClipboardList,
   FileText, Bookmark, BookOpen, ChevronRight
 } from 'lucide-react';
@@ -18,7 +18,6 @@ const CATEGORIES: CategoryItem[] = [
   { id: 'concrete', name: 'Concrete', count: 6, path: '/concrete', icon: Box, color: '#8CA0F0' },
   { id: 'reinforcement', name: 'Reinforcement', count: 5, path: '/concrete/rebar', icon: Grid, color: '#C9A876' },
   { id: 'masonry', name: 'Masonry', count: 4, path: '/concrete/brick', icon: Layers, color: '#E0977B' },
-  { id: 'earthwork', name: 'Earthwork', count: 5, path: '/construction', icon: HardHat, color: '#D9B96E' },
   { id: 'surveying', name: 'Surveying', count: 4, path: '/surveying', icon: Compass, color: '#7DD3E0' },
   { id: 'area-volume', name: 'Area & Volume', count: 6, path: '/calculators', icon: Layers, color: '#A5B4F5' },
   { id: 'quantity', name: 'Quantity Estimation', count: 5, path: '/bbs', icon: ClipboardList, color: '#C7A8E5' },
