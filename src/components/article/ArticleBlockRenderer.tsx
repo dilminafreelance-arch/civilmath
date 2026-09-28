@@ -13,6 +13,7 @@ import {
   ImageTextBlockData,
   TwoColumnBlockData,
   CalculatorCtaBlockData,
+  CalculatorEmbedBlockData,
   RelatedArticlesBlockData,
   FaqBlockData,
   ListBlockData,
@@ -28,6 +29,7 @@ import StepByStepCard from './StepByStepCard';
 import TableBlockRenderer from './TableBlockRenderer';
 import DiagramCard from './DiagramCard';
 import CalculatorCtaCard from './CalculatorCtaCard';
+import CalculatorEmbedCard from './CalculatorEmbedCard';
 import RelatedArticlesCard from './RelatedArticlesCard';
 import FAQSectionCard from './FAQSectionCard';
 import { Quote } from 'lucide-react';
@@ -365,12 +367,39 @@ export default function ArticleBlockRenderer({
     }
 
     // ── Conversion / Links ──
+    case 'calculator_embed': {
+      const embedData = (data as CalculatorEmbedBlockData) || {
+        calculatorId: 'concrete-volume',
+        title: title || 'Interactive Calculator',
+      };
+      return (
+        <CalculatorEmbedCard
+          calculatorId={embedData.calculatorId || 'concrete-volume'}
+          calculatorName={embedData.calculatorName || embedData.title || title}
+          description={embedData.description}
+          initialInputs={embedData.initialInputs}
+        />
+      );
+    }
+
     case 'calculator_cta': {
       const ctaData = (data as CalculatorCtaBlockData) || {
         calculatorUrl: '',
         title: title || 'Interactive Calculator',
         description: '',
       };
+
+      // If calculatorId is provided and embeddable, render interactive CalculatorEmbedCard
+      if (ctaData.calculatorId) {
+        return (
+          <CalculatorEmbedCard
+            calculatorId={ctaData.calculatorId}
+            calculatorName={ctaData.title || title}
+            description={ctaData.description}
+          />
+        );
+      }
+
       return (
         <CalculatorCtaCard
           calculatorUrl={ctaData.calculatorUrl}

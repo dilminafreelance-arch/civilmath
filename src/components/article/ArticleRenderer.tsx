@@ -204,10 +204,10 @@ export default function ArticleRenderer({
       {/* Mobile Table of Contents */}
       {!previewMode && <TableOfContents article={article} />}
 
-      {/* Two-Column Reading Layout: Sticky Desktop Sidebar TOC + Controlled 720-800px Article Body */}
-      <div className="flex gap-10 items-start justify-center">
-        {/* Main Content Column (~720-800px) */}
-        <main className="w-full max-w-[800px] space-y-6">
+      {/* Dedicated Reading Layout: Centered Article Body + Clean Table of Contents Outline */}
+      <div className="max-w-5xl mx-auto flex gap-10 items-start justify-center">
+        {/* Main Content Column */}
+        <main className="flex-1 min-w-0 max-w-[820px] space-y-6">
           {/* Engineering Diagram if Builtin */}
           {article.isBuiltin && article.slug && (
             <div className="my-4">
@@ -286,30 +286,10 @@ export default function ArticleRenderer({
           )}
         </main>
 
-        {/* Desktop Sticky Table of Contents (Right Sidebar) */}
+        {/* Desktop Sticky Table of Contents (Right Sidebar - Content Outline only) */}
         {!previewMode && (
           <aside className="hidden lg:block w-72 shrink-0 sticky top-24 space-y-4">
             <TableOfContents article={article} />
-
-            {/* Quick Calculator Shortcut in Sidebar */}
-            {article.relatedCalculators && article.relatedCalculators.length > 0 && (
-              <div className="p-4 rounded-2xl bg-[#657565]/10 border border-[#657565]/20 space-y-2">
-                <div className="text-[10px] font-mono uppercase font-bold text-[#657565] dark:text-[#A1B3A1] flex items-center gap-1.5">
-                  <Calculator className="w-3.5 h-3.5" />
-                  <span>Related Tool</span>
-                </div>
-                <div className="text-xs font-bold text-[#20231F] dark:text-[#EAE7E0] line-clamp-2">
-                  {article.relatedCalculators[0].name}
-                </div>
-                <Link
-                  to={article.relatedCalculators[0].url}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-[#657565] dark:text-[#A1B3A1] hover:underline no-underline"
-                >
-                  <span>Open Tool</span>
-                  <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
-            )}
           </aside>
         )}
       </div>

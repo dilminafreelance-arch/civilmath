@@ -67,12 +67,14 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen text-ink flex font-sans transition-colors duration-300">
-      {/* 1. Left Sidebar (Desktop Persistent) */}
-      <LeftSidebar className="hidden xl:flex sticky top-0 h-screen" />
+      {/* 1. Left Sidebar (Desktop Persistent - hidden on article pages) */}
+      {!isArticlesActive && (
+        <LeftSidebar className="hidden xl:flex sticky top-0 h-screen" />
+      )}
 
       {/* Mobile Drawer (Left Sidebar on small screens) */}
       <AnimatePresence>
-        {mobileMenuOpen && (
+        {mobileMenuOpen && !isArticlesActive && (
           <div className="fixed inset-0 z-50 xl:hidden flex">
             <motion.div
               initial={{ opacity: 0 }}
@@ -106,14 +108,40 @@ export default function AppLayout() {
         {/* Floating Top Header */}
         <header className="sticky top-0 z-30 bg-surface-1/80 dark:bg-canvas-dark/80 backdrop-blur-xl px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-3 border-b border-border-subtle transition-colors">
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Mobile Hamburger Button */}
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="xl:hidden p-2 rounded-lg border border-border-subtle bg-surface-1 dark:bg-surface-2 text-ink dark:text-ink-dark hover:border-brand/50 transition-colors cursor-pointer shadow-2xs"
-              aria-label="Open navigation menu"
-            >
-              <Menu className="w-4 h-4" />
-            </button>
+            {/* Logo on Article pages when left sidebar is hidden */}
+            {isArticlesActive && (
+              <Link to="/" className="flex items-center gap-2 mr-1 no-underline text-ink shrink-0 group">
+                <div className="w-8 h-8 rounded-xl bg-brand text-white flex items-center justify-center font-bold text-xs shadow-xs group-hover:scale-105 transition-transform">
+                  CM
+                </div>
+                <span className="font-extrabold text-sm tracking-tight hidden sm:inline text-ink">
+                  CivilMath
+                </span>
+              </Link>
+            )}
+
+            {/* Mobile Hamburger Button (only when not viewing articles) */}
+            {!isArticlesActive && (
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="xl:hidden p-2 rounded-lg border border-border-subtle bg-surface-1 dark:bg-surface-2 text-ink dark:text-ink-dark hover:border-brand/50 transition-colors cursor-pointer shadow-2xs"
+                aria-label="Open navigation menu"
+              >
+                <Menu className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Calculators Link on Article pages */}
+            {isArticlesActive && (
+              <Link
+                to="/"
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium border-[#E2E6E2] dark:border-white/10 bg-white dark:bg-[#131715] text-[#526058] dark:text-[#97A69E] hover:text-[#141A16] dark:hover:text-[#ECF2EE] no-underline shadow-2xs"
+                title="Civil Engineering Calculators"
+              >
+                <Calculator className="w-3.5 h-3.5 text-[#7A8981]" />
+                <span>Calculators</span>
+              </Link>
+            )}
 
             {/* Search Input with Ctrl+K */}
             <GlobalSearch />
@@ -228,7 +256,7 @@ export default function AppLayout() {
 
 
         {/* Main Workspace Canvas */}
-        <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 pb-24 lg:pb-8">
+        <main className={`flex-1 w-full ${isArticlesActive ? 'max-w-7xl' : 'max-w-6xl'} mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 pb-24 lg:pb-8`}>
           <Outlet />
         </main>
 
@@ -236,8 +264,10 @@ export default function AppLayout() {
         <SiteFooter />
       </div>
 
-      {/* 3. Right Utility Panel (Desktop Persistent on wide screens) */}
-      <RightUtilityPanel className="hidden 2xl:flex sticky top-0 h-screen" />
+      {/* 3. Right Utility Panel (Desktop Persistent on wide screens - hidden on article pages) */}
+      {!isArticlesActive && (
+        <RightUtilityPanel className="hidden 2xl:flex sticky top-0 h-screen" />
+      )}
 
       {/* Floating Bottom Mobile Navigation Bar */}
       <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 xl:hidden flex items-center gap-1 px-3 py-1.5 bg-surface-1/90 dark:bg-surface-2/95 backdrop-blur-xl border border-border-subtle rounded-2xl shadow-xl select-none touch-manipulation">

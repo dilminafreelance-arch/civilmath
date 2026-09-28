@@ -69,9 +69,23 @@ export interface Article {
   publishedAt: string;
   updatedAt?: string;
   readTimeMinutes: number;
-  status: 'published' | 'draft';
+  status: 'published' | 'draft' | 'scheduled' | 'archived';
   coverImage?: string;
+  coverImageAlt?: string;
   tags: string[];
+
+  // Analytics & Scheduling
+  viewCount?: number;
+  scheduledAt?: string;
+
+  // Display control flags
+  featured?: boolean;
+  allowComments?: boolean;
+  seoIndex?: boolean;
+  showAuthor?: boolean;
+  showRelatedArticles?: boolean;
+  showRelatedCalculators?: boolean;
+  showFaq?: boolean;
 
   // Main / Markdown content
   content?: string;
@@ -127,6 +141,7 @@ export type ArticleBlockType =
   | 'two_column'
   // Conversion Content
   | 'calculator_cta'
+  | 'calculator_embed'
   | 'related_calculator'
   | 'related_article'
   | 'tool_recommendation'
@@ -239,6 +254,15 @@ export interface CalculatorCtaBlockData {
   title: string;
   description: string;
   buttonText?: string;
+}
+
+export interface CalculatorEmbedBlockData {
+  calculatorId: string;
+  calculatorName?: string;
+  description?: string;
+  title?: string;
+  initialInputs?: Record<string, any>;
+  showFullWorkspace?: boolean;
 }
 
 export interface RelatedArticlesBlockData {

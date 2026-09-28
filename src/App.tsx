@@ -32,9 +32,13 @@ const BBSCalculatorPage = lazy(() => import('./pages/BBSCalculatorPage'));
 const BOQBuilderPage = lazy(() => import('./boq/BOQBuilderPage'));
 const ArticlesDirectoryPage = lazy(() => import('./pages/ArticlesDirectoryPage'));
 const ArticleDetailPage = lazy(() => import('./pages/ArticleDetailPage'));
+const ArticleDetailPageV2 = lazy(() => import('./pages/ArticleDetailPageV2'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminArticleEditor = lazy(() => import('./pages/admin/AdminArticleEditor'));
+const AdminArticleEditorV2 = lazy(() => import('./pages/admin/AdminArticleEditorV2'));
 const AdminInquiriesPage = lazy(() => import('./pages/admin/AdminInquiriesPage'));
+const AdminArticlesDashboard = lazy(() => import('./pages/admin/AdminArticlesDashboard'));
+const AdminCategoriesPage = lazy(() => import('./pages/admin/AdminCategoriesPage'));
 
 function SuspenseFallback() {
   return (
@@ -77,10 +81,12 @@ export default function App() {
             <Routes>
               {/* ── Admin Content Management Studio (Dedicated Standalone Layout) ── */}
               <Route path="/admin" element={<Suspense fallback={<SuspenseFallback />}><AdminDashboard /></Suspense>} />
-              <Route path="/admin/articles" element={<Suspense fallback={<SuspenseFallback />}><AdminDashboard /></Suspense>} />
+              <Route path="/admin/articles" element={<Suspense fallback={<SuspenseFallback />}><AdminArticlesDashboard /></Suspense>} />
+              <Route path="/admin/categories" element={<Suspense fallback={<SuspenseFallback />}><AdminCategoriesPage /></Suspense>} />
               <Route path="/admin/inquiries" element={<Suspense fallback={<SuspenseFallback />}><AdminInquiriesPage /></Suspense>} />
-              <Route path="/admin/articles/new" element={<Suspense fallback={<SuspenseFallback />}><AdminArticleEditor /></Suspense>} />
-              <Route path="/admin/articles/edit/:slug" element={<Suspense fallback={<SuspenseFallback />}><AdminArticleEditor /></Suspense>} />
+              <Route path="/admin/articles/new" element={<Suspense fallback={<SuspenseFallback />}><AdminArticleEditorV2 /></Suspense>} />
+              <Route path="/admin/articles/edit/:slug" element={<Suspense fallback={<SuspenseFallback />}><AdminArticleEditorV2 /></Suspense>} />
+
 
               {/* ── Unified Architectural Studio AppLayout Shell ── */}
               <Route element={<AppLayout />}>
@@ -116,7 +122,7 @@ export default function App() {
               <Route path="/guides" element={<GuidesPage />} />
               <Route path="/guides/:slug" element={<GuidePage />} />
               <Route path="/articles" element={<Suspense fallback={<SuspenseFallback />}><ArticlesDirectoryPage /></Suspense>} />
-              <Route path="/articles/:slug" element={<Suspense fallback={<SuspenseFallback />}><ArticleDetailPage /></Suspense>} />
+              <Route path="/articles/:slug" element={<Suspense fallback={<SuspenseFallback />}><ArticleDetailPageV2 /></Suspense>} />
               <Route path="/formulas" element={<FormulasPage />} />
               <Route path="/tables" element={<TablesPage />} />
 

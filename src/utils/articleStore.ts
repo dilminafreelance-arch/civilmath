@@ -149,8 +149,12 @@ export function normalizeArticleData(raw: any, fallbackSlug?: string): Article {
   const wordCount = (content + ' ' + intro).split(/\s+/).filter(Boolean).length;
   const readTimeMinutes = Number(raw.readTimeMinutes) || Math.max(2, Math.ceil((wordCount || 500) / 200));
 
-  const status: 'published' | 'draft' =
-    raw.status === 'draft' || raw.published === false ? 'draft' : 'published';
+  const status: 'published' | 'draft' | 'scheduled' | 'archived' =
+    raw.status === 'draft' ? 'draft'
+    : raw.status === 'scheduled' ? 'scheduled'
+    : raw.status === 'archived' ? 'archived'
+    : raw.published === false ? 'draft'
+    : 'published';
 
   const tags: string[] = Array.isArray(raw.tags) && raw.tags.length > 0
     ? raw.tags.map((t: any) => String(t).trim()).filter(Boolean)

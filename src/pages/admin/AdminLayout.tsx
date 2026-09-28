@@ -259,7 +259,29 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
                 }`}
               >
                 <LayoutDashboard className="w-3.5 h-3.5" />
-                All Articles &amp; Overview
+                Dashboard
+              </Link>
+              <Link
+                to="/admin/articles"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold no-underline transition-colors flex items-center gap-1.5 ${
+                  location.pathname === '/admin/articles'
+                    ? 'bg-[#EAE7E0] dark:bg-[#2A312A] text-[#20231F] dark:text-white'
+                    : 'text-[#7B8978] hover:text-[#20231F] dark:hover:text-white'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                All Articles
+              </Link>
+              <Link
+                to="/admin/categories"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold no-underline transition-colors flex items-center gap-1.5 ${
+                  location.pathname === '/admin/categories'
+                    ? 'bg-[#EAE7E0] dark:bg-[#2A312A] text-[#20231F] dark:text-white'
+                    : 'text-[#7B8978] hover:text-[#20231F] dark:hover:text-white'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                Categories
               </Link>
               <Link
                 to="/admin/inquiries"
@@ -270,7 +292,7 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
                 }`}
               >
                 <Mail className="w-3.5 h-3.5" />
-                <span>Contact Inquiries</span>
+                <span>Inquiries</span>
                 {unreadCount > 0 && (
                   <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-600 text-white">
                     {unreadCount}
@@ -286,7 +308,7 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
                 }`}
               >
                 <PenTool className="w-3.5 h-3.5" />
-                Write New Article
+                Write Article
               </Link>
             </nav>
           </div>
