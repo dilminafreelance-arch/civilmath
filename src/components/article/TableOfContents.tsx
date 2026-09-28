@@ -13,6 +13,7 @@ export interface TableOfContentsProps {
   article: Article;
   activeId?: string;
   onSelect?: (id: string) => void;
+  mode?: 'all' | 'mobile-only' | 'sidebar-only';
 }
 
 /**
@@ -74,6 +75,7 @@ export default function TableOfContents({
   article,
   activeId,
   onSelect,
+  mode = 'all',
 }: TableOfContentsProps) {
   const [items, setItems] = useState<TocItem[]>([]);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -117,7 +119,8 @@ export default function TableOfContents({
   return (
     <>
       {/* Mobile Collapsible TOC */}
-      <div className="lg:hidden w-full mb-8 bg-[#FAF9F6] dark:bg-[#1E221E] border border-[#D8D0C2] dark:border-[#384238] rounded-2xl overflow-hidden shadow-2xs">
+      {mode !== 'sidebar-only' && (
+        <div className="lg:hidden w-full mb-8 bg-[#FAF9F6] dark:bg-[#1E221E] border border-[#D8D0C2] dark:border-[#384238] rounded-2xl overflow-hidden shadow-2xs">
         <button
           type="button"
           onClick={() => setMobileOpen(prev => !prev)}
@@ -158,9 +161,11 @@ export default function TableOfContents({
           </div>
         )}
       </div>
+      )}
 
       {/* Desktop Sticky Sidebar TOC */}
-      <div className="hidden lg:block p-5 rounded-2xl bg-[#FAF9F6] dark:bg-[#1E221E] border border-[#D8D0C2] dark:border-[#384238] shadow-2xs space-y-3">
+      {mode !== 'mobile-only' && (
+        <div className="hidden lg:block p-5 rounded-2xl bg-[#FAF9F6] dark:bg-[#1E221E] border border-[#D8D0C2] dark:border-[#384238] shadow-2xs space-y-3">
         <div className="flex items-center justify-between text-xs font-bold text-[#20231F] dark:text-[#EAE7E0] pb-2 border-b border-[#D8D0C2]/50 dark:border-[#333C33]">
           <span className="flex items-center gap-1.5 uppercase font-mono tracking-wider text-[11px] text-[#657565] dark:text-[#A1B3A1]">
             <List className="w-3.5 h-3.5" />
@@ -201,6 +206,7 @@ export default function TableOfContents({
           })}
         </nav>
       </div>
+      )}
     </>
   );
 }

@@ -201,8 +201,8 @@ export default function ArticleRenderer({
         </figure>
       )}
 
-      {/* Mobile Table of Contents */}
-      {!previewMode && <TableOfContents article={article} />}
+      {/* Mobile Table of Contents (shown only on small/mobile screens) */}
+      {!previewMode && <TableOfContents article={article} mode="mobile-only" />}
 
       {/* Dedicated Reading Layout: Centered Article Body + Clean Table of Contents Outline */}
       <div className="max-w-5xl mx-auto flex gap-10 items-start justify-center">
@@ -289,7 +289,7 @@ export default function ArticleRenderer({
         {/* Desktop Sticky Table of Contents (Right Sidebar - Content Outline only) */}
         {!previewMode && (
           <aside className="hidden lg:block w-72 shrink-0 sticky top-24 space-y-4">
-            <TableOfContents article={article} />
+            <TableOfContents article={article} mode="sidebar-only" />
           </aside>
         )}
       </div>
