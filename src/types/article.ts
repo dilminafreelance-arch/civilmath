@@ -139,14 +139,16 @@ export type ArticleBlockType =
   | 'image'
   | 'image_text'
   | 'two_column'
+  | 'diagram'
   // Conversion Content
   | 'calculator_cta'
   | 'calculator_embed'
   | 'related_calculator'
   | 'related_article'
   | 'tool_recommendation'
-  // FAQ
-  | 'faq';
+  // FAQ & Code
+  | 'faq'
+  | 'code_block';
 
 export interface FormulaVariable {
   symbol: string;
