@@ -103,7 +103,13 @@ async function prerenderRoutes() {
       // Abort external analytics/tracking pings during prerender
       await page.route('**/*', (route) => {
         const reqUrl = route.request().url();
-        if (reqUrl.includes('googletagmanager.com') || reqUrl.includes('google-analytics.com') || reqUrl.includes('/_vercel/insights')) {
+        if (
+          reqUrl.includes('googletagmanager.com') ||
+          reqUrl.includes('google-analytics.com') ||
+          reqUrl.includes('/_vercel/insights') ||
+          reqUrl.includes('googlesyndication.com') ||
+          reqUrl.includes('doubleclick.net')
+        ) {
           return route.abort();
         }
         return route.continue();
