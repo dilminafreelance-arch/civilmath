@@ -29,7 +29,7 @@
       if ('serviceWorker' in navigator) {
         if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
           window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js?v=2').catch(() => {});
+            navigator.serviceWorker.register('/sw.js?v=3').catch(() => {});
           });
         } else {
           navigator.serviceWorker.getRegistrations().then((registrations) => {

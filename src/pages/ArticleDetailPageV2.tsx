@@ -37,8 +37,15 @@ export default function ArticleDetailPageV2() {
   useEffect(() => {
     if (!slug) return;
     
-    // Only show loading spinner if we don't have cached data to show immediately
-    if (!cached) {
+    const syncArt = getCachedArticleSync(slug);
+    if (syncArt) {
+      if (syncArt.status === 'draft' && !isAdmin && !isPreviewParam) {
+        setArticle(null);
+      } else {
+        setArticle(syncArt);
+      }
+      setLoading(false);
+    } else {
       setLoading(true);
     }
 
@@ -50,12 +57,12 @@ export default function ArticleDetailPageV2() {
           } else {
             setArticle(data);
           }
-        } else if (!cached) {
+        } else if (!syncArt) {
           setArticle(null);
         }
       })
       .catch(() => {
-        if (!cached) setArticle(null);
+        if (!syncArt) setArticle(null);
       })
       .finally(() => {
         setLoading(false);
@@ -117,7 +124,7 @@ export default function ArticleDetailPageV2() {
     : article.blocks?.find(b => b.type === 'faq')?.data?.faqs || [];
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div className="w-full max-w-6xl mx-auto py-2">
       {/* Admin Draft Mode Warning Banner */}
       {isDraft && (
         <div className="mb-6 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex flex-wrap items-center justify-between gap-3 text-xs">

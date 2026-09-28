@@ -10,7 +10,7 @@ export default function ArticleDiagram({ slug }: DiagramProps) {
   if (norm.includes('beam')) {
     return (
       <figure className="my-6 rounded-2xl overflow-hidden border border-[#D8D0C2] dark:border-[#384238] bg-white dark:bg-[#1E221E] p-4 sm:p-6 shadow-xs">
-        <div className="flex items-center justify-between mb-3 text-xs font-mono font-bold text-[#657565] dark:text-[#A1B3A1]">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 text-xs font-mono font-bold text-[#657565] dark:text-[#A1B3A1]">
           <span>Fig 1.1 — Simply Supported Beam: Load, BMD & SFD Distribution</span>
           <span className="text-[10px] px-2 py-0.5 rounded bg-[#657565]/10">Euler-Bernoulli Mechanics</span>
         </div>
@@ -101,7 +101,7 @@ export default function ArticleDiagram({ slug }: DiagramProps) {
   if (norm.includes('concrete') || norm.includes('volume')) {
     return (
       <figure className="my-6 rounded-2xl overflow-hidden border border-[#D8D0C2] dark:border-[#384238] bg-white dark:bg-[#1E221E] p-4 sm:p-6 shadow-xs">
-        <div className="flex items-center justify-between mb-3 text-xs font-mono font-bold text-[#657565] dark:text-[#A1B3A1]">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 text-xs font-mono font-bold text-[#657565] dark:text-[#A1B3A1]">
           <span>Fig 1.2 — Wet Mixed Concrete to Dry Ingredient Volume Ratio (1.54 Factor)</span>
           <span className="text-[10px] px-2 py-0.5 rounded bg-[#657565]/10">IS 456 / BS 8500</span>
         </div>
@@ -162,7 +162,7 @@ export default function ArticleDiagram({ slug }: DiagramProps) {
   if (norm.includes('rebar') || norm.includes('bbs') || norm.includes('steel')) {
     return (
       <figure className="my-6 rounded-2xl overflow-hidden border border-[#D8D0C2] dark:border-[#384238] bg-white dark:bg-[#1E221E] p-4 sm:p-6 shadow-xs">
-        <div className="flex items-center justify-between mb-3 text-xs font-mono font-bold text-[#657565] dark:text-[#A1B3A1]">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 text-xs font-mono font-bold text-[#657565] dark:text-[#A1B3A1]">
           <span>Fig 1.3 — Standard Rebar Bends, Hook Lengths & Bend Deduction Allowances</span>
           <span className="text-[10px] px-2 py-0.5 rounded bg-[#657565]/10">BS 8666 / IS 2502</span>
         </div>
@@ -204,7 +204,7 @@ export default function ArticleDiagram({ slug }: DiagramProps) {
   if (norm.includes('column') || norm.includes('pedestal')) {
     return (
       <figure className="my-6 rounded-2xl overflow-hidden border border-[#D8D0C2] dark:border-[#384238] bg-white dark:bg-[#1E221E] p-4 sm:p-6 shadow-xs">
-        <div className="flex items-center justify-between mb-3 text-xs font-mono font-bold text-[#657565] dark:text-[#A1B3A1]">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 text-xs font-mono font-bold text-[#657565] dark:text-[#A1B3A1]">
           <span>Fig 1.4 — Reinforced Concrete Column Cross-Section Detailing</span>
           <span className="text-[10px] px-2 py-0.5 rounded bg-[#657565]/10">ACI 318 / IS 456</span>
         </div>
@@ -253,7 +253,7 @@ export default function ArticleDiagram({ slug }: DiagramProps) {
   if (norm.includes('bearing') || norm.includes('retaining') || norm.includes('geotech')) {
     return (
       <figure className="my-6 rounded-2xl overflow-hidden border border-[#D8D0C2] dark:border-[#384238] bg-white dark:bg-[#1E221E] p-4 sm:p-6 shadow-xs">
-        <div className="flex items-center justify-between mb-3 text-xs font-mono font-bold text-[#657565] dark:text-[#A1B3A1]">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 text-xs font-mono font-bold text-[#657565] dark:text-[#A1B3A1]">
           <span>Fig 1.5 — Terzaghi General Bearing Capacity Soil Failure Wedges</span>
           <span className="text-[10px] px-2 py-0.5 rounded bg-[#657565]/10">Geotechnical Mechanics</span>
         </div>
@@ -301,7 +301,7 @@ export default function ArticleDiagram({ slug }: DiagramProps) {
   if (norm.includes('hi') || norm.includes('survey') || norm.includes('traverse')) {
     return (
       <figure className="my-6 rounded-2xl overflow-hidden border border-[#D8D0C2] dark:border-[#384238] bg-white dark:bg-[#1E221E] p-4 sm:p-6 shadow-xs">
-        <div className="flex items-center justify-between mb-3 text-xs font-mono font-bold text-[#657565] dark:text-[#A1B3A1]">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 text-xs font-mono font-bold text-[#657565] dark:text-[#A1B3A1]">
           <span>Fig 1.6 — Height of Instrument (HI) Differential Leveling Survey Geometry</span>
           <span className="text-[10px] px-2 py-0.5 rounded bg-[#657565]/10">Field Surveying</span>
         </div>

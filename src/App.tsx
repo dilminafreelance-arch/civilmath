@@ -1,5 +1,5 @@
 import { useEffect, lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AppProvider } from './context/AppContext';
 import { ProjectProvider } from './context/ProjectContext';
@@ -70,6 +70,26 @@ function ScrollToTop() {
   return null;
 }
 
+function ArticleDetailRouteWrapper() {
+  const { slug } = useParams<{ slug: string }>();
+  return <ArticleDetailPageV2 key={slug} />;
+}
+
+function AdminArticleEditorRouteWrapper() {
+  const { slug } = useParams<{ slug?: string }>();
+  return <AdminArticleEditorV2 key={slug || 'new'} />;
+}
+
+function BBSPageRouteWrapper() {
+  const location = useLocation();
+  return <BBSCalculatorPage key={location.pathname} />;
+}
+
+function GuidePageRouteWrapper() {
+  const { slug } = useParams<{ slug?: string }>();
+  return <GuidePage key={slug} />;
+}
+
 export default function App() {
   return (
     <HelmetProvider>
@@ -84,8 +104,8 @@ export default function App() {
               <Route path="/admin/articles" element={<Suspense fallback={<SuspenseFallback />}><AdminArticlesDashboard /></Suspense>} />
               <Route path="/admin/categories" element={<Suspense fallback={<SuspenseFallback />}><AdminCategoriesPage /></Suspense>} />
               <Route path="/admin/inquiries" element={<Suspense fallback={<SuspenseFallback />}><AdminInquiriesPage /></Suspense>} />
-              <Route path="/admin/articles/new" element={<Suspense fallback={<SuspenseFallback />}><AdminArticleEditorV2 /></Suspense>} />
-              <Route path="/admin/articles/edit/:slug" element={<Suspense fallback={<SuspenseFallback />}><AdminArticleEditorV2 /></Suspense>} />
+              <Route path="/admin/articles/new" element={<Suspense fallback={<SuspenseFallback />}><AdminArticleEditorRouteWrapper /></Suspense>} />
+              <Route path="/admin/articles/edit/:slug" element={<Suspense fallback={<SuspenseFallback />}><AdminArticleEditorRouteWrapper /></Suspense>} />
 
 
               {/* ── Unified Architectural Studio AppLayout Shell ── */}
@@ -96,22 +116,22 @@ export default function App() {
               <Route path="/bbs" element={<BBSCategoryPage />} />
 
               {/* BBS Structure Pages */}
-              <Route path="/bbs/footing" element={<Suspense fallback={<SuspenseFallback />}><BBSCalculatorPage /></Suspense>} />
-              <Route path="/bbs/combined-footing" element={<Suspense fallback={<SuspenseFallback />}><BBSCalculatorPage /></Suspense>} />
-              <Route path="/bbs/strip-footing" element={<Suspense fallback={<SuspenseFallback />}><BBSCalculatorPage /></Suspense>} />
-              <Route path="/bbs/raft-foundation" element={<Suspense fallback={<SuspenseFallback />}><BBSCalculatorPage /></Suspense>} />
-              <Route path="/bbs/beam" element={<Suspense fallback={<SuspenseFallback />}><BBSCalculatorPage /></Suspense>} />
-              <Route path="/bbs/plinth-beam" element={<Suspense fallback={<SuspenseFallback />}><BBSCalculatorPage /></Suspense>} />
-              <Route path="/bbs/tie-beam" element={<Suspense fallback={<SuspenseFallback />}><BBSCalculatorPage /></Suspense>} />
-              <Route path="/bbs/lintel-beam" element={<Suspense fallback={<SuspenseFallback />}><BBSCalculatorPage /></Suspense>} />
-              <Route path="/bbs/column" element={<Suspense fallback={<SuspenseFallback />}><BBSCalculatorPage /></Suspense>} />
-              <Route path="/bbs/pedestal" element={<Suspense fallback={<SuspenseFallback />}><BBSCalculatorPage /></Suspense>} />
-              <Route path="/bbs/slab" element={<Suspense fallback={<SuspenseFallback />}><BBSCalculatorPage /></Suspense>} />
-              <Route path="/bbs/staircase" element={<Suspense fallback={<SuspenseFallback />}><BBSCalculatorPage /></Suspense>} />
-              <Route path="/bbs/retaining-wall" element={<Suspense fallback={<SuspenseFallback />}><BBSCalculatorPage /></Suspense>} />
-              <Route path="/bbs/foundation-mesh" element={<Suspense fallback={<SuspenseFallback />}><BBSCalculatorPage /></Suspense>} />
+              <Route path="/bbs/footing" element={<Suspense fallback={<SuspenseFallback />}><BBSPageRouteWrapper /></Suspense>} />
+              <Route path="/bbs/combined-footing" element={<Suspense fallback={<SuspenseFallback />}><BBSPageRouteWrapper /></Suspense>} />
+              <Route path="/bbs/strip-footing" element={<Suspense fallback={<SuspenseFallback />}><BBSPageRouteWrapper /></Suspense>} />
+              <Route path="/bbs/raft-foundation" element={<Suspense fallback={<SuspenseFallback />}><BBSPageRouteWrapper /></Suspense>} />
+              <Route path="/bbs/beam" element={<Suspense fallback={<SuspenseFallback />}><BBSPageRouteWrapper /></Suspense>} />
+              <Route path="/bbs/plinth-beam" element={<Suspense fallback={<SuspenseFallback />}><BBSPageRouteWrapper /></Suspense>} />
+              <Route path="/bbs/tie-beam" element={<Suspense fallback={<SuspenseFallback />}><BBSPageRouteWrapper /></Suspense>} />
+              <Route path="/bbs/lintel-beam" element={<Suspense fallback={<SuspenseFallback />}><BBSPageRouteWrapper /></Suspense>} />
+              <Route path="/bbs/column" element={<Suspense fallback={<SuspenseFallback />}><BBSPageRouteWrapper /></Suspense>} />
+              <Route path="/bbs/pedestal" element={<Suspense fallback={<SuspenseFallback />}><BBSPageRouteWrapper /></Suspense>} />
+              <Route path="/bbs/slab" element={<Suspense fallback={<SuspenseFallback />}><BBSPageRouteWrapper /></Suspense>} />
+              <Route path="/bbs/staircase" element={<Suspense fallback={<SuspenseFallback />}><BBSPageRouteWrapper /></Suspense>} />
+              <Route path="/bbs/retaining-wall" element={<Suspense fallback={<SuspenseFallback />}><BBSPageRouteWrapper /></Suspense>} />
+              <Route path="/bbs/foundation-mesh" element={<Suspense fallback={<SuspenseFallback />}><BBSPageRouteWrapper /></Suspense>} />
               {/* Fallback BBS route */}
-              <Route path="/bbs/:structureType" element={<Suspense fallback={<SuspenseFallback />}><BBSCalculatorPage /></Suspense>} />
+              <Route path="/bbs/:structureType" element={<Suspense fallback={<SuspenseFallback />}><BBSPageRouteWrapper /></Suspense>} />
 
               {/* Category Landing Pages */}
               <Route path="/structural" element={<CategoryPageTemplate category="structural" />} />
@@ -120,9 +140,9 @@ export default function App() {
               <Route path="/surveying" element={<CategoryPageTemplate category="survey" />} />
               <Route path="/utilities" element={<CategoryPageTemplate category="utility" />} />
               <Route path="/guides" element={<GuidesPage />} />
-              <Route path="/guides/:slug" element={<GuidePage />} />
+              <Route path="/guides/:slug" element={<GuidePageRouteWrapper />} />
               <Route path="/articles" element={<Suspense fallback={<SuspenseFallback />}><ArticlesDirectoryPage /></Suspense>} />
-              <Route path="/articles/:slug" element={<Suspense fallback={<SuspenseFallback />}><ArticleDetailPageV2 /></Suspense>} />
+              <Route path="/articles/:slug" element={<Suspense fallback={<SuspenseFallback />}><ArticleDetailRouteWrapper /></Suspense>} />
               <Route path="/formulas" element={<FormulasPage />} />
               <Route path="/tables" element={<TablesPage />} />
 

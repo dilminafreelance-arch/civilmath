@@ -1,4 +1,4 @@
-const CACHE_NAME = 'civilmath-v2';
+const CACHE_NAME = 'civilmath-v3';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -17,6 +17,11 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
+
+  // Never cache API calls in service worker — always network fetch
+  if (url.pathname.startsWith('/api/')) {
+    return;
+  }
 
   // Network-First for HTML navigation requests (ensures index.html always gets new asset hashes)
   if (event.request.mode === 'navigate') {

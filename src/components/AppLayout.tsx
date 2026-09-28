@@ -106,8 +106,8 @@ export default function AppLayout() {
       {/* 2. Center Column + Header */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Floating Top Header */}
-        <header className="sticky top-0 z-30 bg-surface-1/80 dark:bg-canvas-dark/80 backdrop-blur-xl px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-3 border-b border-border-subtle transition-colors">
-          <div className="flex items-center gap-2 sm:gap-3">
+        <header className="sticky top-0 z-30 bg-surface-1/80 dark:bg-canvas-dark/80 backdrop-blur-xl px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3 border-b border-border-subtle transition-colors max-w-full overflow-hidden">
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
             {/* Logo on Article pages when left sidebar is hidden */}
             {isArticlesActive && (
               <Link to="/" className="flex items-center gap-2 mr-1 no-underline text-ink shrink-0 group">
@@ -124,7 +124,7 @@ export default function AppLayout() {
             {!isArticlesActive && (
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="xl:hidden p-2 rounded-lg border border-border-subtle bg-surface-1 dark:bg-surface-2 text-ink dark:text-ink-dark hover:border-brand/50 transition-colors cursor-pointer shadow-2xs"
+                className="xl:hidden p-2 rounded-lg border border-border-subtle bg-surface-1 dark:bg-surface-2 text-ink dark:text-ink-dark hover:border-brand/50 transition-colors cursor-pointer shadow-2xs shrink-0"
                 aria-label="Open navigation menu"
               >
                 <Menu className="w-4 h-4" />
@@ -146,10 +146,10 @@ export default function AppLayout() {
             {/* Search Input with Ctrl+K */}
             <GlobalSearch />
 
-            {/* Articles Tab */}
+            {/* Articles Tab (Hidden on small mobile screens since floating bottom nav provides direct access) */}
             <Link
               to="/articles"
-              className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors no-underline shadow-2xs ${
+              className={`hidden sm:inline-flex items-center gap-1.5 sm:gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors no-underline shadow-2xs ${
                 isArticlesActive
                   ? 'border-brand/60 bg-brand/10 text-brand dark:text-brand-light font-semibold'
                   : 'border-[#E2E6E2] dark:border-white/10 bg-white dark:bg-[#131715] text-[#526058] dark:text-[#97A69E] hover:text-[#141A16] dark:hover:text-[#ECF2EE] hover:border-[#2E6B56]/50 dark:hover:border-[#34D399]/40'
@@ -270,7 +270,7 @@ export default function AppLayout() {
       )}
 
       {/* Floating Bottom Mobile Navigation Bar */}
-      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 xl:hidden flex items-center gap-1 px-3 py-1.5 bg-surface-1/90 dark:bg-surface-2/95 backdrop-blur-xl border border-border-subtle rounded-2xl shadow-xl select-none touch-manipulation">
+      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 xl:hidden flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-1.5 bg-surface-1/90 dark:bg-surface-2/95 backdrop-blur-xl border border-border-subtle rounded-2xl shadow-xl select-none touch-manipulation max-w-[calc(100vw-16px)]">
         <Link
           to="/"
           className={`flex flex-col items-center px-3 py-1 rounded-xl text-[10px] font-bold no-underline transition-colors ${

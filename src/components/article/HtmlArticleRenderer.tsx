@@ -53,11 +53,13 @@ function prepareArticleHtml(rawHtml: string): string {
   });
 
   // 3. Ensure tables are wrapped in a responsive overflow container if not already wrapped
-  if (html.includes('<table') && !html.includes('table-responsive-wrapper')) {
-    html = html.replace(/<table([\s\S]*?)<\/table>/gi, match => {
-      return `<div class="table-responsive-wrapper my-6 overflow-x-auto rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs">${match}</div>`;
-    });
-  }
+  html = html.replace(/(<table[\s\S]*?<\/table>)/gi, (match) => {
+    return `<div class="table-responsive-wrapper my-6 overflow-x-auto rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs">${match}</div>`;
+  });
+  // Clean up any accidental double nesting:
+  html = html.replace(/<div class="table-responsive-wrapper[^>]*>\s*<div class="table-responsive-wrapper[^>]*>([\s\S]*?)<\/div>\s*<\/div>/gi, (_, inner) => {
+    return `<div class="table-responsive-wrapper my-6 overflow-x-auto rounded-xl border border-stone-200 dark:border-stone-800 shadow-2xs">${inner}</div>`;
+  });
 
   // 4. Inject slugified id attributes into h2 and h3 headings for Table of Contents anchor jumping
   html = html.replace(/<h([23])([^>]*)>([\s\S]*?)<\/h\1>/gi, (match, level, attrs, inner) => {
@@ -85,7 +87,7 @@ export default function HtmlArticleRenderer({ content, article }: HtmlArticleRen
   }, [content]);
 
   return (
-    <div className="article-reader-container w-full">
+    <div className="article-reader-container w-full max-w-full overflow-hidden">
       <div
         className="article-body-content max-w-[720px] mx-auto text-[17px] sm:text-[18px] leading-[1.7] text-stone-800 dark:text-stone-200 space-y-6 break-words"
         dangerouslySetInnerHTML={{ __html: cleanHtml }}
