@@ -17,8 +17,15 @@ export function rowToArticle(row) {
   const title = row.title || 'Untitled Article';
   const slug = row.slug || 'untitled';
   const content = row.content || '';
-  const category = meta.category || 'general';
-  const excerpt = meta.excerpt || row.summary || (content.length > 20 ? content.slice(0, 160) : title);
+  const category = row.category || meta.category || 'general';
+  const excerpt = row.excerpt || meta.excerpt || row.summary || (content.length > 20 ? content.slice(0, 160) : title);
+  const status = row.status || (row.published === false ? 'draft' : (meta.status || 'published'));
+  const contentFormat = row.content_format || meta.content_format || (content.includes('<p') || content.includes('<h2') ? 'html' : 'legacy');
+  const coverImage = row.cover_image_url || row.image_url || meta.coverImage || '';
+  const tags = Array.isArray(row.tags) && row.tags.length ? row.tags : (Array.isArray(meta.tags) && meta.tags.length ? meta.tags : [category]);
+  const publishedAt = row.published_at || row.created_at || new Date().toISOString();
+  const createdAt = row.created_at || row.published_at || publishedAt;
+  const updatedAt = row.updated_at || undefined;
 
   return {
     id: row.id,
@@ -28,13 +35,16 @@ export function rowToArticle(row) {
     excerpt,
     category,
     author: meta.author || 'CivilMath Engineering Editorial Team',
-    publishedAt: row.published_at || new Date().toISOString(),
-    updatedAt: row.updated_at || undefined,
+    publishedAt,
+    createdAt,
+    updatedAt,
     readTimeMinutes: meta.readTimeMinutes || Math.max(2, Math.ceil((content.split(/\s+/).length || 500) / 200)),
-    status: row.published === false ? 'draft' : (meta.status || 'published'),
-    tags: Array.isArray(row.tags) && row.tags.length ? row.tags : [category],
-    coverImage: row.image_url || meta.coverImage || '',
-    content: content,
+    status,
+    tags,
+    coverImage,
+    coverImageUrl: coverImage,
+    content,
+    contentFormat,
     introduction: meta.introduction || '',
     theory: meta.theory || '',
     realWorldApplications: meta.realWorldApplications || [],
@@ -50,11 +60,11 @@ export function rowToArticle(row) {
     seo: {
       seoTitle: meta.seo?.seoTitle || (title + ' | CivilMath'),
       metaDescription: meta.seo?.metaDescription || excerpt,
-      primaryKeyword: meta.seo?.primaryKeyword || (row.tags?.[0] || category),
+      primaryKeyword: meta.seo?.primaryKeyword || (tags[0] || category),
       secondaryKeywords: meta.seo?.secondaryKeywords || [],
       lsiKeywords: meta.seo?.lsiKeywords || [],
       canonicalUrl: meta.seo?.canonicalUrl || ('https://civilmath.com/articles/' + slug),
-      ogImage: row.image_url || meta.seo?.ogImage,
+      ogImage: coverImage || meta.seo?.ogImage,
       noindex: Boolean(meta.seo?.noindex),
     },
     isBuiltin: false,
@@ -63,14 +73,23 @@ export function rowToArticle(row) {
 
 export function articleToRow(article) {
   const now = new Date().toISOString();
+  const status = article.status === 'draft' ? 'draft' : 'published';
+  const contentFormat = article.contentFormat || article.content_format || 'html';
+  const coverImageUrl = article.coverImageUrl || article.cover_image_url || article.coverImage || article.imageUrl || article.image_url || '';
+  const excerpt = article.excerpt || article.summary || '';
+  const category = article.category || 'general';
+  const tags = Array.isArray(article.tags) ? article.tags : [category];
+  const createdAt = article.createdAt || article.publishedAt || article.created_at || now;
 
   const meta = {
-    excerpt: article.excerpt || article.summary || '',
-    category: article.category || 'general',
+    excerpt,
+    category,
     author: article.author || 'CivilMath Engineering Editorial Team',
     readTimeMinutes: article.readTimeMinutes || 5,
     h1: article.h1 || article.title,
-    status: article.status || 'published',
+    status,
+    content_format: contentFormat,
+    coverImage: coverImageUrl,
     introduction: article.introduction || '',
     theory: article.theory || '',
     realWorldApplications: article.realWorldApplications || [],
@@ -85,8 +104,8 @@ export function articleToRow(article) {
     blocks: Array.isArray(article.blocks) ? article.blocks : [],
     seo: article.seo || {
       seoTitle: (article.title || 'Untitled Article') + ' | CivilMath',
-      metaDescription: article.excerpt || '',
-      primaryKeyword: (article.tags && article.tags[0]) || 'general',
+      metaDescription: excerpt,
+      primaryKeyword: tags[0] || 'general',
       secondaryKeywords: [],
       lsiKeywords: [],
     },
@@ -96,11 +115,18 @@ export function articleToRow(article) {
     slug: article.slug,
     title: article.title,
     content: article.content || '',
-    summary: JSON.stringify(meta),
-    tags: Array.isArray(article.tags) ? article.tags : [],
-    image_url: article.coverImage || article.imageUrl || article.image_url || '',
-    published_at: article.publishedAt || article.published_at || now,
+    status,
+    excerpt,
+    cover_image_url: coverImageUrl,
+    category,
+    tags,
+    content_format: contentFormat,
+    created_at: createdAt,
     updated_at: now,
-    published: article.status === 'draft' ? false : (article.published ?? true),
+    // Legacy fields for backward compatibility
+    summary: JSON.stringify(meta),
+    image_url: coverImageUrl,
+    published_at: article.publishedAt || article.published_at || createdAt,
+    published: status !== 'draft',
   };
 }

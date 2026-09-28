@@ -402,13 +402,18 @@ ${[...staticUrls, ...articleUrls].join("\n")}
 
 // Articles API - Get all custom articles
 app.get("/api/articles", async (req, res) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
+  const isAdmin = Boolean(token && verifySessionToken(token));
+
   const supabase = getSupabaseServer();
   if (supabase) {
     try {
-      const { data, error } = await supabase
-        .from("articles")
-        .select("*")
-        .order("published_at", { ascending: false });
+      let query = supabase.from("articles").select("*");
+      if (!isAdmin) {
+        query = query.or("status.eq.published,status.is.null");
+      }
+      const { data, error } = await query.order("published_at", { ascending: false });
 
       if (!error && Array.isArray(data)) {
         const mapped = data.map(rowToArticle);
@@ -422,20 +427,25 @@ app.get("/api/articles", async (req, res) => {
     }
   }
   const articles = readStoredArticles();
-  res.json(articles);
+  const visible = isAdmin ? articles : articles.filter((a: any) => a.status === "published" || !a.status);
+  res.json(visible);
 });
 
 // Articles API - Get single article
 app.get("/api/articles/:slug", async (req, res) => {
   const { slug } = req.params;
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
+  const isAdmin = Boolean(token && verifySessionToken(token));
+
   const supabase = getSupabaseServer();
   if (supabase) {
     try {
-      const { data, error } = await supabase
-        .from("articles")
-        .select("*")
-        .eq("slug", slug)
-        .maybeSingle();
+      let query = supabase.from("articles").select("*").eq("slug", slug);
+      if (!isAdmin) {
+        query = query.or("status.eq.published,status.is.null");
+      }
+      const { data, error } = await query.maybeSingle();
 
       if (!error && data) {
         return res.json(rowToArticle(data));
@@ -449,7 +459,7 @@ app.get("/api/articles/:slug", async (req, res) => {
   }
   const articles = readStoredArticles();
   const article = articles.find((a: any) => a.slug?.toLowerCase() === slug.toLowerCase());
-  if (!article) {
+  if (!article || (!isAdmin && article.status === "draft")) {
     return res.status(404).json({ error: "Article not found", status: "not_found" });
   }
   res.json(article);
@@ -580,15 +590,17 @@ app.delete("/api/articles/:slug", requireAdminAuth, async (req, res) => {
 });
 
 // Image Upload API (Article Cover & Inline Visuals)
-app.post("/api/upload", requireAdminAuth, (req, res) => {
+app.post("/api/upload", requireAdminAuth, async (req, res) => {
   try {
-    const { image, filename } = req.body || {};
+    const { image, filename, slug = "article" } = req.body || {};
     if (!image || typeof image !== "string") {
       return res.status(400).json({ error: "Image data is required.", status: "error" });
     }
 
+    const cleanSlug = String(slug).toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/(^-|-$)/g, "") || "article";
+    const timestamp = Date.now();
     const match = image.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
-    let ext = "png";
+    let ext = "webp";
     let buffer: Buffer;
 
     if (match) {
@@ -602,12 +614,45 @@ app.post("/api/upload", requireAdminAuth, (req, res) => {
       return res.status(400).json({ error: "Image file exceeds 10MB maximum limit.", status: "error" });
     }
 
+    // Try Supabase Storage upload to 'article-images' bucket
+    const supabase = getSupabaseServer();
+    if (supabase && supabase.storage) {
+      try {
+        const storagePath = `articles/${cleanSlug}/${timestamp}.${ext}`;
+        const contentType = ext === "webp" ? "image/webp" : ext === "png" ? "image/png" : "image/jpeg";
+        const { data, error } = await supabase.storage
+          .from("article-images")
+          .upload(storagePath, buffer, {
+            contentType,
+            upsert: true,
+          });
+
+        if (!error && data) {
+          const { data: pubData } = supabase.storage
+            .from("article-images")
+            .getPublicUrl(storagePath);
+
+          if (pubData?.publicUrl) {
+            return res.json({
+              status: "success",
+              url: pubData.publicUrl,
+              filename: storagePath,
+              size: buffer.length,
+            });
+          }
+        }
+      } catch (storageErr: any) {
+        console.warn("Supabase storage upload notice in server.ts:", storageErr?.message);
+      }
+    }
+
+    // Local fallback: save to public/uploads/articles
     const baseName = (filename || "article-image")
       .replace(/\.[^/.]+$/, "")
       .replace(/[^a-zA-Z0-9_-]/g, "-")
       .substring(0, 40)
       .toLowerCase();
-    const finalFilename = `${Date.now()}-${baseName || "img"}.${ext}`;
+    const finalFilename = `${timestamp}-${baseName || "img"}.${ext}`;
     const uploadDir = path.join(process.cwd(), "public", "uploads", "articles");
 
     if (!fs.existsSync(uploadDir)) {

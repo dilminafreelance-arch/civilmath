@@ -33,7 +33,19 @@ export function extractTocItems(article: Article): TocItem[] {
     if (level === 2) counter++;
   };
 
-  if (article.blocks && article.blocks.length > 0) {
+  // Check if article has HTML content
+  if (article.content && (article.contentFormat === 'html' || article.content.includes('<h2') || article.content.includes('<h3'))) {
+    const headingRegex = /<h([23])[^>]*>([\s\S]*?)<\/h\1>/gi;
+    let match;
+    while ((match = headingRegex.exec(article.content)) !== null) {
+      const level = Number(match[1]) as 2 | 3;
+      const text = match[2].replace(/<[^>]*>/g, '').trim();
+      const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      if (id && text) {
+        addItem(id, text, level);
+      }
+    }
+  } else if (article.blocks && article.blocks.length > 0) {
     for (const b of article.blocks) {
       if (b.visibility === false) continue;
 

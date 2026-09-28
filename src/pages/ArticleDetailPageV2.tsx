@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Clock, Edit3, Eye } from 'lucide-react';
 import { SEOHead } from '../utils/seo';
 import { Article } from '../types/article';
 import {
   getArticleBySlug,
   getAllArticleSummaries,
   fetchAndSyncAllArticles,
+  getAdminToken,
 } from '../utils/articleStore';
 import { getArticleCoverImage } from '../data/articleVisuals';
 import { generateArticleJsonLd } from '../utils/autoSeo';
@@ -14,10 +15,13 @@ import ArticleRenderer from '../components/article/ArticleRenderer';
 
 export default function ArticleDetailPageV2() {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
+  const isPreviewParam = searchParams.get('preview') === 'true';
 
   const [article, setArticle] = useState<Article | null>(null);
   const [allArticles, setAllArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const isAdmin = Boolean(getAdminToken());
 
   // Load article and directory
   useEffect(() => {
@@ -25,7 +29,16 @@ export default function ArticleDetailPageV2() {
     setLoading(true);
     getArticleBySlug(slug)
       .then(data => {
-        setArticle(data || null);
+        if (data) {
+          // If draft and not admin, hide article (public 404)
+          if (data.status === 'draft' && !isAdmin && !isPreviewParam) {
+            setArticle(null);
+          } else {
+            setArticle(data);
+          }
+        } else {
+          setArticle(null);
+        }
         setLoading(false);
       })
       .catch(() => {
@@ -38,7 +51,7 @@ export default function ArticleDetailPageV2() {
     fetchAndSyncAllArticles()
       .then(synced => setAllArticles(synced))
       .catch(() => {});
-  }, [slug]);
+  }, [slug, isAdmin, isPreviewParam]);
 
   if (loading) {
     return (
@@ -80,6 +93,7 @@ export default function ArticleDetailPageV2() {
 
   const coverImage = getArticleCoverImage(article.slug, article.category, article.coverImage);
   const jsonLd = generateArticleJsonLd(article);
+  const isDraft = article.status === 'draft';
 
   // Extract FAQs from structured blocks if present or legacy field
   const faqData = article.faqs?.length
@@ -88,6 +102,23 @@ export default function ArticleDetailPageV2() {
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      {/* Admin Draft Mode Warning Banner */}
+      {isDraft && (
+        <div className="mb-6 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-medium">
+            <Clock className="w-4 h-4 shrink-0 text-amber-600" />
+            <span><strong>Draft Preview:</strong> This article is an unpublished draft and hidden from the public.</span>
+          </div>
+          <Link
+            to={`/admin/articles/edit/${article.slug}`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold transition-colors shadow-2xs"
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            <span>Edit in Studio</span>
+          </Link>
+        </div>
+      )}
+
       <SEOHead
         meta={{
           title: article.seo?.seoTitle || `${article.title} | CivilMath`,
@@ -96,6 +127,7 @@ export default function ArticleDetailPageV2() {
           canonical: `https://civilmath.com/articles/${article.slug}`,
           image: coverImage.url,
           type: 'article',
+          noindex: isDraft || Boolean(article.seo?.noindex),
           schema: jsonLd,
           faqs: faqData.length ? faqData : undefined,
           breadcrumbs: [

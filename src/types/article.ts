@@ -87,8 +87,11 @@ export interface Article {
   showRelatedCalculators?: boolean;
   showFaq?: boolean;
 
-  // Main / Markdown content
+  // Main / HTML / Markdown content
   content?: string;
+  contentFormat?: 'legacy' | 'html';
+  coverImageUrl?: string;
+  createdAt?: string;
 
   // Structured engineering article sections
   introduction?: string;

@@ -8,6 +8,7 @@ import { Article, ArticleBlock, legacyArticleToBlocks } from '../../types/articl
 import { getArticleCoverImage } from '../../data/articleVisuals';
 import ArticleDiagram from '../ArticleDiagrams';
 import ArticleBlockRenderer from './ArticleBlockRenderer';
+import HtmlArticleRenderer from './HtmlArticleRenderer';
 import TableOfContents from './TableOfContents';
 import ArticleReadingProgress from './ArticleReadingProgress';
 import RelatedArticlesCard from './RelatedArticlesCard';
@@ -25,13 +26,24 @@ export default function ArticleRenderer({
 }: ArticleRendererProps) {
   const [copied, setCopied] = useState(false);
 
+  const isHtmlFormat = useMemo(() => {
+    if (article.contentFormat === 'html') return true;
+    if (article.contentFormat === 'legacy') return false;
+    // Auto-detect: if content has HTML tags and no structured blocks
+    if ((!article.blocks || article.blocks.length === 0) && article.content) {
+      return article.content.includes('<p') || article.content.includes('<h2') || article.content.includes('<div');
+    }
+    return false;
+  }, [article.contentFormat, article.blocks, article.content]);
+
   // Determine blocks: if article has blocks, use them. Otherwise convert legacy fields.
   const blocks = useMemo<ArticleBlock[]>(() => {
+    if (isHtmlFormat) return [];
     if (article.blocks && article.blocks.length > 0) {
       return [...article.blocks].sort((a, b) => a.order - b.order);
     }
     return legacyArticleToBlocks(article);
-  }, [article]);
+  }, [article, isHtmlFormat]);
 
   // Compute Prev / Next articles
   const { prevArticle, nextArticle } = useMemo(() => {
@@ -215,17 +227,21 @@ export default function ArticleRenderer({
             </div>
           )}
 
-          {/* Render All Structured Content Blocks */}
-          <div className="space-y-6">
-            {blocks.map(block => (
-              <ArticleBlockRenderer
-                key={block.id}
-                block={block}
-                currentSlug={article.slug}
-                category={article.category}
-              />
-            ))}
-          </div>
+          {/* Render Sanitized HTML or Legacy Structured Content Blocks */}
+          {isHtmlFormat ? (
+            <HtmlArticleRenderer content={article.content || ''} article={article} />
+          ) : (
+            <div className="space-y-6">
+              {blocks.map(block => (
+                <ArticleBlockRenderer
+                  key={block.id}
+                  block={block}
+                  currentSlug={article.slug}
+                  category={article.category}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Author Signature Box */}
           <div className="mt-12 p-6 rounded-2xl bg-[#FAF9F6] dark:bg-[#1E221E] border border-[#D8D0C2] dark:border-[#384238] flex items-center gap-4 shadow-2xs">

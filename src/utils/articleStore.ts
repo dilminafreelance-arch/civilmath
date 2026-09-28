@@ -27,48 +27,150 @@ export function getAdminAuthHeaders(): Record<string, string> {
 }
 
 /**
- * Reads a File object and uploads it to the server (or returns data URI fallback).
+ * Resizes an image file to max ~1600px width and converts it to WebP before uploading.
  */
-export async function uploadArticleImage(file: File): Promise<{ url: string; filename: string }> {
+export async function optimizeImageToWebP(
+  file: File,
+  maxWidth = 1600,
+  quality = 0.85
+): Promise<{ dataUrl: string; filename: string }> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+    // If it's already an SVG, keep it as SVG without rasterizing
+    if (file.type === 'image/svg+xml') {
+      const reader = new FileReader();
+      reader.onload = () => resolve({ dataUrl: reader.result as string, filename: file.name });
+      reader.onerror = () => reject(new Error('Failed to read SVG file.'));
+      reader.readAsDataURL(file);
+      return;
+    }
 
-    reader.onload = async () => {
-      const dataUri = reader.result as string;
-      try {
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          headers: getAdminAuthHeaders(),
-          body: JSON.stringify({
-            image: dataUri,
-            filename: file.name,
-          }),
-        });
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
 
-        if (res.ok) {
-          const text = await res.text();
-          if (text) {
-            try {
-              const data = JSON.parse(text);
-              if (data && data.url) {
-                return resolve({ url: data.url, filename: data.filename || file.name });
-              }
-            } catch {
-              // ignore
-            }
-          }
-        }
-      } catch {
-        // server endpoint offline, use dataUri
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      let width = img.naturalWidth || img.width;
+      let height = img.naturalHeight || img.height;
+
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width);
+        width = maxWidth;
       }
 
-      // Fallback to data URI if server endpoint unavailable
-      resolve({ url: dataUri, filename: file.name });
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        // Fallback to direct file read if canvas context unavailable
+        const reader = new FileReader();
+        reader.onload = () => resolve({ dataUrl: reader.result as string, filename: file.name });
+        reader.onerror = () => reject(new Error('Failed to process image.'));
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const baseName = file.name.replace(/\.[^/.]+$/, '').replace(/[^a-z0-9_-]/gi, '-').toLowerCase() || 'image';
+      const webpFilename = `${baseName}.webp`;
+
+      try {
+        const webpDataUrl = canvas.toDataURL('image/webp', quality);
+        if (webpDataUrl && webpDataUrl.startsWith('data:image/webp')) {
+          return resolve({ dataUrl: webpDataUrl, filename: webpFilename });
+        }
+      } catch {
+        // ignore and fallback
+      }
+
+      // Fallback to jpeg if webp export is unsupported
+      const jpegDataUrl = canvas.toDataURL('image/jpeg', quality);
+      resolve({ dataUrl: jpegDataUrl, filename: `${baseName}.jpg` });
     };
 
-    reader.onerror = () => reject(new Error('Failed to read image file.'));
-    reader.readAsDataURL(file);
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Could not load image for optimization.'));
+    };
+
+    img.src = objectUrl;
   });
+}
+
+/**
+ * Reads a File object, optimizes it to WebP (<1600px), and uploads it to Supabase Storage / backend.
+ */
+export async function uploadArticleImage(
+  file: File,
+  slug: string = 'article'
+): Promise<{ url: string; filename: string }> {
+  try {
+    const { dataUrl, filename } = await optimizeImageToWebP(file, 1600, 0.85);
+
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: getAdminAuthHeaders(),
+      body: JSON.stringify({
+        image: dataUrl,
+        filename,
+        slug,
+      }),
+    });
+
+    if (res.ok) {
+      const text = await res.text();
+      if (text) {
+        try {
+          const data = JSON.parse(text);
+          if (data && data.url) {
+            return { url: data.url, filename: data.filename || filename };
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+
+    // Fallback to optimized data URI if server upload fails or is offline
+    return { url: dataUrl, filename };
+  } catch (err: any) {
+    console.warn('Image optimization/upload notice, using fallback:', err?.message || err);
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve({ url: reader.result as string, filename: file.name });
+      reader.onerror = () => reject(new Error('Failed to read image file.'));
+      reader.readAsDataURL(file);
+    });
+  }
+}
+
+/**
+ * Checks if a slug is already taken by another article.
+ */
+export async function checkSlugExists(slug: string, currentSlug?: string): Promise<boolean> {
+  const normSlug = slug.toLowerCase().trim();
+  if (!normSlug) return false;
+  if (currentSlug && normSlug === currentSlug.toLowerCase().trim()) return false;
+
+  const stored = getStoredCustomArticles();
+  const existsLocally = stored.some(a => a.slug.toLowerCase() === normSlug);
+  if (existsLocally) return true;
+
+  try {
+    const res = await fetch(`/api/articles/${encodeURIComponent(normSlug)}`);
+    if (res.ok) {
+      const data = await res.json();
+      return Boolean(data && data.slug);
+    }
+  } catch {
+    // offline or static mode
+  }
+  return false;
 }
 
 const VALID_CATEGORIES: ArticleCategory[] = [
@@ -181,6 +283,16 @@ export function normalizeArticleData(raw: any, fallbackSlug?: string): Article {
     noindex: Boolean(raw.seo?.noindex ?? raw.noindex),
   };
 
+  const contentFormat: 'legacy' | 'html' =
+    raw.contentFormat === 'html' || raw.content_format === 'html'
+      ? 'html'
+      : (raw.contentFormat === 'legacy' || raw.content_format === 'legacy'
+          ? 'legacy'
+          : (content && (content.includes('<p') || content.includes('<h2')) ? 'html' : 'legacy'));
+
+  const coverImage = raw.coverImage || raw.coverImageUrl || raw.cover_image_url || raw.image_url || raw.imageUrl || undefined;
+  const createdAt = raw.createdAt || raw.created_at || publishedAt;
+
   return {
     id: raw.id,
     slug,
@@ -190,12 +302,15 @@ export function normalizeArticleData(raw: any, fallbackSlug?: string): Article {
     category,
     author,
     publishedAt,
+    createdAt,
     updatedAt,
     readTimeMinutes,
     status,
-    coverImage: raw.coverImage || raw.image_url || raw.imageUrl || undefined,
+    coverImage,
+    coverImageUrl: coverImage,
     tags,
     content,
+    contentFormat,
     introduction: intro,
     theory: typeof raw.theory === 'string' ? raw.theory : '',
     realWorldApplications: Array.isArray(raw.realWorldApplications) ? raw.realWorldApplications : [],

@@ -1,5 +1,5 @@
 import { setCors } from "./_lib/openrouter.js";
-import { requireAdminAuth } from "./_lib/auth.js";
+import { requireAdminAuth, verifySessionToken } from "./_lib/auth.js";
 import { getSupabase } from "./_lib/supabase.js";
 import { rowToArticle, articleToRow } from "./_lib/articleMapper.js";
 import { notifySearchEngines } from "./_lib/indexnow.js";
@@ -23,12 +23,16 @@ export default async function handler(req, res) {
   const supabase = getSupabase();
 
   if (req.method === "GET") {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
+    const isAdmin = Boolean(token && verifySessionToken(token));
+
     if (slug) {
-      const { data, error } = await supabase
-        .from("articles")
-        .select("*")
-        .eq("slug", slug)
-        .single();
+      let query = supabase.from("articles").select("*").eq("slug", slug);
+      if (!isAdmin) {
+        query = query.or("status.eq.published,status.is.null");
+      }
+      const { data, error } = await query.maybeSingle();
 
       if (error || !data) {
         return res.status(404).json({ error: "Article not found", status: "not_found" });
@@ -36,10 +40,11 @@ export default async function handler(req, res) {
       return res.status(200).json(rowToArticle(data));
     }
 
-    const { data, error } = await supabase
-      .from("articles")
-      .select("*")
-      .order("published_at", { ascending: false });
+    let query = supabase.from("articles").select("*");
+    if (!isAdmin) {
+      query = query.or("status.eq.published,status.is.null");
+    }
+    const { data, error } = await query.order("published_at", { ascending: false });
 
     if (error) {
       console.error("Supabase GET error:", error);
