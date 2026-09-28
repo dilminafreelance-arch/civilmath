@@ -71,7 +71,7 @@ export function rowToArticle(row) {
   };
 }
 
-export function articleToRow(article) {
+export function articleToRow(article, extraColumns = {}) {
   const now = new Date().toISOString();
   const status = article.status === 'draft' ? 'draft' : 'published';
   const contentFormat = article.contentFormat || article.content_format || 'html';
@@ -111,22 +111,28 @@ export function articleToRow(article) {
     },
   };
 
-  return {
+  const row = {
     slug: article.slug,
     title: article.title,
     content: article.content || '',
-    status,
-    excerpt,
-    cover_image_url: coverImageUrl,
-    category,
-    tags,
-    content_format: contentFormat,
-    created_at: createdAt,
-    updated_at: now,
-    // Legacy fields for backward compatibility
     summary: JSON.stringify(meta),
+    tags,
     image_url: coverImageUrl,
-    published_at: article.publishedAt || article.published_at || createdAt,
     published: status !== 'draft',
+    published_at: article.publishedAt || article.published_at || createdAt,
+    updated_at: now,
   };
+
+  // If caller specifically requests/knows extra columns exist in Supabase:
+  if (extraColumns && typeof extraColumns === 'object') {
+    if (extraColumns.status) row.status = status;
+    if (extraColumns.excerpt) row.excerpt = excerpt;
+    if (extraColumns.cover_image_url) row.cover_image_url = coverImageUrl;
+    if (extraColumns.category) row.category = category;
+    if (extraColumns.content_format) row.content_format = contentFormat;
+    if (extraColumns.created_at) row.created_at = createdAt;
+  }
+
+  return row;
 }
+

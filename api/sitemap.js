@@ -35,8 +35,8 @@ export default async function handler(req, res) {
     const supabase = getSupabase();
     const { data: articles, error } = await supabase
       .from("articles")
-      .select("slug, updated_at, published_at, status")
-      .or("status.eq.published,status.is.null")
+      .select("slug, updated_at, published_at, published")
+      .or("published.eq.true,published.is.null")
       .order("published_at", { ascending: false });
 
     if (!error && Array.isArray(articles)) {

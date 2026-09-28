@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     if (slug) {
       let query = supabase.from("articles").select("*").eq("slug", slug);
       if (!isAdmin) {
-        query = query.or("status.eq.published,status.is.null");
+        query = query.or("published.eq.true,published.is.null");
       }
       const { data, error } = await query.maybeSingle();
 
@@ -42,7 +42,7 @@ export default async function handler(req, res) {
 
     let query = supabase.from("articles").select("*");
     if (!isAdmin) {
-      query = query.or("status.eq.published,status.is.null");
+      query = query.or("published.eq.true,published.is.null");
     }
     const { data, error } = await query.order("published_at", { ascending: false });
 
@@ -107,7 +107,7 @@ export default async function handler(req, res) {
 
     if (error) {
       console.error("Supabase POST error:", error);
-      return res.status(500).json({ error: "Failed to save article." });
+      return res.status(500).json({ error: `Failed to save article to Supabase: ${error.message || error}` });
     }
 
     // Asynchronously notify search engines (IndexNow & Google ping) without blocking

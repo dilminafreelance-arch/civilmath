@@ -482,39 +482,38 @@ export async function saveArticle(article: Article): Promise<void> {
     isBuiltin: false,
   };
 
+  // Sync to server API (Supabase)
+  const res = await fetch('/api/articles', {
+    method: 'POST',
+    headers: getAdminAuthHeaders(),
+    body: JSON.stringify(updatedArticle),
+  });
+
+  if (!res.ok) {
+    let errMsg = `Server returned status ${res.status}`;
+    try {
+      const json = await res.json();
+      if (json?.error) errMsg = json.error;
+    } catch {
+      // ignore
+    }
+    throw new Error(errMsg);
+  }
+
+  const json = await res.json();
+  const saved = json?.article || json;
+  const synced = saved && (saved.slug || saved.title)
+    ? normalizeArticleData(saved, updatedArticle.slug)
+    : updatedArticle;
+
   if (index >= 0) {
-    custom[index] = updatedArticle;
+    custom[index] = synced;
   } else {
-    custom.unshift(updatedArticle);
+    custom.unshift(synced);
   }
 
   setStoredCustomArticles(custom);
-  articleCache.set(updatedArticle.slug.toLowerCase(), updatedArticle);
-
-  // Sync to server API if available
-  try {
-    const res = await fetch('/api/articles', {
-      method: 'POST',
-      headers: getAdminAuthHeaders(),
-      body: JSON.stringify(updatedArticle),
-    });
-    if (res.ok) {
-      const json = await res.json();
-      const saved = json?.article || json;
-      if (saved && (saved.slug || saved.title)) {
-        const synced = normalizeArticleData(saved, updatedArticle.slug);
-        articleCache.set(synced.slug.toLowerCase(), synced);
-        const latestCustom = getStoredCustomArticles();
-        const lIdx = latestCustom.findIndex(c => c.slug.toLowerCase() === synced.slug.toLowerCase());
-        if (lIdx >= 0) {
-          latestCustom[lIdx] = synced;
-          setStoredCustomArticles(latestCustom);
-        }
-      }
-    }
-  } catch {
-    // Offline or static mode
-  }
+  articleCache.set(synced.slug.toLowerCase(), synced);
 }
 
 /**

@@ -335,8 +335,8 @@ app.get("/sitemap.xml", async (req, res) => {
     try {
       const { data: articles, error } = await supabase
         .from("articles")
-        .select("slug, updated_at, published_at, status")
-        .or("status.eq.published,status.is.null")
+        .select("slug, updated_at, published_at, published")
+        .or("published.eq.true,published.is.null")
         .order("published_at", { ascending: false });
 
       if (!error && Array.isArray(articles)) {
@@ -411,7 +411,7 @@ app.get("/api/articles", async (req, res) => {
     try {
       let query = supabase.from("articles").select("*");
       if (!isAdmin) {
-        query = query.or("status.eq.published,status.is.null");
+        query = query.or("published.eq.true,published.is.null");
       }
       const { data, error } = await query.order("published_at", { ascending: false });
 
@@ -443,7 +443,7 @@ app.get("/api/articles/:slug", async (req, res) => {
     try {
       let query = supabase.from("articles").select("*").eq("slug", slug);
       if (!isAdmin) {
-        query = query.or("status.eq.published,status.is.null");
+        query = query.or("published.eq.true,published.is.null");
       }
       const { data, error } = await query.maybeSingle();
 
@@ -495,14 +495,16 @@ app.post("/api/articles", requireAdminAuth, async (req, res) => {
         .single();
       if (error) {
         console.error("Supabase upsert error in server.ts:", error);
+        return res.status(500).json({ error: `Supabase save failed: ${error.message}`, status: "error" });
       } else if (data) {
         notifySearchEngines(data.slug || article.slug).catch((err) =>
           console.warn("Auto-index ping error:", err?.message || err)
         );
         return res.json({ status: "success", article: rowToArticle(data) });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Supabase upsert exception in server.ts:", err);
+      return res.status(500).json({ error: `Supabase save exception: ${err?.message || err}`, status: "error" });
     }
   }
 
