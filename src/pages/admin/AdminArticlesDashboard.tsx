@@ -6,7 +6,7 @@ import {
   FileText, Sparkles, Upload,
   Download, Mail, X, Image as ImageIcon,
   ChevronLeft, ChevronRight, TrendingUp, BookOpen, Loader2,
-  MoreHorizontal,
+  MoreHorizontal, Code,
 } from 'lucide-react';
 import AdminLayout from './AdminLayout';
 import AdminUploadModal from './AdminUploadModal';
@@ -943,6 +943,29 @@ export default function AdminArticlesDashboard() {
                                     className="absolute right-0 top-full mt-1 z-50 w-44 bg-white dark:bg-[#1E221E] border border-[#D8D0C2] dark:border-[#333C33] rounded-xl shadow-lg overflow-hidden"
                                     onClick={e => e.stopPropagation()}
                                   >
+                                    {/* Edit in JSON Editor */}
+                                    <Link
+                                      to={`/admin/articles/edit/${article.slug}?mode=json`}
+                                      onClick={() => setOpenMenuSlug(null)}
+                                      className="flex items-center gap-2.5 w-full px-3 py-2.5 text-[11px] font-medium text-[#20231F] dark:text-[#EAE7E0] hover:bg-[#F3F1EC] dark:hover:bg-[#252B25] cursor-pointer transition-colors"
+                                    >
+                                      <Code className="w-3.5 h-3.5 text-blue-600" />
+                                      Edit in JSON Editor
+                                    </Link>
+
+                                    {/* Copy JSON */}
+                                    <button
+                                      onClick={() => {
+                                        setOpenMenuSlug(null);
+                                        navigator.clipboard.writeText(JSON.stringify(article, null, 2));
+                                      }}
+                                      className="flex items-center gap-2.5 w-full px-3 py-2.5 text-[11px] font-medium text-[#20231F] dark:text-[#EAE7E0] hover:bg-[#F3F1EC] dark:hover:bg-[#252B25] cursor-pointer transition-colors"
+                                      title="Copy article JSON to clipboard"
+                                    >
+                                      <Copy className="w-3.5 h-3.5 text-[#657565]" />
+                                      Copy Raw JSON
+                                    </button>
+
                                     {/* Duplicate */}
                                     <button
                                       onClick={() => {
