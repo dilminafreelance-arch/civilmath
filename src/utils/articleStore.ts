@@ -412,6 +412,55 @@ export async function fetchAndSyncAllArticles(): Promise<Article[]> {
 }
 
 /**
+ * Synchronously retrieves an article from in-memory cache or localStorage.
+ * Enables zero-millisecond instantaneous page rendering.
+ */
+export function getCachedArticleSync(slug?: string): Article | undefined {
+  if (!slug) return undefined;
+  const normalizedSlug = slug.toLowerCase().trim();
+
+  // 1. In-memory cache
+  if (articleCache.has(normalizedSlug)) {
+    const cached = articleCache.get(normalizedSlug)!;
+    if (cached.content || cached.blocks?.length) {
+      return normalizeArticleData(cached, normalizedSlug);
+    }
+  }
+
+  // 2. Custom storage (localStorage)
+  const customList = getStoredCustomArticles();
+  const foundCustom = customList.find(a => a.slug.toLowerCase() === normalizedSlug);
+  if (foundCustom && (foundCustom.content || foundCustom.blocks?.length)) {
+    const normalized = normalizeArticleData(foundCustom, normalizedSlug);
+    articleCache.set(normalizedSlug, normalized);
+    return normalized;
+  }
+
+  return undefined;
+}
+
+/**
+ * Prefetches an article into the in-memory cache for instant navigation.
+ */
+export async function prefetchArticle(slug: string): Promise<void> {
+  if (!slug) return;
+  const normalizedSlug = slug.toLowerCase().trim();
+  if (articleCache.has(normalizedSlug)) return;
+  try {
+    const res = await fetch(`/api/articles/${encodeURIComponent(normalizedSlug)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && (data.slug || data.title)) {
+        const normalized = normalizeArticleData(data, normalizedSlug);
+        articleCache.set(normalizedSlug, normalized);
+      }
+    }
+  } catch {
+    // ignore background prefetch errors
+  }
+}
+
+/**
  * Loads a single article by slug (from in-memory cache, custom storage, or remote Supabase API).
  */
 export async function getArticleBySlug(slug: string): Promise<Article | undefined> {
@@ -562,27 +611,41 @@ export async function bulkUploadArticles(articles: Article[]): Promise<{ added: 
 }
 
 /**
- * Deletes an article by slug (custom only).
+ * Deletes an article by slug (both from Supabase server and local storage).
  */
 export async function deleteArticle(slug: string): Promise<boolean> {
+  if (!slug) return false;
   const normSlug = slug.toLowerCase().trim();
-  const custom = getStoredCustomArticles();
-  const filtered = custom.filter(a => a.slug.toLowerCase() !== normSlug);
-  if (filtered.length === custom.length) {
-    return false; // nothing was deleted
-  }
 
-  setStoredCustomArticles(filtered);
-  articleCache.delete(normSlug);
-
+  // 1. Send DELETE request to backend API (Supabase)
   try {
-    await fetch(`/api/articles/${encodeURIComponent(slug)}`, {
+    const res = await fetch(`/api/articles/${encodeURIComponent(normSlug)}`, {
       method: 'DELETE',
       headers: getAdminAuthHeaders(),
     });
-  } catch {
-    // Ignore server error
+
+    if (!res.ok) {
+      let errMsg = `Server returned status ${res.status}`;
+      try {
+        const json = await res.json();
+        if (json?.error) errMsg = json.error;
+      } catch {
+        // ignore
+      }
+      throw new Error(errMsg);
+    }
+  } catch (err: any) {
+    console.error('Remote delete failed:', err);
+    throw err;
   }
+
+  // 2. Clean up from localStorage
+  const custom = getStoredCustomArticles();
+  const filtered = custom.filter(a => a.slug.toLowerCase() !== normSlug);
+  setStoredCustomArticles(filtered);
+
+  // 3. Clean up from in-memory cache
+  articleCache.delete(normSlug);
 
   return true;
 }

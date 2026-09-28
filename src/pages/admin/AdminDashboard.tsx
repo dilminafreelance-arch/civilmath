@@ -95,9 +95,15 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (slug: string) => {
-    await deleteArticle(slug);
-    setDeleteConfirmSlug(null);
-    refreshArticles();
+    try {
+      await deleteArticle(slug);
+      setDeleteConfirmSlug(null);
+      await fetchAndSyncAllArticles();
+      refreshArticles();
+    } catch (err: any) {
+      console.error('Delete error in dashboard:', err);
+      alert(err?.message || 'Failed to delete article.');
+    }
   };
 
   return (

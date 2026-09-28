@@ -5,6 +5,7 @@ import { SEOHead } from '../utils/seo';
 import { Article } from '../types/article';
 import {
   getArticleBySlug,
+  getCachedArticleSync,
   getAllArticleSummaries,
   fetchAndSyncAllArticles,
   getAdminToken,
@@ -17,40 +18,55 @@ export default function ArticleDetailPageV2() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const isPreviewParam = searchParams.get('preview') === 'true';
-
-  const [article, setArticle] = useState<Article | null>(null);
-  const [allArticles, setAllArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
   const isAdmin = Boolean(getAdminToken());
 
-  // Load article and directory
+  const cached = slug ? getCachedArticleSync(slug) : undefined;
+  const [article, setArticle] = useState<Article | null>(() => {
+    if (cached) {
+      if (cached.status === 'draft' && !isAdmin && !isPreviewParam) {
+        return null;
+      }
+      return cached;
+    }
+    return null;
+  });
+  const [allArticles, setAllArticles] = useState<Article[]>(() => getAllArticleSummaries());
+  const [loading, setLoading] = useState<boolean>(() => !cached);
+
+  // Load article and directory (SWR pattern: instant render + background refresh)
   useEffect(() => {
     if (!slug) return;
-    setLoading(true);
+    
+    // Only show loading spinner if we don't have cached data to show immediately
+    if (!cached) {
+      setLoading(true);
+    }
+
     getArticleBySlug(slug)
       .then(data => {
         if (data) {
-          // If draft and not admin, hide article (public 404)
           if (data.status === 'draft' && !isAdmin && !isPreviewParam) {
             setArticle(null);
           } else {
             setArticle(data);
           }
-        } else {
+        } else if (!cached) {
           setArticle(null);
         }
-        setLoading(false);
       })
       .catch(() => {
-        setArticle(null);
+        if (!cached) setArticle(null);
+      })
+      .finally(() => {
         setLoading(false);
       });
 
-    const summaries = getAllArticleSummaries();
-    setAllArticles(summaries);
-    fetchAndSyncAllArticles()
-      .then(synced => setAllArticles(synced))
-      .catch(() => {});
+    // Populate related articles if directory is empty
+    if (allArticles.length === 0) {
+      fetchAndSyncAllArticles()
+        .then(synced => setAllArticles(synced))
+        .catch(() => {});
+    }
   }, [slug, isAdmin, isPreviewParam]);
 
   if (loading) {

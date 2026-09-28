@@ -27,7 +27,16 @@ export default async function handler(req, res) {
     const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
     const isAdmin = Boolean(token && verifySessionToken(token));
 
+    if (!isAdmin) {
+      res.setHeader("Cache-Control", "public, max-age=60, s-maxage=600, stale-while-revalidate=86400");
+    } else {
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    }
+
     if (slug) {
+      if (!isAdmin) {
+        res.setHeader("Cache-Control", "public, max-age=120, s-maxage=1800, stale-while-revalidate=86400");
+      }
       let query = supabase.from("articles").select("*").eq("slug", slug);
       if (!isAdmin) {
         query = query.or("published.eq.true,published.is.null");

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { SEOHead } from '../utils/seo';
 import { Article } from '../types/article';
-import { getAllArticleSummaries, fetchAndSyncAllArticles } from '../utils/articleStore';
+import { getAllArticleSummaries, fetchAndSyncAllArticles, prefetchArticle } from '../utils/articleStore';
 import { getArticleCoverImage } from '../data/articleVisuals';
 
 type SortOption = 'recommended' | 'time-asc' | 'time-desc' | 'alphabetical';
@@ -235,6 +235,8 @@ export default function ArticlesDirectoryPage() {
               <Link
                 key={art.slug}
                 to={`/articles/${art.slug}`}
+                onMouseEnter={() => prefetchArticle(art.slug)}
+                onFocus={() => prefetchArticle(art.slug)}
                 className="group flex flex-col bg-[#FAF9F6] dark:bg-[#1E221E] border border-[#D8D0C2] dark:border-[#384238] rounded-2xl overflow-hidden hover:border-[#657565] transition-all no-underline shadow-2xs hover:shadow-md hover:-translate-y-0.5"
               >
                 {/* 16:9 Thumbnail Image */}

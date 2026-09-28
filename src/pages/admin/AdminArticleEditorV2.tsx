@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Save, Eye, ArrowLeft, Send, Check, AlertCircle, AlertTriangle,
   Upload, X, Image as ImageIcon, Loader2, Sparkles, Clock, Globe,
-  CheckCircle2, ChevronDown, ChevronUp, Tag, Layers
+  CheckCircle2, ChevronDown, ChevronUp, Tag, Layers, Trash2
 } from 'lucide-react';
 import AdminLayout from './AdminLayout';
 import TiptapArticleEditor from '../../components/article/editor/TiptapArticleEditor';
@@ -14,6 +14,7 @@ import {
 import {
   getArticleBySlug,
   saveArticle,
+  deleteArticle,
   uploadArticleImage,
   checkSlugExists,
   normalizeArticleData,
@@ -329,6 +330,28 @@ export default function AdminArticleEditorV2() {
     window.open(`/articles/${cleanSlug}?preview=true`, '_blank');
   };
 
+  // Delete action for existing article
+  const [isDeleting, setIsDeleting] = useState(false);
+  const handleDeleteArticle = async () => {
+    if (!isEditing || !originalSlug) return;
+    const confirmed = window.confirm(
+      `Are you sure you want to permanently delete "${title || originalSlug}"?\n\nThis will remove the article from Supabase and the live website. This action cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteArticle(originalSlug);
+      showToast('Article deleted successfully.', 'success');
+      setTimeout(() => {
+        navigate('/admin/articles');
+      }, 500);
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to delete article.', 'error');
+      setIsDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <AdminLayout>
@@ -431,13 +454,27 @@ export default function AdminArticleEditorV2() {
             {/* Publish Button */}
             <button
               type="button"
-              disabled={saving}
+              disabled={saving || isDeleting}
               onClick={() => handleSave('published')}
               className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
             >
               <Send className="w-3.5 h-3.5" />
               <span>{saving && status === 'published' ? 'Publishing…' : 'Publish'}</span>
             </button>
+
+            {/* Delete Article Button (Only when editing existing article) */}
+            {isEditing && (
+              <button
+                type="button"
+                disabled={saving || isDeleting}
+                onClick={handleDeleteArticle}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 text-xs font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-all cursor-pointer disabled:opacity-50"
+                title="Delete this article permanently"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+                <span>{isDeleting ? 'Deleting…' : 'Delete'}</span>
+              </button>
+            )}
           </div>
         </div>
 

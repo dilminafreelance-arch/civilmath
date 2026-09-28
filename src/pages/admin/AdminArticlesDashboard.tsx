@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   PenTool, Search, RefreshCw, Eye, Edit3, Trash2, Copy,
-  CheckCircle2, Clock, CalendarClock, Archive,
+  CheckCircle2, AlertCircle, Clock, CalendarClock, Archive,
   FileText, Sparkles, Upload,
   Download, Mail, X, Image as ImageIcon,
   ChevronLeft, ChevronRight, TrendingUp, BookOpen, Loader2,
@@ -175,6 +175,12 @@ export default function AdminArticlesDashboard() {
   const [exporting, setExporting] = useState(false);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [unreadInquiries, setUnreadInquiries] = useState(0);
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' | 'warning' } | null>(null);
+
+  const showToast = useCallback((text: string, type: 'success' | 'error' | 'warning' = 'success') => {
+    setToastMessage({ text, type });
+    setTimeout(() => setToastMessage(null), 4000);
+  }, []);
 
   // Filters
   const [search, setSearch] = useState('');
@@ -357,11 +363,18 @@ export default function AdminArticlesDashboard() {
 
   const handleDelete = async (slug: string) => {
     setActionLoadingSlug(slug);
-    await deleteArticle(slug);
-    setDeleteConfirmSlug(null);
-    setActionLoadingSlug(null);
-    setSelected(prev => { const n = new Set(prev); n.delete(slug); return n; });
-    refreshArticles(true);
+    try {
+      await deleteArticle(slug);
+      setDeleteConfirmSlug(null);
+      setSelected(prev => { const n = new Set(prev); n.delete(slug); return n; });
+      await fetchAndSyncAllArticles();
+      refreshArticles(false);
+      showToast('Article deleted successfully.', 'success');
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to delete article.', 'error');
+    } finally {
+      setActionLoadingSlug(null);
+    }
   };
 
   const handleDuplicate = async (article: Article) => {
@@ -427,13 +440,21 @@ export default function AdminArticlesDashboard() {
 
   const handleBulkDelete = async () => {
     setBulkLoading(true);
-    for (const slug of selectedSlugs) {
-      await deleteArticle(slug);
+    const count = selectedSlugs.length;
+    try {
+      for (const slug of selectedSlugs) {
+        await deleteArticle(slug);
+      }
+      setSelected(new Set());
+      setBulkDeleteConfirm(false);
+      await fetchAndSyncAllArticles();
+      refreshArticles(false);
+      showToast(`${count} article(s) deleted successfully.`, 'success');
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to delete selected articles.', 'error');
+    } finally {
+      setBulkLoading(false);
     }
-    setSelected(new Set());
-    setBulkDeleteConfirm(false);
-    setBulkLoading(false);
-    refreshArticles(true);
   };
 
   // ── Page numbers ───────────────────────────────────────────────────────────
@@ -460,6 +481,25 @@ export default function AdminArticlesDashboard() {
   return (
     <AdminLayout>
       <div className="space-y-5">
+        {/* Toast Notification */}
+        {toastMessage && (
+          <div
+            className={`fixed top-4 right-4 z-50 p-4 rounded-2xl shadow-xl flex items-center gap-3 text-xs font-bold animate-in fade-in slide-in-from-top-2 border ${
+              toastMessage.type === 'success'
+                ? 'bg-emerald-900 text-white border-emerald-700'
+                : toastMessage.type === 'error'
+                ? 'bg-rose-900 text-white border-rose-700'
+                : 'bg-amber-900 text-white border-amber-700'
+            }`}
+          >
+            {toastMessage.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-300" />
+            ) : (
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-300" />
+            )}
+            <span>{toastMessage.text}</span>
+          </div>
+        )}
 
         {/* ── Page header ── */}
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">

@@ -406,6 +406,12 @@ app.get("/api/articles", async (req, res) => {
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
   const isAdmin = Boolean(token && verifySessionToken(token));
 
+  if (!isAdmin) {
+    res.setHeader("Cache-Control", "public, max-age=60, s-maxage=600, stale-while-revalidate=86400");
+  } else {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  }
+
   const supabase = getSupabaseServer();
   if (supabase) {
     try {
@@ -437,6 +443,12 @@ app.get("/api/articles/:slug", async (req, res) => {
   const authHeader = req.headers.authorization;
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
   const isAdmin = Boolean(token && verifySessionToken(token));
+
+  if (!isAdmin) {
+    res.setHeader("Cache-Control", "public, max-age=120, s-maxage=1800, stale-while-revalidate=86400");
+  } else {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  }
 
   const supabase = getSupabaseServer();
   if (supabase) {
@@ -582,9 +594,11 @@ app.delete("/api/articles/:slug", requireAdminAuth, async (req, res) => {
         .eq("slug", slug);
       if (error) {
         console.error("Supabase delete error in server.ts:", error);
+        return res.status(500).json({ error: `Supabase delete error: ${error.message}`, status: "error" });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Supabase delete exception in server.ts:", err);
+      return res.status(500).json({ error: `Supabase delete exception: ${err?.message || err}`, status: "error" });
     }
   }
 
