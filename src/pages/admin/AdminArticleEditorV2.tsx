@@ -5,16 +5,17 @@ import React, {
   useRef,
   ChangeEvent,
 } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Save, Eye, ArrowLeft, Send, Sparkles, RefreshCw, Check,
   Link as LinkIcon, Image as ImageIcon, Trash2, Copy, Plus,
   FileText, Clock, HelpCircle, Code, AlignLeft,
-  ChevronDown, Monitor, Tablet, Smartphone, Calculator,
+  ChevronDown, ChevronUp, Monitor, Tablet, Smartphone, Calculator,
   Compass, Table as TableIcon, Layers, AlertTriangle, Lightbulb,
   Info, BookOpen, Quote, Shield, CheckCircle2, ChevronRight,
   ExternalLink, Upload, X, Bold, Italic, Underline, Strikethrough,
-  List, ListOrdered, Maximize2, Loader2
+  List, ListOrdered, Maximize2, Loader2, MoveUp, MoveDown, EyeOff,
+  Columns, CheckSquare, CornerDownLeft, Sparkle
 } from 'lucide-react';
 import AdminLayout from './AdminLayout';
 import {
@@ -24,6 +25,15 @@ import {
   ArticleBlockType,
   FormulaBlockData,
   StepByStepBlockData,
+  TableBlockData,
+  ImageBlockData,
+  FaqBlockData,
+  CalculationExampleBlockData,
+  WarningBlockData,
+  EngineeringNoteBlockData,
+  KeyTakeawayBlockData,
+  QuoteBlockData,
+  TwoColumnBlockData,
   legacyArticleToBlocks,
 } from '../../types/article';
 import {
@@ -32,18 +42,41 @@ import {
   uploadArticleImage,
   getAllArticleSummaries,
 } from '../../utils/articleStore';
-import { autoGenerateSeo, slugify } from '../../utils/autoSeo';
+import { autoGenerateSeo, auditArticleSeo, slugify } from '../../utils/autoSeo';
 import MathFormula from '../../components/article/MathFormula';
+import ArticleRenderer from '../../components/article/ArticleRenderer';
+import CalculationCard from '../../components/article/CalculationCard';
 
 // ─── Categories ──────────────────────────────────────────────────────────────
 const CATEGORIES: { id: ArticleCategory; label: string }[] = [
   { id: 'concrete', label: 'Concrete' },
-  { id: 'structural', label: 'Structural' },
+  { id: 'structural', label: 'Structural Analysis' },
   { id: 'bbs', label: 'Bar Bending Schedule (BBS)' },
   { id: 'geotech', label: 'Geotechnical' },
   { id: 'survey', label: 'Surveying & Leveling' },
   { id: 'utility', label: 'Engineering Utilities' },
-  { id: 'general', label: 'General Civil' },
+  { id: 'general', label: 'General Civil Engineering' },
+];
+
+export const AVAILABLE_CALCULATORS = [
+  { id: 'concrete-volume', name: 'Concrete Volume & Mix Ratio Estimator', url: '/concrete/volume', category: 'concrete' },
+  { id: 'rebar-calculator', name: 'Reinforcing Rebar Quantity Calculator', url: '/concrete/rebar', category: 'concrete' },
+  { id: 'brick-calculator', name: 'Brick & Wall Mortar Estimator', url: '/concrete/brick', category: 'concrete' },
+  { id: 'structural-beam', name: 'Beam Analysis (Simply Supported & Cantilever)', url: '/structural/beam', category: 'structural' },
+  { id: 'structural-column', name: 'RCC Column Axial Capacity (ACI 318)', url: '/structural/column', category: 'structural' },
+  { id: 'structural-slab', name: 'Slab Deflection & Thickness Estimator', url: '/structural/slab', category: 'structural' },
+  { id: 'steel-calculator', name: 'Structural Steel Section Weight Calculator', url: '/structural/steel-weight', category: 'structural' },
+  { id: 'survey-hi', name: 'Height of Instrument (HI) Survey Calculator', url: '/surveying/hi', category: 'survey' },
+  { id: 'survey-coordinate', name: 'Coordinate Traverse & Bowditch Adjustment', url: '/surveying/traverse', category: 'survey' },
+  { id: 'geotech-bearing', name: 'Soil Bearing Capacity (Terzaghi & Meyerhof)', url: '/geotechnical/bearing-capacity', category: 'geotech' },
+  { id: 'geotech-retaining', name: 'Retaining Wall Earth Pressure (Rankine & Coulomb)', url: '/geotechnical/retaining-wall', category: 'geotech' },
+  { id: 'utility-convert', name: 'Civil Engineering Unit Converter', url: '/utilities/unit-converter', category: 'utility' },
+  { id: 'bbs-footing', name: 'Isolated Footing Bar Bending Schedule (BBS)', url: '/bbs/footing', category: 'bbs' },
+  { id: 'bbs-beam', name: 'Beam Bar Bending Schedule (BBS)', url: '/bbs/beam', category: 'bbs' },
+  { id: 'bbs-column', name: 'Column Bar Bending Schedule (BBS)', url: '/bbs/column', category: 'bbs' },
+  { id: 'bbs-slab', name: 'Floor Slab Bar Bending Schedule (BBS)', url: '/bbs/slab', category: 'bbs' },
+  { id: 'bbs-staircase', name: 'Staircase Bar Bending Schedule (BBS)', url: '/bbs/staircase', category: 'bbs' },
+  { id: 'bbs-raft', name: 'Raft Foundation Bar Bending Schedule (BBS)', url: '/bbs/raft-foundation', category: 'bbs' },
 ];
 
 // ─── Toggle Switch Component ────────────────────────────────────────────────
@@ -78,7 +111,7 @@ function Toggle({
   );
 }
 
-// ─── Default Sample Article Matching Reference Image ───────────────────────
+// ─── Default Sample Article ─────────────────────────────────────────────────
 const DEFAULT_CONCRETE_ARTICLE: Article = {
   slug: 'how-to-calculate-concrete-volume',
   title: 'How to Calculate Concrete Volume',
@@ -160,6 +193,18 @@ const DEFAULT_CONCRETE_ARTICLE: Article = {
         title: 'Concrete Volume Calculator',
       },
     },
+    {
+      id: 'blk_warning',
+      type: 'warning',
+      order: 4,
+      visibility: true,
+      title: 'Engineering Verification Required',
+      data: {
+        title: 'Engineering Verification Required',
+        message: 'The calculated quantity represents theoretical neat volume. Actual ordering must account for project site wastage, pumping losses, and approved construction drawings.',
+        severity: 'warning',
+      } as WarningBlockData,
+    },
   ],
 };
 
@@ -199,6 +244,7 @@ export default function AdminArticleEditorV2() {
   const [article, setArticle] = useState<Article>(() => DEFAULT_CONCRETE_ARTICLE);
   const [loading, setLoading] = useState(isEditing);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Pane 1 tabs
   const [pane1Tab, setPane1Tab] = useState<'content' | 'seo' | 'settings'>('content');
@@ -213,11 +259,35 @@ export default function AdminArticleEditorV2() {
   const [calcHeight, setCalcHeight] = useState<number>(0.15);
   const [calculatedVolume, setCalculatedVolume] = useState<number | null>(2.25);
 
+  // Quick content input
+  const [quickInputText, setQuickInputText] = useState('');
+
+  // Expanded blocks map
+  const [expandedBlocks, setExpandedBlocks] = useState<Record<string, boolean>>({
+    blk_h2_intro: true,
+    blk_formula_vol: true,
+    blk_step_by_step: true,
+    blk_calculator: true,
+    blk_warning: true,
+  });
+
   // Tag input state
   const [tagInput, setTagInput] = useState('');
 
-  // Cover image input
+  // Dropdown for Paragraph toolbar
+  const [paragraphMenuOpen, setParagraphMenuOpen] = useState(false);
+
+  // Active focused textarea ref for toolbar formatting
+  const lastActiveTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // File input ref
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Toast helper
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   // Load article if editing
   useEffect(() => {
@@ -231,6 +301,9 @@ export default function AdminArticleEditorV2() {
               eff.blocks = legacyArticleToBlocks(loaded);
             }
             setArticle(eff);
+            const exp: Record<string, boolean> = {};
+            eff.blocks.forEach((b) => { exp[b.id] = true; });
+            setExpandedBlocks(exp);
           } else {
             navigate('/admin/articles');
           }
@@ -323,11 +396,117 @@ export default function AdminArticleEditorV2() {
           type: 'calculator_embed',
           order: newOrder,
           visibility: true,
-          title: 'Interactive Calculator',
+          title: 'Concrete Volume Calculator',
           data: {
             calculatorId: 'concrete-volume',
             title: 'Concrete Volume Calculator',
           },
+        };
+        break;
+      case 'warning':
+        newBlock = {
+          id: newId,
+          type: 'warning',
+          order: newOrder,
+          visibility: true,
+          title: 'Safety Warning',
+          data: {
+            title: 'Safety Warning',
+            message: 'All calculations must be verified by a registered civil/structural engineer prior to casting.',
+            severity: 'warning',
+          } as WarningBlockData,
+        };
+        break;
+      case 'engineering_note':
+        newBlock = {
+          id: newId,
+          type: 'engineering_note',
+          order: newOrder,
+          visibility: true,
+          title: 'Engineering Practice Note',
+          data: {
+            title: 'Engineering Practice Note',
+            note: 'Always convert all linear dimensions into consistent SI units (metres) before volumetric multiplication.',
+          } as EngineeringNoteBlockData,
+        };
+        break;
+      case 'key_takeaway':
+        newBlock = {
+          id: newId,
+          type: 'key_takeaway',
+          order: newOrder,
+          visibility: true,
+          title: 'Key Takeaways',
+          data: {
+            title: 'Key Takeaways',
+            items: [
+              'Verify dimensions on Approved for Construction drawings.',
+              'Apply 1.54 multiplier when calculating dry ingredients.',
+              'Account for 3-5% pouring and spillage wastage.',
+            ],
+          } as KeyTakeawayBlockData,
+        };
+        break;
+      case 'table':
+        newBlock = {
+          id: newId,
+          type: 'table',
+          order: newOrder,
+          visibility: true,
+          title: 'Engineering Properties Table',
+          data: {
+            title: 'Engineering Properties Table',
+            headers: ['Grade', 'Mix Ratio', 'Characteristic Strength (MPa)', 'Applications'],
+            rows: [
+              ['M15', '1 : 2 : 4', '15 MPa', 'PCC, Plain Footing Bed'],
+              ['M20', '1 : 1.5 : 3', '20 MPa', 'General RCC, Slabs, Beams'],
+              ['M25', '1 : 1 : 2', '25 MPa', 'Heavy Columns, Water Retaining'],
+            ],
+            caption: 'Table 1: Standard Concrete Nominal Mixes',
+          } as TableBlockData,
+        };
+        break;
+      case 'image':
+        newBlock = {
+          id: newId,
+          type: 'image',
+          order: newOrder,
+          visibility: true,
+          title: 'Site Diagram',
+          data: {
+            url: 'https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?auto=format&fit=crop&w=1200&q=80',
+            alt: 'Foundation excavation and rebar cage layout',
+            caption: 'Figure 1: Measurement profile for foundation casting',
+          } as ImageBlockData,
+        };
+        break;
+      case 'faq':
+        newBlock = {
+          id: newId,
+          type: 'faq',
+          order: newOrder,
+          visibility: true,
+          title: 'Frequently Asked Questions',
+          data: {
+            title: 'Frequently Asked Questions',
+            faqs: [
+              { question: 'What is the dry volume factor in concrete?', answer: 'The dry volume factor 1.54 compensates for voids between dry cement, sand, and stone.' },
+              { question: 'How much wastage should be added for ready-mix pumping?', answer: 'Usually 3% to 5% depending on pump line length and site layout.' },
+            ],
+          } as FaqBlockData,
+        };
+        break;
+      case 'quote':
+        newBlock = {
+          id: newId,
+          type: 'quote',
+          order: newOrder,
+          visibility: true,
+          title: 'Standard of Care Quote',
+          data: {
+            quote: 'Structural safety and durability depend on precise estimation and adherence to code standards.',
+            author: 'ACI Concrete Field Guide',
+          } as QuoteBlockData,
         };
         break;
       default:
@@ -345,6 +524,8 @@ export default function AdminArticleEditorV2() {
       ...prev,
       blocks: [...(prev.blocks || []), newBlock],
     }));
+    setExpandedBlocks((prev) => ({ ...prev, [newId]: true }));
+    showToast(`Added ${newBlock.type.replace(/_/g, ' ')} block`);
   };
 
   // Block actions
@@ -353,6 +534,7 @@ export default function AdminArticleEditorV2() {
       ...prev,
       blocks: (prev.blocks || []).filter((b) => b.id !== blockId),
     }));
+    showToast('Block removed');
   };
 
   const handleDuplicateBlock = (blockId: string) => {
@@ -367,6 +549,117 @@ export default function AdminArticleEditorV2() {
       ...prev,
       blocks: [...(prev.blocks || []), duplicated],
     }));
+    setExpandedBlocks((prev) => ({ ...prev, [duplicated.id]: true }));
+    showToast('Block duplicated');
+  };
+
+  const handleMoveBlock = (index: number, direction: 'up' | 'down') => {
+    const blocks = [...(article.blocks || [])];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= blocks.length) return;
+    const temp = blocks[index];
+    blocks[index] = blocks[targetIndex];
+    blocks[targetIndex] = temp;
+    // update order
+    blocks.forEach((b, i) => { b.order = i; });
+    setArticle((prev) => ({ ...prev, blocks }));
+  };
+
+  const toggleBlockVisibility = (blockId: string) => {
+    setArticle((prev) => ({
+      ...prev,
+      blocks: (prev.blocks || []).map((b) =>
+        b.id === blockId ? { ...b, visibility: b.visibility === false ? true : false } : b
+      ),
+    }));
+  };
+
+  const toggleExpandBlock = (blockId: string) => {
+    setExpandedBlocks((prev) => ({
+      ...prev,
+      [blockId]: !prev[blockId],
+    }));
+  };
+
+  // Update block content helper
+  const updateBlockContent = (blockId: string, content: string) => {
+    setArticle((prev) => ({
+      ...prev,
+      blocks: (prev.blocks || []).map((b) =>
+        b.id === blockId ? { ...b, content } : b
+      ),
+    }));
+  };
+
+  // Update block title helper
+  const updateBlockTitle = (blockId: string, title: string) => {
+    setArticle((prev) => ({
+      ...prev,
+      blocks: (prev.blocks || []).map((b) =>
+        b.id === blockId ? { ...b, title, data: b.data ? { ...b.data, title } : b.data } : b
+      ),
+    }));
+  };
+
+  // Update block data helper
+  const updateBlockData = (blockId: string, dataPatch: any) => {
+    setArticle((prev) => ({
+      ...prev,
+      blocks: (prev.blocks || []).map((b) =>
+        b.id === blockId ? { ...b, data: { ...(b.data || {}), ...dataPatch } } : b
+      ),
+    }));
+  };
+
+  // Quick add from prompt
+  const handleQuickAdd = () => {
+    if (!quickInputText.trim()) return;
+    const newId = `blk_${Date.now()}_p`;
+    const newBlock: ArticleBlock = {
+      id: newId,
+      type: 'paragraph',
+      order: (article.blocks || []).length,
+      visibility: true,
+      content: quickInputText.trim(),
+    };
+    setArticle((prev) => ({
+      ...prev,
+      blocks: [...(prev.blocks || []), newBlock],
+    }));
+    setQuickInputText('');
+    setExpandedBlocks((prev) => ({ ...prev, [newId]: true }));
+    showToast('Paragraph added to content');
+  };
+
+  // Formatting toolbar action
+  const applyFormatting = (format: 'bold' | 'italic' | 'underline' | 'strike' | 'bullet' | 'number' | 'link' | 'quote' | 'code') => {
+    if (lastActiveTextareaRef.current) {
+      const textarea = lastActiveTextareaRef.current;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selected = textarea.value.substring(start, end);
+      let replacement = '';
+      switch (format) {
+        case 'bold': replacement = `**${selected || 'bold text'}**`; break;
+        case 'italic': replacement = `*${selected || 'italic text'}*`; break;
+        case 'underline': replacement = `<u>${selected || 'underline text'}</u>`; break;
+        case 'strike': replacement = `~~${selected || 'strikethrough text'}~~`; break;
+        case 'bullet': replacement = `\n- ${selected || 'List item'}`; break;
+        case 'number': replacement = `\n1. ${selected || 'Numbered item'}`; break;
+        case 'link': replacement = `[${selected || 'Link text'}](https://example.com)`; break;
+        case 'quote': replacement = `\n> ${selected || 'Quote text'}`; break;
+        case 'code': replacement = `\`${selected || 'code'}\``; break;
+      }
+      const updated = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
+      textarea.value = updated;
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      showToast(`Applied ${format} formatting`);
+    } else {
+      if (format === 'bullet') handleAddBlock('step_by_step');
+      else if (format === 'quote') handleAddBlock('quote');
+      else if (format === 'code') handleAddBlock('code_block');
+      else handleAddBlock('paragraph');
+    }
   };
 
   // Save handler
@@ -381,10 +674,28 @@ export default function AdminArticleEditorV2() {
       await saveArticle(toSave);
       setArticle(toSave);
       setSaveStatus('saved');
+      showToast(status === 'published' ? '🎉 Article published successfully!' : '💾 Draft saved successfully!');
       setTimeout(() => setSaveStatus('idle'), 2500);
     } catch {
       setSaveStatus('error');
+      showToast('❌ Error saving article');
     }
+  };
+
+  // Run auto SEO
+  const handleAutoSeo = () => {
+    const generated = autoGenerateSeo(article);
+    setArticle((prev) => ({
+      ...prev,
+      seo: {
+        ...prev.seo,
+        seoTitle: generated.seoTitle || prev.seo.seoTitle,
+        metaDescription: generated.metaDescription || prev.seo.metaDescription,
+        primaryKeyword: generated.primaryKeyword || prev.seo.primaryKeyword,
+        secondaryKeywords: generated.secondaryKeywords || prev.seo.secondaryKeywords,
+      },
+    }));
+    showToast('⚡ Auto SEO keywords and meta tags generated!');
   };
 
   // Cover image change
@@ -394,15 +705,17 @@ export default function AdminArticleEditorV2() {
     try {
       const url = await uploadArticleImage(file);
       setArticle((prev) => ({ ...prev, coverImage: url }));
+      showToast('Image uploaded successfully');
     } catch (err) {
       console.error('Image upload failed', err);
+      showToast('Image upload failed');
     }
   };
 
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center py-20">
+        <div className="flex items-center justify-center py-24">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
         </div>
       </AdminLayout>
@@ -412,6 +725,14 @@ export default function AdminArticleEditorV2() {
   return (
     <AdminLayout>
       <div className="w-full space-y-4">
+        {/* Floating Toast notification */}
+        {toastMessage && (
+          <div className="fixed top-20 right-6 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-top-2 border border-slate-700">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>{toastMessage}</span>
+          </div>
+        )}
+
         {/* ── TOP PAGE HEADER ────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
           <div className="flex items-center gap-3.5">
@@ -730,6 +1051,19 @@ export default function AdminArticleEditorV2() {
             {/* TAB CONTENT: SEO */}
             {pane1Tab === 'seo' && (
               <div className="space-y-3.5">
+                <div className="p-3 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 rounded-xl flex items-center justify-between">
+                  <div className="text-xs font-bold text-blue-900 dark:text-blue-300">
+                    ⚡ Instant Optimizer
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAutoSeo}
+                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] font-bold cursor-pointer"
+                  >
+                    Run Auto SEO
+                  </button>
+                </div>
+
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-200 mb-1">
                     Focus Keyword
@@ -741,6 +1075,19 @@ export default function AdminArticleEditorV2() {
                     className="w-full text-xs px-3 py-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg"
                   />
                 </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-200 mb-1">
+                    Secondary Keywords
+                  </label>
+                  <input
+                    type="text"
+                    value={(article.seo.secondaryKeywords || []).join(', ')}
+                    onChange={(e) => setArticle((prev) => ({ ...prev, seo: { ...prev.seo, secondaryKeywords: e.target.value.split(',').map(s => s.trim()).filter(Boolean) } }))}
+                    className="w-full text-xs px-3 py-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg"
+                  />
+                </div>
+
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-200 mb-1">
                     Canonical URL
@@ -773,6 +1120,21 @@ export default function AdminArticleEditorV2() {
                   onChange={(v) => setArticle((prev) => ({ ...prev, showAuthor: v }))}
                   label="Show Author Box"
                 />
+                <Toggle
+                  checked={Boolean(article.showRelatedArticles ?? true)}
+                  onChange={(v) => setArticle((prev) => ({ ...prev, showRelatedArticles: v }))}
+                  label="Show Related Articles"
+                />
+                <Toggle
+                  checked={Boolean(article.showRelatedCalculators ?? true)}
+                  onChange={(v) => setArticle((prev) => ({ ...prev, showRelatedCalculators: v }))}
+                  label="Show Related Calculators"
+                />
+                <Toggle
+                  checked={Boolean(article.showFaq ?? true)}
+                  onChange={(v) => setArticle((prev) => ({ ...prev, showFaq: v }))}
+                  label="Show FAQ Section"
+                />
               </div>
             )}
           </div>
@@ -782,30 +1144,95 @@ export default function AdminArticleEditorV2() {
           ══════════════════════════════════════════════════════════════════ */}
           <div className="bg-white dark:bg-[#0F172A] border border-gray-200 dark:border-slate-800 rounded-2xl p-4 space-y-4 shadow-2xs">
             {/* Formatting Toolbar at Top */}
-            <div className="flex flex-wrap items-center gap-1 pb-3 border-b border-gray-100 dark:border-slate-800/80 text-slate-600 dark:text-slate-400">
-              <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-slate-800 rounded-md text-xs font-semibold cursor-pointer">
-                <span>Paragraph</span>
-                <ChevronDown className="w-3 h-3 text-slate-400" />
+            <div className="flex flex-wrap items-center gap-1 pb-3 border-b border-gray-100 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 relative">
+              {/* Paragraph menu */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setParagraphMenuOpen(!paragraphMenuOpen)}
+                  className="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-md text-xs font-semibold cursor-pointer"
+                >
+                  <span>Paragraph</span>
+                  <ChevronDown className="w-3 h-3 text-slate-400" />
+                </button>
+                {paragraphMenuOpen && (
+                  <div className="absolute left-0 top-full mt-1 w-40 bg-white dark:bg-[#101E33] border border-gray-200 dark:border-[#1E3050] rounded-xl shadow-xl p-1 z-30 space-y-0.5">
+                    <button
+                      type="button"
+                      onClick={() => { handleAddBlock('paragraph'); setParagraphMenuOpen(false); }}
+                      className="w-full text-left px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer"
+                    >
+                      Paragraph
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { handleAddBlock('heading_2'); setParagraphMenuOpen(false); }}
+                      className="w-full text-left px-2.5 py-1.5 text-xs font-bold text-slate-800 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer"
+                    >
+                      Heading 2 (H2)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { handleAddBlock('quote'); setParagraphMenuOpen(false); }}
+                      className="w-full text-left px-2.5 py-1.5 text-xs italic text-slate-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer"
+                    >
+                      Quote
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { handleAddBlock('code_block'); setParagraphMenuOpen(false); }}
+                      className="w-full text-left px-2.5 py-1.5 text-xs font-mono text-slate-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer"
+                    >
+                      Code Block
+                    </button>
+                  </div>
+                )}
               </div>
+
               <span className="w-px h-4 bg-gray-200 dark:bg-slate-700 mx-1" />
-              <button type="button" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Bold"><Bold className="w-3.5 h-3.5" /></button>
-              <button type="button" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Italic"><Italic className="w-3.5 h-3.5" /></button>
-              <button type="button" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Underline"><Underline className="w-3.5 h-3.5" /></button>
-              <button type="button" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Strikethrough"><Strikethrough className="w-3.5 h-3.5" /></button>
+
+              <button type="button" onClick={() => applyFormatting('bold')} className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Bold"><Bold className="w-3.5 h-3.5" /></button>
+              <button type="button" onClick={() => applyFormatting('italic')} className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Italic"><Italic className="w-3.5 h-3.5" /></button>
+              <button type="button" onClick={() => applyFormatting('underline')} className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Underline"><Underline className="w-3.5 h-3.5" /></button>
+              <button type="button" onClick={() => applyFormatting('strike')} className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Strikethrough"><Strikethrough className="w-3.5 h-3.5" /></button>
+
               <span className="w-px h-4 bg-gray-200 dark:bg-slate-700 mx-1" />
-              <button type="button" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Bullet List"><List className="w-3.5 h-3.5" /></button>
-              <button type="button" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Numbered List"><ListOrdered className="w-3.5 h-3.5" /></button>
+
+              <button type="button" onClick={() => applyFormatting('bullet')} className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Bullet List"><List className="w-3.5 h-3.5" /></button>
+              <button type="button" onClick={() => applyFormatting('number')} className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Numbered List"><ListOrdered className="w-3.5 h-3.5" /></button>
+
               <span className="w-px h-4 bg-gray-200 dark:bg-slate-700 mx-1" />
-              <button type="button" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Link"><LinkIcon className="w-3.5 h-3.5" /></button>
-              <button type="button" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Quote"><Quote className="w-3.5 h-3.5" /></button>
-              <button type="button" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Code"><Code className="w-3.5 h-3.5" /></button>
-              <button type="button" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Table"><TableIcon className="w-3.5 h-3.5" /></button>
-              <button type="button" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Image"><ImageIcon className="w-3.5 h-3.5" /></button>
-              <button type="button" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer ml-auto" title="Fullscreen"><Maximize2 className="w-3.5 h-3.5" /></button>
+
+              <button type="button" onClick={() => applyFormatting('link')} className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Insert Link"><LinkIcon className="w-3.5 h-3.5" /></button>
+              <button type="button" onClick={() => applyFormatting('quote')} className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Quote"><Quote className="w-3.5 h-3.5" /></button>
+              <button type="button" onClick={() => applyFormatting('code')} className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Code"><Code className="w-3.5 h-3.5" /></button>
+              <button type="button" onClick={() => handleAddBlock('table')} className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Insert Table"><TableIcon className="w-3.5 h-3.5" /></button>
+              <button type="button" onClick={() => handleAddBlock('image')} className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md hover:text-slate-900 cursor-pointer" title="Insert Image"><ImageIcon className="w-3.5 h-3.5" /></button>
             </div>
 
-            <div className="text-[11px] text-slate-400 font-medium italic">
-              Write your content here...
+            {/* Quick content input box */}
+            <div className="relative flex items-center gap-2">
+              <input
+                type="text"
+                value={quickInputText}
+                onChange={(e) => setQuickInputText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleQuickAdd();
+                  }
+                }}
+                placeholder="Write your content here, press Enter to append..."
+                className="w-full text-xs px-3.5 py-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-200 placeholder:italic focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              />
+              <button
+                type="button"
+                onClick={handleQuickAdd}
+                disabled={!quickInputText.trim()}
+                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shrink-0 cursor-pointer disabled:opacity-40"
+              >
+                + Add
+              </button>
             </div>
 
             {/* Layout with vertical palette on left + content canvas on right */}
@@ -836,288 +1263,744 @@ export default function AdminArticleEditorV2() {
               </div>
 
               {/* Block Canvas Stack */}
-              <div className="flex-1 space-y-3 min-w-0">
-                {(article.blocks || []).map((block) => (
-                  <div
-                    key={block.id}
-                    className="border border-gray-200 dark:border-slate-800 rounded-xl bg-white dark:bg-[#111A2E] p-3 space-y-2.5 shadow-2xs group"
-                  >
-                    {/* Block 1: H2 Heading / Intro */}
-                    {block.type === 'heading_2' && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                              H2
-                            </span>
-                            <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
-                              {block.title || 'Introduction'}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => handleDuplicateBlock(block.id)}
-                              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
-                              title="Duplicate"
-                            >
-                              <Copy className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteBlock(block.id)}
-                              className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                        <textarea
-                          rows={3}
-                          value={block.content || ''}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setArticle((prev) => ({
-                              ...prev,
-                              blocks: (prev.blocks || []).map((b) =>
-                                b.id === block.id ? { ...b, content: val } : b
-                              ),
-                            }));
-                          }}
-                          className="w-full text-xs p-2 bg-gray-50 dark:bg-slate-900/60 border border-gray-200 dark:border-slate-700/80 rounded-lg text-slate-800 dark:text-slate-200 resize-none outline-none focus:border-blue-500"
-                        />
-                      </div>
-                    )}
-
-                    {/* Block 2: Formula Block */}
-                    {block.type === 'formula' && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="px-1.5 py-0.5 text-[10px] font-serif italic font-bold rounded bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
-                              fx
-                            </span>
-                            <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
-                              {block.title || 'Formula Block'}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => handleDuplicateBlock(block.id)}
-                              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
-                              title="Duplicate"
-                            >
-                              <Copy className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteBlock(block.id)}
-                              className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                        {/* Formula Content Card */}
-                        <div className="p-3.5 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 space-y-2.5">
-                          <div className="text-xs font-bold text-slate-900 dark:text-white">
-                            {block.data?.title || 'Concrete Volume Formula'}
-                          </div>
-                          <div className="py-2 text-center text-lg font-serif">
-                            <MathFormula
-                              equation={block.data?.equation || 'V = L \\times W \\times H'}
-                            />
-                          </div>
-                          <div className="text-[11px] text-slate-600 dark:text-slate-300 font-mono space-y-1 pt-1 border-t border-blue-100/60 dark:border-blue-900/40">
-                            <div><strong className="font-bold">V</strong> = Concrete volume (m³)</div>
-                            <div><strong className="font-bold">L</strong> = Length (m)</div>
-                            <div><strong className="font-bold">W</strong> = Width (m)</div>
-                            <div><strong className="font-bold">H</strong> = Height or Thickness (m)</div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Block 3: Step by Step Block */}
-                    {block.type === 'step_by_step' && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <ListOrdered className="w-3.5 h-3.5 text-blue-600" />
-                            <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
-                              {block.title || 'Step by Step Block'}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => handleDuplicateBlock(block.id)}
-                              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
-                              title="Duplicate"
-                            >
-                              <Copy className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteBlock(block.id)}
-                              className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                        {/* Steps List */}
-                        <div className="space-y-2">
-                          {[
-                            { n: 1, text: 'Identify the structure and dimensions' },
-                            { n: 2, text: 'Convert all dimensions to metres' },
-                            { n: 3, text: 'Use the formula V = L × W × H' },
-                            { n: 4, text: 'Calculate the volume' },
-                            { n: 5, text: 'Add wastage if required (2% – 5%)' },
-                          ].map((step) => (
-                            <div key={step.n} className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300">
-                              <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
-                                {step.n}
-                              </span>
-                              <span>{step.text}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Block 4: Calculator Block */}
-                    {block.type === 'calculator_embed' && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <Calculator className="w-3.5 h-3.5 text-blue-600" />
-                            <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
-                              Calculator Block
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => handleDuplicateBlock(block.id)}
-                              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
-                              title="Duplicate"
-                            >
-                              <Copy className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteBlock(block.id)}
-                              className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                        {/* Interactive Calculator Box */}
-                        <div className="p-3.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/40 space-y-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">
-                              *
-                            </div>
-                            <span className="text-xs font-bold text-emerald-900 dark:text-emerald-300">
-                              Concrete Volume Calculator
-                            </span>
-                          </div>
-
-                          <div className="grid grid-cols-3 gap-2">
-                            <div>
-                              <label className="block text-[10px] text-slate-600 dark:text-slate-400 mb-1">
-                                Length (m)
-                              </label>
-                              <input
-                                type="number"
-                                value={calcLength}
-                                onChange={(e) => setCalcLength(parseFloat(e.target.value) || 0)}
-                                className="w-full text-xs font-bold p-1.5 bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700/60 rounded-md outline-none"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] text-slate-600 dark:text-slate-400 mb-1">
-                                Width (m)
-                              </label>
-                              <input
-                                type="number"
-                                value={calcWidth}
-                                onChange={(e) => setCalcWidth(parseFloat(e.target.value) || 0)}
-                                className="w-full text-xs font-bold p-1.5 bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700/60 rounded-md outline-none"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] text-slate-600 dark:text-slate-400 mb-1">
-                                Height (m)
-                              </label>
-                              <input
-                                type="number"
-                                step="0.01"
-                                value={calcHeight}
-                                onChange={(e) => setCalcHeight(parseFloat(e.target.value) || 0)}
-                                className="w-full text-xs font-bold p-1.5 bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700/60 rounded-md outline-none"
-                              />
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={handleCalculate}
-                            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-                          >
-                            <Calculator className="w-3.5 h-3.5" />
-                            <span>Calculate Volume</span>
-                          </button>
-
-                          {calculatedVolume !== null && (
-                            <div className="p-2 bg-white dark:bg-slate-900 rounded-lg text-center text-xs font-bold text-slate-900 dark:text-white border border-emerald-200 dark:border-emerald-800">
-                              Volume: <span className="text-blue-600 dark:text-blue-400 font-mono text-sm">{calculatedVolume} m³</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Generic block display for other types */}
-                    {!['heading_2', 'formula', 'step_by_step', 'calculator_embed'].includes(block.type) && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase font-mono">
-                            {block.type.replace(/_/g, ' ')}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteBlock(block.id)}
-                            className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                        <textarea
-                          rows={2}
-                          value={block.content || ''}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setArticle((prev) => ({
-                              ...prev,
-                              blocks: (prev.blocks || []).map((b) =>
-                                b.id === block.id ? { ...b, content: val } : b
-                              ),
-                            }));
-                          }}
-                          className="w-full text-xs p-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg"
-                        />
-                      </div>
-                    )}
+              <div className="flex-1 space-y-3 min-w-0 max-h-[800px] overflow-y-auto pr-1">
+                {(article.blocks || []).length === 0 ? (
+                  <div className="p-8 text-center border-2 border-dashed border-gray-200 dark:border-slate-800 rounded-xl text-slate-400 text-xs">
+                    No blocks added yet. Click any block in the palette to start.
                   </div>
-                ))}
+                ) : (
+                  (article.blocks || []).map((block, idx) => {
+                    const isExpanded = expandedBlocks[block.id] ?? true;
+
+                    return (
+                      <div
+                        key={block.id}
+                        className={`border rounded-xl transition-all shadow-2xs ${
+                          block.visibility === false
+                            ? 'border-gray-200 dark:border-slate-800 opacity-60 bg-gray-50/50'
+                            : 'border-gray-200 dark:border-slate-800 bg-white dark:bg-[#111A2E]'
+                        }`}
+                      >
+                        {/* Block Header */}
+                        <div className="p-2.5 flex items-center justify-between gap-2 border-b border-gray-100 dark:border-slate-800/80 bg-gray-50/60 dark:bg-slate-900/40 rounded-t-xl">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="px-1.5 py-0.5 text-[10px] font-mono font-bold rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 uppercase shrink-0">
+                              {block.type.replace(/_/g, ' ')}
+                            </span>
+                            <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+                              {block.title || block.content?.slice(0, 35) || 'Block'}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleMoveBlock(idx, 'up')}
+                              disabled={idx === 0}
+                              className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white disabled:opacity-20 cursor-pointer"
+                              title="Move Up"
+                            >
+                              <MoveUp className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMoveBlock(idx, 'down')}
+                              disabled={idx === (article.blocks?.length || 0) - 1}
+                              className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white disabled:opacity-20 cursor-pointer"
+                              title="Move Down"
+                            >
+                              <MoveDown className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDuplicateBlock(block.id)}
+                              className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
+                              title="Duplicate"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => toggleBlockVisibility(block.id)}
+                              className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
+                              title="Toggle Visibility"
+                            >
+                              {block.visibility === false ? <EyeOff className="w-3 h-3 text-amber-500" /> : <Eye className="w-3 h-3" />}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteBlock(block.id)}
+                              className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => toggleExpandBlock(block.id)}
+                              className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
+                            >
+                              {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Block Body */}
+                        {isExpanded && (
+                          <div className="p-3 space-y-3">
+                            {/* ── PARAGRAPH BLOCK ── */}
+                            {block.type === 'paragraph' && (
+                              <div>
+                                <textarea
+                                  ref={(el) => { if (el) lastActiveTextareaRef.current = el; }}
+                                  rows={4}
+                                  value={block.content || ''}
+                                  onChange={(e) => updateBlockContent(block.id, e.target.value)}
+                                  placeholder="Enter paragraph text (Markdown supported)..."
+                                  className="w-full text-xs p-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 resize-none outline-none focus:border-blue-500"
+                                />
+                                <div className="text-right text-[10px] text-slate-400 mt-0.5">
+                                  {(block.content || '').length} characters
+                                </div>
+                              </div>
+                            )}
+
+                            {/* ── HEADING 2 BLOCK ── */}
+                            {block.type === 'heading_2' && (
+                              <div className="space-y-2">
+                                <div>
+                                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                                    Heading Title
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={block.title || ''}
+                                    onChange={(e) => updateBlockTitle(block.id, e.target.value)}
+                                    placeholder="Section Heading"
+                                    className="w-full text-xs font-bold p-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                                    Introduction / Content
+                                  </label>
+                                  <textarea
+                                    ref={(el) => { if (el) lastActiveTextareaRef.current = el; }}
+                                    rows={3}
+                                    value={block.content || ''}
+                                    onChange={(e) => updateBlockContent(block.id, e.target.value)}
+                                    placeholder="Section introductory explanation..."
+                                    className="w-full text-xs p-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 resize-none outline-none focus:border-blue-500"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* ── FORMULA BLOCK ── */}
+                            {block.type === 'formula' && (
+                              <div className="space-y-3">
+                                <div>
+                                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                                    Formula Title
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={block.data?.title || block.title || ''}
+                                    onChange={(e) => {
+                                      updateBlockTitle(block.id, e.target.value);
+                                      updateBlockData(block.id, { title: e.target.value });
+                                    }}
+                                    placeholder="e.g. Concrete Volume Formula"
+                                    className="w-full text-xs font-bold p-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                                    LaTeX Equation
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={block.data?.equation || ''}
+                                    onChange={(e) => updateBlockData(block.id, { equation: e.target.value })}
+                                    placeholder="V = L \times W \times H"
+                                    className="w-full text-xs font-mono font-bold p-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-blue-600 dark:text-blue-400"
+                                  />
+                                </div>
+
+                                {/* KaTeX Preview */}
+                                <div className="p-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 rounded-xl text-center">
+                                  <div className="text-[10px] uppercase font-bold text-blue-500 mb-1">Rendered Math</div>
+                                  <MathFormula equation={block.data?.equation || 'V = L \\times W \\times H'} />
+                                </div>
+
+                                {/* Variables List */}
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-200">
+                                    <span>Variables</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const currentVars = block.data?.variables || [];
+                                        updateBlockData(block.id, {
+                                          variables: [...currentVars, { symbol: 'X', meaning: 'Parameter explanation' }],
+                                        });
+                                      }}
+                                      className="text-blue-600 hover:underline cursor-pointer"
+                                    >
+                                      + Add Variable
+                                    </button>
+                                  </div>
+                                  {(block.data?.variables || []).map((v: any, vIdx: number) => (
+                                    <div key={vIdx} className="flex items-center gap-2">
+                                      <input
+                                        type="text"
+                                        value={v.symbol}
+                                        onChange={(e) => {
+                                          const vars = [...(block.data?.variables || [])];
+                                          vars[vIdx] = { ...vars[vIdx], symbol: e.target.value };
+                                          updateBlockData(block.id, { variables: vars });
+                                        }}
+                                        placeholder="Symbol"
+                                        className="w-16 text-xs font-mono font-bold p-1.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-md"
+                                      />
+                                      <input
+                                        type="text"
+                                        value={v.meaning}
+                                        onChange={(e) => {
+                                          const vars = [...(block.data?.variables || [])];
+                                          vars[vIdx] = { ...vars[vIdx], meaning: e.target.value };
+                                          updateBlockData(block.id, { variables: vars });
+                                        }}
+                                        placeholder="Meaning (e.g. Concrete volume (m³))"
+                                        className="flex-1 text-xs p-1.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-md"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const vars = (block.data?.variables || []).filter((_: any, idx2: number) => idx2 !== vIdx);
+                                          updateBlockData(block.id, { variables: vars });
+                                        }}
+                                        className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* ── STEP BY STEP BLOCK ── */}
+                            {block.type === 'step_by_step' && (
+                              <div className="space-y-3">
+                                <div>
+                                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                                    Section Title
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={block.data?.title || block.title || ''}
+                                    onChange={(e) => {
+                                      updateBlockTitle(block.id, e.target.value);
+                                      updateBlockData(block.id, { title: e.target.value });
+                                    }}
+                                    placeholder="Step by Step Method"
+                                    className="w-full text-xs font-bold p-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-200">
+                                    <span>Procedure Steps</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const currentSteps = block.data?.steps || [];
+                                        const nextNum = currentSteps.length + 1;
+                                        updateBlockData(block.id, {
+                                          steps: [
+                                            ...currentSteps,
+                                            { stepNumber: nextNum, title: `Step ${nextNum} instruction`, description: '' },
+                                          ],
+                                        });
+                                      }}
+                                      className="text-blue-600 hover:underline cursor-pointer"
+                                    >
+                                      + Add Step
+                                    </button>
+                                  </div>
+
+                                  {(block.data?.steps || []).map((st: any, sIdx: number) => (
+                                    <div key={sIdx} className="flex items-start gap-2 p-2 bg-gray-50 dark:bg-slate-900/60 rounded-lg border border-gray-200 dark:border-slate-800">
+                                      <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-1">
+                                        {sIdx + 1}
+                                      </span>
+                                      <div className="flex-1 space-y-1">
+                                        <input
+                                          type="text"
+                                          value={st.title}
+                                          onChange={(e) => {
+                                            const steps = [...(block.data?.steps || [])];
+                                            steps[sIdx] = { ...steps[sIdx], title: e.target.value };
+                                            updateBlockData(block.id, { steps });
+                                          }}
+                                          placeholder="Step title"
+                                          className="w-full text-xs font-semibold p-1 bg-transparent border-b border-gray-200 dark:border-slate-700 outline-none"
+                                        />
+                                        <textarea
+                                          rows={2}
+                                          value={st.description || ''}
+                                          onChange={(e) => {
+                                            const steps = [...(block.data?.steps || [])];
+                                            steps[sIdx] = { ...steps[sIdx], description: e.target.value };
+                                            updateBlockData(block.id, { steps });
+                                          }}
+                                          placeholder="Detailed step instruction..."
+                                          className="w-full text-xs p-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-md resize-none"
+                                        />
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const steps = (block.data?.steps || []).filter((_: any, idx3: number) => idx3 !== sIdx);
+                                          updateBlockData(block.id, { steps });
+                                        }}
+                                        className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* ── CALCULATOR BLOCK ── */}
+                            {block.type === 'calculator_embed' && (
+                              <div className="space-y-3">
+                                <div>
+                                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                                    Embed Calculator
+                                  </label>
+                                  <select
+                                    value={block.data?.calculatorId || 'concrete-volume'}
+                                    onChange={(e) => updateBlockData(block.id, { calculatorId: e.target.value })}
+                                    className="w-full text-xs font-medium px-3 py-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg cursor-pointer"
+                                  >
+                                    {AVAILABLE_CALCULATORS.map((calc) => (
+                                      <option key={calc.id} value={calc.id}>
+                                        {calc.name}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+
+                                {/* Live Calculator Embed Preview & Test */}
+                                <div className="p-3.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/40 space-y-3">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">
+                                      *
+                                    </div>
+                                    <span className="text-xs font-bold text-emerald-900 dark:text-emerald-300">
+                                      Concrete Volume Calculator
+                                    </span>
+                                  </div>
+
+                                  <div className="grid grid-cols-3 gap-2">
+                                    <div>
+                                      <label className="block text-[10px] text-slate-600 dark:text-slate-400 mb-1">
+                                        Length (m)
+                                      </label>
+                                      <input
+                                        type="number"
+                                        value={calcLength}
+                                        onChange={(e) => setCalcLength(parseFloat(e.target.value) || 0)}
+                                        className="w-full text-xs font-bold p-1.5 bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700/60 rounded-md outline-none"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-[10px] text-slate-600 dark:text-slate-400 mb-1">
+                                        Width (m)
+                                      </label>
+                                      <input
+                                        type="number"
+                                        value={calcWidth}
+                                        onChange={(e) => setCalcWidth(parseFloat(e.target.value) || 0)}
+                                        className="w-full text-xs font-bold p-1.5 bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700/60 rounded-md outline-none"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-[10px] text-slate-600 dark:text-slate-400 mb-1">
+                                        Height (m)
+                                      </label>
+                                      <input
+                                        type="number"
+                                        step="0.01"
+                                        value={calcHeight}
+                                        onChange={(e) => setCalcHeight(parseFloat(e.target.value) || 0)}
+                                        className="w-full text-xs font-bold p-1.5 bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700/60 rounded-md outline-none"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    onClick={handleCalculate}
+                                    className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                                  >
+                                    <Calculator className="w-3.5 h-3.5" />
+                                    <span>Calculate Volume</span>
+                                  </button>
+
+                                  {calculatedVolume !== null && (
+                                    <div className="p-2 bg-white dark:bg-slate-900 rounded-lg text-center text-xs font-bold text-slate-900 dark:text-white border border-emerald-200 dark:border-emerald-800">
+                                      Volume: <span className="text-blue-600 dark:text-blue-400 font-mono text-sm">{calculatedVolume} m³</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* ── WARNING BLOCK ── */}
+                            {block.type === 'warning' && (
+                              <div className="space-y-2 p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-800/40">
+                                <div>
+                                  <label className="block text-[10px] font-bold text-amber-900 dark:text-amber-300 uppercase mb-1">
+                                    Warning Title
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={block.data?.title || block.title || ''}
+                                    onChange={(e) => {
+                                      updateBlockTitle(block.id, e.target.value);
+                                      updateBlockData(block.id, { title: e.target.value });
+                                    }}
+                                    placeholder="Engineering Verification Required"
+                                    className="w-full text-xs font-bold p-2 bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700 rounded-lg"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[10px] font-bold text-amber-900 dark:text-amber-300 uppercase mb-1">
+                                    Warning Message
+                                  </label>
+                                  <textarea
+                                    rows={3}
+                                    value={block.data?.message || block.content || ''}
+                                    onChange={(e) => {
+                                      updateBlockContent(block.id, e.target.value);
+                                      updateBlockData(block.id, { message: e.target.value });
+                                    }}
+                                    placeholder="Enter engineering code disclaimer and verification notes..."
+                                    className="w-full text-xs p-2.5 bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700 rounded-lg resize-none"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* ── NOTE BLOCK ── */}
+                            {block.type === 'engineering_note' && (
+                              <div className="space-y-2 p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/40">
+                                <div>
+                                  <label className="block text-[10px] font-bold text-blue-900 dark:text-blue-300 uppercase mb-1">
+                                    Note Title
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={block.data?.title || block.title || ''}
+                                    onChange={(e) => {
+                                      updateBlockTitle(block.id, e.target.value);
+                                      updateBlockData(block.id, { title: e.target.value });
+                                    }}
+                                    className="w-full text-xs font-bold p-2 bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-700 rounded-lg"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[10px] font-bold text-blue-900 dark:text-blue-300 uppercase mb-1">
+                                    Note Content
+                                  </label>
+                                  <textarea
+                                    rows={2}
+                                    value={block.data?.note || block.content || ''}
+                                    onChange={(e) => updateBlockData(block.id, { note: e.target.value })}
+                                    className="w-full text-xs p-2 bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-700 rounded-lg resize-none"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* ── KEY TAKEAWAYS BLOCK ── */}
+                            {block.type === 'key_takeaway' && (
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-200">
+                                  <span>Key Points</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const items = block.data?.items || [];
+                                      updateBlockData(block.id, { items: [...items, 'New key takeaway point'] });
+                                    }}
+                                    className="text-blue-600 hover:underline cursor-pointer"
+                                  >
+                                    + Add Item
+                                  </button>
+                                </div>
+                                {(block.data?.items || []).map((it: string, itIdx: number) => (
+                                  <div key={itIdx} className="flex items-center gap-2">
+                                    <CheckSquare className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                    <input
+                                      type="text"
+                                      value={it}
+                                      onChange={(e) => {
+                                        const items = [...(block.data?.items || [])];
+                                        items[itIdx] = e.target.value;
+                                        updateBlockData(block.id, { items });
+                                      }}
+                                      className="flex-1 text-xs p-1.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-md"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const items = (block.data?.items || []).filter((_: any, i: number) => i !== itIdx);
+                                        updateBlockData(block.id, { items });
+                                      }}
+                                      className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* ── TABLE BLOCK ── */}
+                            {block.type === 'table' && (
+                              <div className="space-y-3">
+                                <div>
+                                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                                    Table Caption / Title
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={block.data?.title || block.data?.caption || ''}
+                                    onChange={(e) => updateBlockData(block.id, { title: e.target.value, caption: e.target.value })}
+                                    className="w-full text-xs font-bold p-1.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-md"
+                                  />
+                                </div>
+                                <div className="overflow-x-auto max-w-full border border-gray-200 dark:border-slate-700 rounded-lg">
+                                  <table className="w-full text-xs font-mono">
+                                    <thead>
+                                      <tr className="bg-gray-100 dark:bg-slate-800">
+                                        {(block.data?.headers || []).map((h: string, hIdx: number) => (
+                                          <th key={hIdx} className="p-1 border-r border-gray-200 dark:border-slate-700">
+                                            <input
+                                              type="text"
+                                              value={h}
+                                              onChange={(e) => {
+                                                const headers = [...(block.data?.headers || [])];
+                                                headers[hIdx] = e.target.value;
+                                                updateBlockData(block.id, { headers });
+                                              }}
+                                              className="w-full font-bold bg-transparent outline-none p-1 text-xs"
+                                            />
+                                          </th>
+                                        ))}
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {(block.data?.rows || []).map((row: string[], rIdx: number) => (
+                                        <tr key={rIdx} className="border-t border-gray-200 dark:border-slate-700">
+                                          {row.map((cell: string, cIdx: number) => (
+                                            <td key={cIdx} className="p-1 border-r border-gray-200 dark:border-slate-700">
+                                              <input
+                                                type="text"
+                                                value={cell}
+                                                onChange={(e) => {
+                                                  const rows = [...(block.data?.rows || [])];
+                                                  rows[rIdx] = [...rows[rIdx]];
+                                                  rows[rIdx][cIdx] = e.target.value;
+                                                  updateBlockData(block.id, { rows });
+                                                }}
+                                                className="w-full bg-transparent outline-none p-1 text-xs"
+                                              />
+                                            </td>
+                                          ))}
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const headers = [...(block.data?.headers || ['Col 1', 'Col 2']), `Col ${(block.data?.headers?.length || 2) + 1}`];
+                                      const rows = (block.data?.rows || []).map((r: string[]) => [...r, '-']);
+                                      updateBlockData(block.id, { headers, rows });
+                                    }}
+                                    className="px-2 py-1 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 rounded font-semibold text-blue-600 cursor-pointer"
+                                  >
+                                    + Add Column
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const colCount = block.data?.headers?.length || 3;
+                                      const newRow = Array(colCount).fill('Sample');
+                                      const rows = [...(block.data?.rows || []), newRow];
+                                      updateBlockData(block.id, { rows });
+                                    }}
+                                    className="px-2 py-1 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 rounded font-semibold text-blue-600 cursor-pointer"
+                                  >
+                                    + Add Row
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* ── IMAGE BLOCK ── */}
+                            {block.type === 'image' && (
+                              <div className="space-y-2">
+                                <div>
+                                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                                    Image URL
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={block.data?.url || ''}
+                                    onChange={(e) => updateBlockData(block.id, { url: e.target.value })}
+                                    placeholder="https://images.unsplash.com/..."
+                                    className="w-full text-xs p-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                                    Caption
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={block.data?.caption || ''}
+                                    onChange={(e) => updateBlockData(block.id, { caption: e.target.value })}
+                                    placeholder="Figure 1: Measurement profile..."
+                                    className="w-full text-xs p-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg"
+                                  />
+                                </div>
+                                {block.data?.url && (
+                                  <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-slate-700 max-h-36 aspect-video bg-slate-900">
+                                    <img src={block.data.url} alt="Block preview" className="w-full h-full object-cover" />
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* ── FAQ BLOCK ── */}
+                            {block.type === 'faq' && (
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-200">
+                                  <span>Questions & Answers</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const faqs = [...(block.data?.faqs || []), { question: 'New engineering question?', answer: 'Detailed explanation...' }];
+                                      updateBlockData(block.id, { faqs });
+                                    }}
+                                    className="text-blue-600 hover:underline cursor-pointer"
+                                  >
+                                    + Add Question
+                                  </button>
+                                </div>
+                                {(block.data?.faqs || []).map((faq: any, fIdx: number) => (
+                                  <div key={fIdx} className="p-2.5 bg-gray-50 dark:bg-slate-900/60 rounded-lg border border-gray-200 dark:border-slate-800 space-y-1.5">
+                                    <div className="flex items-center justify-between gap-2">
+                                      <input
+                                        type="text"
+                                        value={faq.question}
+                                        onChange={(e) => {
+                                          const faqs = [...(block.data?.faqs || [])];
+                                          faqs[fIdx] = { ...faqs[fIdx], question: e.target.value };
+                                          updateBlockData(block.id, { faqs });
+                                        }}
+                                        placeholder="Question"
+                                        className="flex-1 text-xs font-bold bg-transparent outline-none border-b border-gray-200 dark:border-slate-700 pb-1"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const faqs = (block.data?.faqs || []).filter((_: any, i: number) => i !== fIdx);
+                                          updateBlockData(block.id, { faqs });
+                                        }}
+                                        className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                    <textarea
+                                      rows={2}
+                                      value={faq.answer}
+                                      onChange={(e) => {
+                                        const faqs = [...(block.data?.faqs || [])];
+                                        faqs[fIdx] = { ...faqs[fIdx], answer: e.target.value };
+                                        updateBlockData(block.id, { faqs });
+                                      }}
+                                      placeholder="Technical answer..."
+                                      className="w-full text-xs p-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-md resize-none"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* ── CODE BLOCK ── */}
+                            {block.type === 'code_block' && (
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <label className="text-[10px] font-bold text-slate-500 uppercase">Code</label>
+                                  <input
+                                    type="text"
+                                    value={block.data?.language || 'python'}
+                                    onChange={(e) => updateBlockData(block.id, { language: e.target.value })}
+                                    placeholder="Language"
+                                    className="text-xs font-mono px-2 py-0.5 bg-gray-100 dark:bg-slate-800 rounded border border-gray-200 dark:border-slate-700"
+                                  />
+                                </div>
+                                <textarea
+                                  rows={4}
+                                  value={block.content || block.data?.code || ''}
+                                  onChange={(e) => {
+                                    updateBlockContent(block.id, e.target.value);
+                                    updateBlockData(block.id, { code: e.target.value });
+                                  }}
+                                  placeholder="# Write script or calculation snippet..."
+                                  className="w-full text-xs font-mono p-2.5 bg-slate-900 text-slate-100 rounded-lg resize-none outline-none"
+                                />
+                              </div>
+                            )}
+
+                            {/* ── QUOTE BLOCK ── */}
+                            {block.type === 'quote' && (
+                              <div className="space-y-2">
+                                <textarea
+                                  rows={2}
+                                  value={block.data?.quote || block.content || ''}
+                                  onChange={(e) => updateBlockData(block.id, { quote: e.target.value })}
+                                  placeholder="Enter quote text..."
+                                  className="w-full text-xs italic p-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg resize-none"
+                                />
+                                <input
+                                  type="text"
+                                  value={block.data?.author || ''}
+                                  onChange={(e) => updateBlockData(block.id, { author: e.target.value })}
+                                  placeholder="Quote Author / Standard Reference"
+                                  className="w-full text-xs p-1.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
@@ -1149,7 +2032,7 @@ export default function AdminArticleEditorV2() {
                       : 'border-transparent text-slate-400 hover:text-slate-700'
                   }`}
                 >
-                  Editor
+                  Editor (JSON)
                 </button>
               </div>
 
@@ -1195,98 +2078,24 @@ export default function AdminArticleEditorV2() {
             </div>
 
             {/* Simulated Live Reader Canvas */}
-            <div
-              className={`w-full overflow-y-auto max-h-[750px] p-4 bg-white dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-xl space-y-3.5 transition-all text-left ${
-                previewDevice === 'mobile'
-                  ? 'max-w-[340px] mx-auto'
-                  : previewDevice === 'tablet'
-                  ? 'max-w-[480px] mx-auto'
-                  : 'w-full'
-              }`}
-            >
-              {/* Breadcrumb */}
-              <div className="text-[10px] text-slate-400 font-mono flex items-center gap-1 flex-wrap">
-                <span>Home</span>
-                <span>&gt;</span>
-                <span>Articles</span>
-                <span>&gt;</span>
-                <span className="capitalize">{article.category}</span>
-                <span>&gt;</span>
-                <span className="text-slate-600 dark:text-slate-300 font-medium truncate max-w-[150px]">
-                  {article.title}
-                </span>
+            {previewTab === 'preview' ? (
+              <div
+                className={`w-full overflow-y-auto max-h-[800px] p-4 bg-white dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-xl space-y-4 transition-all text-left ${
+                  previewDevice === 'mobile'
+                    ? 'max-w-[340px] mx-auto shadow-lg border-2 border-slate-700'
+                    : previewDevice === 'tablet'
+                    ? 'max-w-[500px] mx-auto shadow-lg border-2 border-slate-700'
+                    : 'w-full'
+                }`}
+              >
+                {/* Real-time ArticleRenderer Simulation */}
+                <ArticleRenderer article={article} previewMode={true} />
               </div>
-
-              {/* Title */}
-              <h2 className="text-lg font-black text-slate-900 dark:text-white leading-tight">
-                {article.title || 'How to Calculate Concrete Volume'}
-              </h2>
-
-              {/* Meta row */}
-              <div className="flex items-center gap-2 text-[10px] text-slate-400">
-                <span>By <span className="text-blue-600 dark:text-blue-400 font-medium">{article.author}</span></span>
-                <span>·</span>
-                <span>{article.readTimeMinutes || 8} min read</span>
-                <span>·</span>
-                <span>Updated Sep 27, 2026</span>
+            ) : (
+              <div className="w-full max-h-[800px] overflow-auto p-3 bg-slate-900 text-slate-200 rounded-xl font-mono text-[11px] leading-relaxed">
+                <pre>{JSON.stringify(article, null, 2)}</pre>
               </div>
-
-              {/* Hero Image */}
-              {article.coverImage && (
-                <div className="rounded-xl overflow-hidden aspect-video bg-slate-900">
-                  <img
-                    src={article.coverImage}
-                    alt={article.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-
-              {/* Intro paragraph */}
-              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed m-0">
-                Concrete volume is the total amount of concrete required for a structure. It is an essential calculation in construction for estimation, cost control and material planning.
-              </p>
-
-              {/* Rendered Formula Card */}
-              <div className="p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 space-y-2">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white">
-                  <span className="text-purple-600 font-serif italic">fx</span>
-                  <span>Concrete Volume Formula</span>
-                </div>
-                <div className="py-1 text-center">
-                  <MathFormula equation="V = L \times W \times H" />
-                </div>
-                <div className="text-[10px] text-slate-600 dark:text-slate-400 font-mono space-y-0.5">
-                  <div>V = Concrete volume (m³)</div>
-                  <div>L = Length (m)</div>
-                  <div>W = Width (m)</div>
-                  <div>H = Height or Thickness (m)</div>
-                </div>
-              </div>
-
-              {/* Rendered Step-by-Step Method */}
-              <div className="space-y-2 pt-1">
-                <div className="text-xs font-bold text-slate-900 dark:text-white">
-                  Step by Step Method
-                </div>
-                <div className="space-y-2">
-                  {[
-                    'Identify the structure and dimensions',
-                    'Convert all dimensions to metres',
-                    'Use the formula V = L × W × H',
-                    'Calculate the volume',
-                    'Add wastage if required (2% – 5%)',
-                  ].map((st, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
-                      <span className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[9px] shrink-0">
-                        {idx + 1}
-                      </span>
-                      <span>{st}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* ══════════════════════════════════════════════════════════════════
@@ -1379,9 +2188,19 @@ export default function AdminArticleEditorV2() {
 
             {/* Card 2: SEO Settings */}
             <div className="bg-white dark:bg-[#0F172A] border border-gray-200 dark:border-slate-800 rounded-2xl p-4 space-y-3 shadow-2xs">
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white">
-                SEO Settings
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white">
+                  SEO Settings
+                </h3>
+                <button
+                  type="button"
+                  onClick={handleAutoSeo}
+                  className="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  <span>Auto-fill</span>
+                </button>
+              </div>
 
               {/* SEO Title */}
               <div>
