@@ -14,11 +14,14 @@ export interface RelatedArticlesCardProps {
 
 export default function RelatedArticlesCard({
   title = 'Related Engineering Guides & References',
-  articleSlugs = [],
+  articleSlugs,
   currentSlug,
   category,
 }: RelatedArticlesCardProps) {
   const [articles, setArticles] = useState<Article[]>([]);
+
+  // Stable key to prevent infinite re-render loop from array reference creation
+  const slugsKey = articleSlugs && articleSlugs.length > 0 ? articleSlugs.join(',') : '';
 
   useEffect(() => {
     let isMounted = true;
@@ -59,7 +62,7 @@ export default function RelatedArticlesCard({
     return () => {
       isMounted = false;
     };
-  }, [articleSlugs, currentSlug, category]);
+  }, [slugsKey, currentSlug, category]);
 
   if (articles.length === 0) return null;
 

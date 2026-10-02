@@ -80,13 +80,17 @@ test.describe('Smoke tests', () => {
     await expect(p.locator('body')).toContainText('Articles & Content Administration');
   });
 
-  test('articles directory and detail load', async ({ page: p }) => {
+  test('articles directory, detail load, and browser back navigation', async ({ page: p }) => {
     await p.goto(`${BASE}/articles`);
     await expect(p.locator('h1')).toContainText('Civil Engineering Calculation Articles');
     const firstArticleLink = p.locator('a[href^="/articles/"]').first();
     if (await firstArticleLink.count() > 0) {
       await firstArticleLink.click();
       await expect(p.locator('h1')).toBeVisible();
+      await expect(p.locator('h1')).not.toHaveText('Civil Engineering Calculation Articles');
+      // Test browser back navigation restores directory
+      await p.goBack();
+      await expect(p.locator('h1')).toContainText('Civil Engineering Calculation Articles');
     }
   });
 

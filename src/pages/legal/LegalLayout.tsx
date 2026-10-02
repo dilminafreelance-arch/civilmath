@@ -117,6 +117,15 @@ export default function LegalLayout({
               <a
                 key={item.id}
                 href={`#${item.id}`}
+                onClick={e => {
+                  e.preventDefault();
+                  const el = document.getElementById(item.id);
+                  if (el) {
+                    const offset = el.getBoundingClientRect().top + window.pageYOffset - 80;
+                    window.scrollTo({ top: offset, behavior: 'smooth' });
+                    try { window.history.replaceState(null, '', `#${item.id}`); } catch {}
+                  }
+                }}
                 className="flex items-center gap-2 p-1.5 rounded-lg text-[#555C55] dark:text-[#A4B2A4] hover:text-[#657565] dark:hover:text-[#9FB19F] hover:bg-[#F3F1EC] dark:hover:bg-[#252B25] transition-colors no-underline"
               >
                 <span className="font-mono text-[11px] text-[#7B8978] w-5 shrink-0">{idx + 1}.</span>

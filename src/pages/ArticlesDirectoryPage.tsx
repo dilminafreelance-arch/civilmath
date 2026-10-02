@@ -34,15 +34,22 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string
 };
 
 export default function ArticlesDirectoryPage() {
-  const [articles, setArticles] = useState<Article[]>([]);
+  const [articles, setArticles] = useState<Article[]>(() => getAllArticleSummaries());
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<SortOption>('recommended');
 
   useEffect(() => {
-    setArticles(getAllArticleSummaries());
+    const cached = getAllArticleSummaries();
+    if (cached.length > 0) {
+      setArticles(cached);
+    }
     fetchAndSyncAllArticles()
-      .then(synced => setArticles(synced))
+      .then(synced => {
+        if (synced && synced.length > 0) {
+          setArticles(synced);
+        }
+      })
       .catch(err => console.error('Failed to sync articles in directory:', err));
   }, []);
 

@@ -126,6 +126,28 @@ export default function TableOfContents({
     return () => window.removeEventListener('scroll', handleScroll);
   }, [items]);
 
+  const handleItemClick = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    setMobileOpen(false);
+    setCurrentActiveId(id);
+    const element = document.getElementById(id);
+    if (element) {
+      const topOffset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - topOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
+      try {
+        window.history.replaceState(null, '', `#${id}`);
+      } catch {}
+    }
+    if (onSelect) {
+      onSelect(id);
+    }
+  };
+
   if (items.length === 0) return null;
 
   return (
@@ -151,13 +173,7 @@ export default function TableOfContents({
               <a
                 key={item.id}
                 href={`#${item.id}`}
-                onClick={e => {
-                  setMobileOpen(false);
-                  if (onSelect) {
-                    e.preventDefault();
-                    onSelect(item.id);
-                  }
-                }}
+                onClick={e => handleItemClick(e, item.id)}
                 className={`block py-1.5 px-2 rounded-lg no-underline transition-colors ${
                   item.level === 3 ? 'pl-6 text-[11px]' : ''
                 } ${
@@ -193,12 +209,7 @@ export default function TableOfContents({
               <a
                 key={item.id}
                 href={`#${item.id}`}
-                onClick={e => {
-                  if (onSelect) {
-                    e.preventDefault();
-                    onSelect(item.id);
-                  }
-                }}
+                onClick={e => handleItemClick(e, item.id)}
                 className={`block py-1.5 px-2.5 rounded-xl no-underline transition-all ${
                   item.level === 3 ? 'pl-5 text-[10.5px] opacity-90' : 'text-[11px]'
                 } ${

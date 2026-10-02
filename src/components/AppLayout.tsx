@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Sun, Moon, Menu, X, Bell,
   Home, Calculator, Search as SearchIcon, Keyboard,
-  BookOpen, LayoutDashboard, MessageSquare, Sparkles
+  BookOpen, LayoutDashboard, MessageSquare, Sparkles, ArrowLeft
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import GlobalSearch from './GlobalSearch';
@@ -108,16 +108,34 @@ export default function AppLayout() {
         {/* Floating Top Header */}
         <header className="sticky top-0 z-30 bg-surface-1/80 dark:bg-canvas-dark/80 backdrop-blur-xl px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3 border-b border-border-subtle transition-colors max-w-full overflow-hidden">
           <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
-            {/* Logo on Article pages when left sidebar is hidden */}
+            {/* Logo and Back button on Article pages */}
             {isArticlesActive && (
-              <Link to="/" className="flex items-center gap-2 mr-1 no-underline text-ink shrink-0 group">
-                <div className="w-8 h-8 rounded-xl bg-brand text-white flex items-center justify-center font-bold text-xs shadow-xs group-hover:scale-105 transition-transform">
-                  CM
-                </div>
-                <span className="font-extrabold text-sm tracking-tight hidden sm:inline text-ink">
-                  CivilMath
-                </span>
-              </Link>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== 'undefined' && window.history.length > 1) {
+                      navigate(-1);
+                    } else {
+                      navigate('/articles');
+                    }
+                  }}
+                  className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border border-border-subtle bg-surface-1 dark:bg-surface-2 text-ink-muted hover:text-ink text-xs font-semibold cursor-pointer shadow-2xs flex items-center gap-1 shrink-0 transition-colors"
+                  title="Go back"
+                  aria-label="Go back"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline">Back</span>
+                </button>
+                <Link to="/" className="flex items-center gap-2 mr-1 no-underline text-ink shrink-0 group">
+                  <div className="w-8 h-8 rounded-xl bg-brand text-white flex items-center justify-center font-bold text-xs shadow-xs group-hover:scale-105 transition-transform">
+                    CM
+                  </div>
+                  <span className="font-extrabold text-sm tracking-tight hidden sm:inline text-ink">
+                    CivilMath
+                  </span>
+                </Link>
+              </div>
             )}
 
             {/* Mobile Hamburger Button (only when not viewing articles) */}

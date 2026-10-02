@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Calendar, Clock, User, Share2, Printer, Check,
   ArrowLeft, ArrowRight, Calculator, ExternalLink, ShieldAlert
@@ -81,27 +81,50 @@ export default function ArticleRenderer({
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'noopener,noreferrer');
   };
 
+  const navigate = useNavigate();
+
+  const handleGoBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/articles');
+    }
+  };
+
   return (
     <article className="w-full pb-16 selection:bg-[#657565]/20">
       {!previewMode && <ArticleReadingProgress />}
 
-      {/* Breadcrumb Navigation */}
+      {/* Back button & Breadcrumb Navigation */}
       {!previewMode && (
-        <nav aria-label="Breadcrumb" className="text-xs text-[#7B8978] flex items-center gap-1.5 font-mono mb-6">
-          <Link to="/" className="hover:text-[#20231F] dark:hover:text-white transition-colors no-underline">
-            Home
-          </Link>
-          <span>/</span>
-          <Link to="/articles" className="hover:text-[#20231F] dark:hover:text-white transition-colors no-underline">
-            Articles
-          </Link>
-          <span>/</span>
-          <span className="capitalize text-[#7B8978] hidden sm:inline">{article.category}</span>
-          <span className="hidden sm:inline">/</span>
-          <span className="text-[#20231F] dark:text-[#EAE7E0] font-bold truncate max-w-[200px] sm:max-w-xs">
-            {article.title}
-          </span>
-        </nav>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <button
+            type="button"
+            onClick={handleGoBack}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#D8D0C2] dark:border-[#384238] bg-[#FAF9F6] dark:bg-[#1E221E] text-xs font-semibold text-[#657565] dark:text-[#A1B3A1] hover:text-[#20231F] dark:hover:text-white transition-colors cursor-pointer shadow-2xs group"
+            title="Go back to previous page"
+            aria-label="Go back to previous page"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+            <span>Back</span>
+          </button>
+
+          <nav aria-label="Breadcrumb" className="text-xs text-[#7B8978] flex items-center gap-1.5 font-mono overflow-hidden">
+            <Link to="/" className="hover:text-[#20231F] dark:hover:text-white transition-colors no-underline shrink-0">
+              Home
+            </Link>
+            <span>/</span>
+            <Link to="/articles" className="hover:text-[#20231F] dark:hover:text-white transition-colors no-underline shrink-0">
+              Articles
+            </Link>
+            <span>/</span>
+            <span className="capitalize text-[#7B8978] hidden sm:inline shrink-0">{article.category}</span>
+            <span className="hidden sm:inline">/</span>
+            <span className="text-[#20231F] dark:text-[#EAE7E0] font-bold truncate max-w-[160px] sm:max-w-xs">
+              {article.title}
+            </span>
+          </nav>
+        </div>
       )}
 
       {/* Top Article Header Section */}

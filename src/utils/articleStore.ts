@@ -328,6 +328,37 @@ export function normalizeArticleData(raw: any, fallbackSlug?: string): Article {
   };
 }
 
+// Helper to strip heavy content before saving to localStorage to prevent QuotaExceededError
+export function toArticleSummary(art: Article): Article {
+  return {
+    id: art.id,
+    slug: art.slug,
+    title: art.title,
+    h1: art.h1,
+    excerpt: art.excerpt,
+    category: art.category,
+    author: art.author,
+    publishedAt: art.publishedAt,
+    createdAt: art.createdAt,
+    updatedAt: art.updatedAt,
+    readTimeMinutes: art.readTimeMinutes,
+    status: art.status,
+    coverImage: art.coverImage,
+    coverImageUrl: art.coverImageUrl,
+    tags: art.tags,
+    seo: art.seo ? {
+      seoTitle: art.seo.seoTitle,
+      metaDescription: art.seo.metaDescription,
+      primaryKeyword: art.seo.primaryKeyword,
+      secondaryKeywords: art.seo.secondaryKeywords || [],
+      lsiKeywords: art.seo.lsiKeywords || [],
+      canonicalUrl: art.seo.canonicalUrl,
+      noindex: art.seo.noindex,
+    } : undefined,
+    isBuiltin: art.isBuiltin,
+  };
+}
+
 // Helper to get custom articles stored in localStorage
 export function getStoredCustomArticles(): Article[] {
   if (typeof window === 'undefined') return [];
@@ -345,13 +376,28 @@ export function getStoredCustomArticles(): Article[] {
   }
 }
 
-// Helper to persist custom articles into localStorage
+// Helper to persist custom articles into localStorage (summaries only to strictly avoid quota limits)
 export function setStoredCustomArticles(articles: Article[]) {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(articles));
+    const summaries = articles.map(toArticleSummary);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(summaries));
   } catch (err) {
-    console.error('Failed to save custom articles to localStorage:', err);
+    console.warn('LocalStorage save quota warning, attempting compact save:', err);
+    try {
+      const minimal = articles.map(a => ({
+        slug: a.slug,
+        title: a.title,
+        excerpt: a.excerpt ? a.excerpt.slice(0, 120) : '',
+        category: a.category,
+        publishedAt: a.publishedAt,
+        readTimeMinutes: a.readTimeMinutes,
+        status: a.status,
+      }));
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(minimal));
+    } catch (fallbackErr) {
+      console.error('Failed to save even minimal articles to localStorage:', fallbackErr);
+    }
   }
 }
 
