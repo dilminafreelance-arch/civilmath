@@ -147,7 +147,10 @@ export function SEO({
   children,
 }: SEOProps) {
   const url = canonicalUrl ? (canonicalUrl.startsWith('http') ? canonicalUrl : `${SITE_URL}${canonicalUrl.startsWith('/') ? canonicalUrl : `/${canonicalUrl}`}`) : SITE_URL;
-  const image = ogImage ? (ogImage.startsWith('http') ? ogImage : `${SITE_URL}${ogImage.startsWith('/') ? ogImage : `/${ogImage}`}`) : DEFAULT_IMAGE;
+  // data: URIs are not valid og:image values (crawlers can't fetch them) — fall back to the default image.
+  const image = ogImage && !ogImage.startsWith('data:')
+    ? (ogImage.startsWith('http') ? ogImage : `${SITE_URL}${ogImage.startsWith('/') ? ogImage : `/${ogImage}`}`)
+    : DEFAULT_IMAGE;
 
   const schemas: Record<string, any>[] = [];
   if (schema) {
