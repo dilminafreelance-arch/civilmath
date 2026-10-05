@@ -77,6 +77,16 @@ export const ALL_ROUTES_SEO: RouteSEOConfig[] = [
     isCalculator: true,
   },
   {
+    path: '/concrete/cost',
+    title: 'Concrete Slab Cost Calculator | Price per Sq Ft | CivilMath',
+    description: 'Free concrete slab cost calculator. Enter slab or pad dimensions and your local ready-mix price to estimate concrete volume, total material cost, and price per square foot.',
+    keywords: ['concrete slab cost calculator', 'concrete slab price calculator', 'cost calculator for concrete slab', 'concrete pad cost calculator', 'concrete price per square foot', 'ready mix concrete price estimator'],
+    priority: 0.9,
+    changefreq: 'weekly',
+    category: 'concrete',
+    isCalculator: true,
+  },
+  {
     path: '/structural',
     title: 'Structural Engineering Design & Analysis Tools | CivilMath',
     description: 'Free structural analysis calculators for simply supported beams, short column axial capacity, slab deflection limits, and steel section weights on CivilMath.',

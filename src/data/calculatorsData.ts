@@ -32,6 +32,16 @@ export const CALCULATORS_LIST: CalculatorDef[] = [
     trending: true,
     featured: true,
   },
+  {
+    id: 'concrete-cost',
+    name: 'Concrete Slab Cost Calculator',
+    category: 'concrete',
+    slug: 'cost',
+    description: 'Estimates ready-mix concrete volume, total material cost, and price per square foot for slabs and pads from dimensions and local supplier pricing.',
+    iconName: 'DollarSign',
+    trending: true,
+    featured: true,
+  },
   // Structural
   {
     id: 'structural-beam',
