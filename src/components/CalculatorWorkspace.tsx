@@ -12,7 +12,6 @@ import { UnitSystem, SavedCalculation, CURRENCY_MAPPING } from '../types';
 import { ExportModal } from './ExportModal';
 import { encodeCalculationToUrl, parseCalculationFromUrl, copyShareLinkToClipboard } from '../utils/shareUrl';
 import Visual3DPreview from './Visual3DPreview';
-import BrickEstimator3D from './BrickEstimator3D';
 import BBSCalculator from './BBSCalculator';
 import { UniversalBBSCalculator } from '../UniversalBBSCalculator';
 import { CALCULATORS_LIST, FORMULA_REFERENCES } from '../data/calculatorsData';
