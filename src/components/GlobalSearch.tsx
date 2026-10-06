@@ -17,8 +17,14 @@ export default function GlobalSearch() {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setOpen(true); }
       if (event.key === 'Escape') setOpen(false);
     };
+    // Dedicated event for the mobile bottom-nav Search button (no fake keydown needed)
+    const openListener = () => setOpen(true);
     window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    window.addEventListener('civilmath:open-search', openListener);
+    return () => {
+      window.removeEventListener('keydown', handler);
+      window.removeEventListener('civilmath:open-search', openListener);
+    };
   }, []);
 
   const results = useMemo(() => {

@@ -317,7 +317,7 @@ export default function AppLayout() {
             <div className="flex-1 flex justify-center">
               <button
                 onClick={() => {
-                  window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
+                  window.dispatchEvent(new CustomEvent('civilmath:open-search'));
                 }}
                 className="flex flex-col items-center justify-center h-14 min-w-[3.25rem] px-2.5 rounded-full text-ink-muted dark:text-ink-muted-dark transition-colors duration-200 cursor-pointer"
                 aria-label="Search"
