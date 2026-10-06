@@ -40,6 +40,24 @@ export default function AppLayout() {
   const [chatOpen, setChatOpen] = useState(false);
   const notifButtonRef = useRef<HTMLDivElement>(null);
 
+  // Gem slider scroll progress (drives the bottom-bar gem indicator)
+  const [scrollProgress, setScrollProgress] = useState(0);
+  useEffect(() => {
+    const update = () => {
+      const el = document.documentElement;
+      const max = el.scrollHeight - el.clientHeight;
+      const y = window.scrollY || el.scrollTop || 0;
+      setScrollProgress(max > 0 ? Math.min(1, Math.max(0, y / max)) : 0);
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, []);
+
   // Close mobile drawer on Escape / route change
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -287,57 +305,115 @@ export default function AppLayout() {
         <RightUtilityPanel className="hidden 2xl:flex sticky top-0 h-screen" />
       )}
 
-      {/* Floating Bottom Mobile Navigation Bar */}
-      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 xl:hidden flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-1.5 bg-surface-1/90 dark:bg-surface-2/95 backdrop-blur-xl border border-border-subtle rounded-2xl shadow-xl select-none touch-manipulation max-w-[calc(100vw-16px)]">
-        <Link
-          to="/"
-          className={`flex flex-col items-center px-3 py-1 rounded-xl text-[10px] font-bold no-underline transition-colors ${
-            location.pathname === '/' ? 'text-brand dark:text-brand-light bg-brand/10' : 'text-ink-muted dark:text-ink-muted-dark'
-          }`}
-        >
-          <Home className="w-4 h-4 mb-0.5" />
-          <span>Home</span>
-        </Link>
-        <Link
-          to="/calculators"
-          className={`flex flex-col items-center px-3 py-1 rounded-xl text-[10px] font-bold no-underline transition-colors ${
-            isCalculatorsActive ? 'text-brand dark:text-brand-light bg-brand/10' : 'text-ink-muted dark:text-ink-muted-dark'
-          }`}
-        >
-          <Calculator className="w-4 h-4 mb-0.5" />
-          <span>Calculators</span>
-        </Link>
-        <button
-          onClick={() => {
-            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
-          }}
-          className="flex flex-col items-center px-3 py-1 rounded-xl text-[10px] font-bold text-ink-muted dark:text-ink-muted-dark transition-colors cursor-pointer"
-        >
-          <SearchIcon className="w-4 h-4 mb-0.5" />
-          <span>Search</span>
-        </button>
-        <Link
-          to="/articles"
-          className={`flex flex-col items-center px-3 py-1 rounded-xl text-[10px] font-bold no-underline transition-colors ${
-            isArticlesActive ? 'text-brand dark:text-brand-light bg-brand/10' : 'text-ink-muted dark:text-ink-muted-dark'
-          }`}
-        >
-          <BookOpen className="w-4 h-4 mb-0.5" />
-          <span>Articles</span>
-        </Link>
-        <button
-          onClick={() => setChatOpen(prev => !prev)}
-          className={`flex flex-col items-center px-2.5 sm:px-3 py-1 rounded-xl text-[10px] font-bold transition-colors cursor-pointer ${
-            chatOpen ? 'text-brand dark:text-brand-light bg-brand/10' : 'text-ink-muted dark:text-ink-muted-dark'
-          }`}
-          aria-label="Toggle Engineering Assistant AI"
-        >
-          <div className="relative">
-            <Sparkles className="w-4 h-4 mb-0.5" />
-            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-brand rounded-full" />
+      {/* Floating Bottom Mobile Navigation Bar — balanced pill with gem scroll indicator */}
+      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 xl:hidden w-[calc(100%-1.5rem)] max-w-[430px]">
+        <div className="flex flex-col rounded-[1.75rem] bg-white/90 dark:bg-surface-2/95 backdrop-blur-xl border border-black/[0.06] dark:border-white/10 shadow-[0_10px_36px_rgba(20,60,40,0.16)] px-4 pt-2.5 pb-1.5 select-none touch-manipulation">
+          {/* Gem scroll-progress slider */}
+          <div className="flex items-center gap-1.5" aria-hidden="true">
+            <Sparkles className="w-3 h-3 text-ink-muted/50 shrink-0" />
+            <div className="relative flex-1 h-7">
+              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-2 rounded-full bg-black/[0.07] dark:bg-white/10" />
+              <div className="absolute inset-x-2.5 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <span key={i} className="w-px h-2.5 rounded-full bg-black/15 dark:bg-white/25" />
+                ))}
+              </div>
+              <div
+                className="absolute top-1/2 -translate-y-1/2 h-2 rounded-full bg-[var(--brand-primary)] transition-[left] duration-150"
+                style={{ left: `${scrollProgress * 100}%`, right: 0 }}
+              />
+              <div
+                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-[left] duration-150"
+                style={{ left: `${scrollProgress * 100}%` }}
+              >
+                <svg viewBox="0 0 32 32" className="w-6 h-6 drop-shadow-[0_2px_4px_rgba(0,0,0,0.25)]">
+                  <circle cx="16" cy="16" r="13" fill="var(--brand-primary)" />
+                  <circle cx="16" cy="16" r="13" fill="none" stroke="#0b3527" strokeOpacity="0.55" strokeWidth="1.5" />
+                  {[0, 45, 90, 135].map((a) => (
+                    <line
+                      key={a}
+                      x1="16"
+                      y1="16"
+                      x2={16 + 13 * Math.cos((a * Math.PI) / 180)}
+                      y2={16 + 13 * Math.sin((a * Math.PI) / 180)}
+                      stroke="#ffffff"
+                      strokeOpacity="0.28"
+                      strokeWidth="1"
+                    />
+                  ))}
+                  <circle cx="16" cy="16" r="8.5" fill="none" stroke="#ffffff" strokeOpacity="0.28" strokeWidth="1" />
+                  <circle cx="16" cy="16" r="4" fill="none" stroke="#ffffff" strokeOpacity="0.28" strokeWidth="1" />
+                  <ellipse cx="12" cy="10.5" rx="3.4" ry="2.1" fill="#ffffff" opacity="0.35" transform="rotate(-25 12 10.5)" />
+                </svg>
+              </div>
+            </div>
+            <Sparkles className="w-3 h-3 text-ink-muted/50 shrink-0" />
           </div>
-          <span>AI</span>
-        </button>
+
+          {/* Nav items — five equal cells, active item gets the highlight pill */}
+          <nav className="flex items-stretch mt-0.5">
+            <div className="flex-1 flex justify-center">
+              <Link
+                to="/"
+                className={`flex flex-col items-center justify-center h-14 min-w-[3.25rem] px-2.5 rounded-full no-underline transition-colors duration-200 ${
+                  location.pathname === '/' ? 'bg-brand/10 text-brand dark:text-brand-light' : 'text-ink-muted dark:text-ink-muted-dark'
+                }`}
+              >
+                <Home className="w-5 h-5" />
+                <span className="text-[10px] font-bold leading-none mt-1">Home</span>
+              </Link>
+            </div>
+            <div className="flex-1 flex justify-center">
+              <Link
+                to="/calculators"
+                className={`flex flex-col items-center justify-center h-14 min-w-[3.25rem] px-2.5 rounded-full no-underline transition-colors duration-200 ${
+                  isCalculatorsActive ? 'bg-brand/10 text-brand dark:text-brand-light' : 'text-ink-muted dark:text-ink-muted-dark'
+                }`}
+              >
+                <Calculator className="w-5 h-5" />
+                <span className="text-[10px] font-bold leading-none mt-1">Calculators</span>
+              </Link>
+            </div>
+            <div className="flex-1 flex justify-center">
+              <button
+                onClick={() => {
+                  window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
+                }}
+                className="flex flex-col items-center justify-center h-14 min-w-[3.25rem] px-2.5 rounded-full text-ink-muted dark:text-ink-muted-dark transition-colors duration-200 cursor-pointer"
+                aria-label="Search"
+              >
+                <SearchIcon className="w-5 h-5" />
+                <span className="text-[10px] font-bold leading-none mt-1">Search</span>
+              </button>
+            </div>
+            <div className="flex-1 flex justify-center">
+              <Link
+                to="/articles"
+                className={`flex flex-col items-center justify-center h-14 min-w-[3.25rem] px-2.5 rounded-full no-underline transition-colors duration-200 ${
+                  isArticlesActive ? 'bg-brand/10 text-brand dark:text-brand-light' : 'text-ink-muted dark:text-ink-muted-dark'
+                }`}
+              >
+                <BookOpen className="w-5 h-5" />
+                <span className="text-[10px] font-bold leading-none mt-1">Articles</span>
+              </Link>
+            </div>
+            <div className="flex-1 flex justify-center">
+              <button
+                onClick={() => setChatOpen(prev => !prev)}
+                className={`flex flex-col items-center justify-center h-14 min-w-[3.25rem] px-2.5 rounded-full transition-colors duration-200 cursor-pointer ${
+                  chatOpen ? 'bg-brand/10 text-brand dark:text-brand-light' : 'text-ink-muted dark:text-ink-muted-dark'
+                }`}
+                aria-label="Toggle Engineering Assistant AI"
+              >
+                <div className="relative">
+                  <Sparkles className="w-5 h-5" />
+                  <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-brand rounded-full" />
+                </div>
+                <span className="text-[10px] font-bold leading-none mt-1">AI</span>
+              </button>
+            </div>
+          </nav>
+        </div>
       </div>
 
       {/* Floating ChatBot Assistant (Controlled from Mobile Bottom Bar or Desktop Floating Bubble) */}
