@@ -87,6 +87,16 @@ export const ALL_ROUTES_SEO: RouteSEOConfig[] = [
     isCalculator: true,
   },
   {
+    path: '/concrete/steps',
+    title: 'Concrete Step Calculator | Stair Volume & Cost | CivilMath',
+    description: 'Free concrete step calculator. Enter riser height, tread depth, number of steps, and stair width to estimate concrete volume, waist slab, landing, and material cost.',
+    keywords: ['concrete step calculator', 'concrete stairs calculator', 'stair concrete volume', 'concrete steps estimator', 'how much concrete for steps', 'concrete staircase calculator'],
+    priority: 0.9,
+    changefreq: 'weekly',
+    category: 'concrete',
+    isCalculator: true,
+  },
+  {
     path: '/structural',
     title: 'Structural Engineering Design & Analysis Tools | CivilMath',
     description: 'Free structural analysis calculators for simply supported beams, short column axial capacity, slab deflection limits, and steel section weights on CivilMath.',

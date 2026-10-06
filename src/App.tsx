@@ -20,6 +20,7 @@ const ConcreteVolumePage = lazy(() => import('./pages/calculators/ConcreteVolume
 const RebarCalculatorPage = lazy(() => import('./pages/calculators/RebarCalculatorPage'));
 const BrickCalculatorPage = lazy(() => import('./pages/calculators/BrickCalculatorPage'));
 const ConcreteCostPage = lazy(() => import('./pages/calculators/ConcreteCostPage'));
+const ConcreteStepsPage = lazy(() => import('./pages/calculators/ConcreteStepsPage'));
 const BeamAnalysisPage = lazy(() => import('./pages/calculators/BeamAnalysisPage'));
 const ColumnDesignPage = lazy(() => import('./pages/calculators/ColumnDesignPage'));
 const SlabDeflectionPage = lazy(() => import('./pages/calculators/SlabDeflectionPage'));
@@ -152,6 +153,7 @@ export default function App() {
               <Route path="/concrete/rebar" element={<Suspense fallback={<SuspenseFallback />}><RebarCalculatorPage /></Suspense>} />
               <Route path="/concrete/brick" element={<Suspense fallback={<SuspenseFallback />}><BrickCalculatorPage /></Suspense>} />
               <Route path="/concrete/cost" element={<Suspense fallback={<SuspenseFallback />}><ConcreteCostPage /></Suspense>} />
+              <Route path="/concrete/steps" element={<Suspense fallback={<SuspenseFallback />}><ConcreteStepsPage /></Suspense>} />
 
               {/* Structural Calculator Pages */}
               <Route path="/structural/beam" element={<Suspense fallback={<SuspenseFallback />}><BeamAnalysisPage /></Suspense>} />
@@ -214,6 +216,7 @@ export default function App() {
               <Route path="/calculators/concrete" element={<Navigate to="/concrete" replace />} />
               <Route path="/calculators/concrete-volume" element={<Navigate to="/concrete/volume" replace />} />
               <Route path="/calculators/concrete-cost" element={<Navigate to="/concrete/cost" replace />} />
+              <Route path="/calculators/concrete-steps" element={<Navigate to="/concrete/steps" replace />} />
               <Route path="/calculators/rebar" element={<Navigate to="/concrete/rebar" replace />} />
               <Route path="/calculators/brick" element={<Navigate to="/concrete/brick" replace />} />
               <Route path="/calculators/beam" element={<Navigate to="/structural/beam" replace />} />

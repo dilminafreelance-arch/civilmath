@@ -42,6 +42,16 @@ export const CALCULATORS_LIST: CalculatorDef[] = [
     trending: true,
     featured: true,
   },
+  {
+    id: 'concrete-steps',
+    name: 'Concrete Step Calculator',
+    category: 'concrete',
+    slug: 'steps',
+    description: 'Estimates concrete volume, waist slab, and landing for straight-run stairs from riser height, tread depth, step count, width, and local ready-mix pricing.',
+    iconName: 'TrendingUp',
+    trending: true,
+    featured: true,
+  },
   // Structural
   {
     id: 'structural-beam',
