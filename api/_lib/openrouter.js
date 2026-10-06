@@ -91,8 +91,62 @@ export async function callOpenRouter({
   throw lastError || new Error("Unable to get a valid response from OpenRouter.");
 }
 
-export function stripMarkdownJson(content) {
-  let cleanContent = content.trim();
+/**
+ * Streaming variant of callOpenRouter: returns the upstream fetch Response
+ * whose body is an SSE event stream (requires `stream: true` passthrough).
+ * Fails fast across the model fallback list — no retry sleeps, so the first
+ * token arrives as quickly as possible. The caller pipes response.body to the
+ * client. Other callers of callOpenRouter are unaffected.
+ */
+export async function streamOpenRouter({
+  messages,
+  temperature = 0.7,
+  maxTokens = 800,
+  title = "CivilMath AI Assistant",
+}) {
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+  if (!openrouterKey) {
+    const err = new Error("OpenRouter API Key not configured.");
+    err.code = "NO_KEY";
+    throw err;
+  }
+
+  let lastError = null;
+
+  for (const currentModel of MODELS) {
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${openrouterKey}`,
+          "HTTP-Referer": process.env.APP_URL || "https://civilmath.com",
+          "X-Title": title,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: currentModel,
+          messages,
+          temperature,
+          max_tokens: maxTokens,
+          stream: true,
+        }),
+      });
+
+      if (!response.ok || !response.body) {
+        const errorText = await response.text().catch(() => "");
+        throw new Error(`OpenRouter HTTP ${response.status}: ${errorText}`);
+      }
+
+      return response;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error("Unable to get a valid response from OpenRouter.");
+}
+
+export function stripMarkdownJson(content) {  let cleanContent = content.trim();
   if (cleanContent.startsWith("```json")) {
     cleanContent = cleanContent.slice(7);
   } else if (cleanContent.startsWith("```")) {

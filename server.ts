@@ -1080,73 +1080,64 @@ app.post("/api/chat", chatLimiter, async (req, res) => {
 
     const systemMessage = {
       role: "system",
-      content: "You are CivilMath AI, an educational civil-engineering assistant. Provide cautious, formula-grounded explanations. Do not claim code compliance, prescribe final design decisions, or invent standards; state that project requirements and applicable standards must be checked by a qualified professional. Keep responses concise, clear, and well-formatted in markdown. You can answer general civil engineering questions or analyze calculations if context is provided."
+      content: "You are CivilMath AI, an educational civil-engineering assistant. Provide cautious, formula-grounded explanations. Do not claim code compliance, prescribe final design decisions, or invent standards; state that project requirements and applicable standards must be checked by a qualified professional. Keep responses concise, clear, and well-formatted in markdown. You can answer general civil engineering questions or analyze calculations if context is provided. LANGUAGE: detect the language of the user's latest message and always reply in that same language (for example English, Sinhala, Tamil, Spanish, French, German, Portuguese, or Hindi). If the message mixes languages, use the dominant one."
     };
 
     const apiMessages = [systemMessage, ...messages];
 
-    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-    let resultText = "";
     const models = ["google/gemini-2.5-flash", "openai/gpt-4o-mini", "google/gemma-3-27b-it"];
 
-    for (let i = 0; i < models.length; i++) {
-      const currentModel = models[i];
-      let success = false;
+    // Stream tokens as they arrive (fail fast across the fallback models).
+    let upstream: Response | null = null;
+    let lastError: any = null;
 
-      for (let attempt = 1; attempt <= 2; attempt++) {
-        try {
-          console.log(`Sending chat request to OpenRouter. Model: ${currentModel}, Attempt: ${attempt}`);
+    for (const currentModel of models) {
+      try {
+        console.log(`Streaming chat request to OpenRouter. Model: ${currentModel}`);
 
-          const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${openrouterKey}`,
-              "HTTP-Referer": process.env.APP_URL || "https://ai.studio/build",
-              "X-Title": "CivilMath AI Assistant Chat",
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              model: currentModel,
-              messages: apiMessages,
-              temperature: 0.7
-            })
-          });
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${openrouterKey}`,
+            "HTTP-Referer": process.env.APP_URL || "https://civilmath.com",
+            "X-Title": "CivilMath AI Assistant Chat",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: currentModel,
+            messages: apiMessages,
+            temperature: 0.7,
+            max_tokens: 800,
+            stream: true
+          })
+        });
 
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`OpenRouter HTTP ${response.status}: ${errorText}`);
-          }
-
-          const data = await response.json();
-          const content = data?.choices?.[0]?.message?.content?.trim();
-
-          if (content) {
-            resultText = content;
-            success = true;
-            break;
-          } else {
-            throw new Error(`OpenRouter returned empty content on model ${currentModel}`);
-          }
-
-        } catch (err: any) {
-          console.warn(`Chat attempt ${attempt} on model ${currentModel} failed:`, err.message || err);
-          if (attempt < 2) {
-            await sleep(1000);
-          }
+        if (!response.ok || !response.body) {
+          const errorText = await response.text().catch(() => "");
+          throw new Error(`OpenRouter HTTP ${response.status}: ${errorText}`);
         }
-      }
 
-      if (success && resultText) {
+        upstream = response;
         break;
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`Chat stream on model ${currentModel} failed:`, err.message || err);
       }
     }
 
-    if (!resultText) {
-      throw new Error("Unable to get valid chat response from OpenRouter after trying multiple models.");
+    if (!upstream?.body) {
+      throw lastError || new Error("Unable to get valid chat response from OpenRouter after trying multiple models.");
     }
 
-    return res.json({ response: resultText, status: "success" });
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      "Connection": "keep-alive",
+    });
+    for await (const chunk of upstream.body as any) {
+      res.write(chunk);
+    }
+    res.end();
 
   } catch (error: any) {
     console.error("AI Chat Error:", error);

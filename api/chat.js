@@ -1,4 +1,4 @@
-import { callOpenRouter, setCors } from "./_lib/openrouter.js";
+import { streamOpenRouter, setCors } from "./_lib/openrouter.js";
 
 export default async function handler(req, res) {
   setCors(res);
@@ -22,16 +22,27 @@ export default async function handler(req, res) {
     const systemMessage = {
       role: "system",
       content:
-        "You are CivilMath AI, an educational civil-engineering assistant. Provide cautious, formula-grounded explanations. Do not claim code compliance, prescribe final design decisions, or invent standards; state that project requirements and applicable standards must be checked by a qualified professional. Keep responses concise, clear, and well-formatted in markdown. IMPORTANT: You must ONLY answer questions related to mathematics, structural engineering, and civil engineering. If the user asks about another topic, politely decline.",
+        "You are CivilMath AI, an educational civil-engineering assistant. Provide cautious, formula-grounded explanations. Do not claim code compliance, prescribe final design decisions, or invent standards; state that project requirements and applicable standards must be checked by a qualified professional. Keep responses concise, clear, and well-formatted in markdown. IMPORTANT: You must ONLY answer questions related to mathematics, structural engineering, and civil engineering. If the user asks about another topic, politely decline. LANGUAGE: detect the language of the user's latest message and always reply in that same language (for example English, Sinhala, Tamil, Spanish, French, German, Portuguese, or Hindi). If the message mixes languages, use the dominant one.",
     };
 
-    const content = await callOpenRouter({
+    // Stream tokens to the client as they arrive (much faster perceived
+    // response than waiting for the full completion).
+    const upstream = await streamOpenRouter({
       messages: [systemMessage, ...messages],
       temperature: 0.7,
+      maxTokens: 800,
       title: "CivilMath AI Assistant Chat",
     });
 
-    return res.status(200).json({ response: content, status: "success" });
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+    });
+    for await (const chunk of upstream.body) {
+      res.write(chunk);
+    }
+    res.end();
   } catch (error) {
     if (error?.code === "NO_KEY") {
       return res.status(500).json({
@@ -40,6 +51,11 @@ export default async function handler(req, res) {
       });
     }
     console.error("AI Chat Error:", error);
+    // If we already started streaming, just end the stream; otherwise JSON error.
+    if (res.headersSent) {
+      try { res.end(); } catch { /* noop */ }
+      return;
+    }
     return res.status(500).json({
       error: "Unable to process your message. Please try again.",
       status: "error",

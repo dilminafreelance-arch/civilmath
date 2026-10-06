@@ -121,9 +121,49 @@ export const ChatBot: React.FC<ChatBotProps> = ({
 
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
         body: JSON.stringify({ messages: apiPayload })
       });
+
+      const contentType = response.headers.get('content-type') || '';
+
+      if (contentType.includes('text/event-stream') && response.body) {
+        // Streaming path: render tokens as they arrive.
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let acc = '';
+        // Insert an empty assistant bubble immediately so tokens paint into it.
+        setMessages([...updatedMessages, { role: 'assistant', content: '' }]);
+
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith('data:')) continue;
+            const data = trimmed.slice(5).trim();
+            if (!data || data === '[DONE]') continue;
+            try {
+              const json = JSON.parse(data);
+              const delta: string = json?.choices?.[0]?.delta?.content || '';
+              if (delta) {
+                acc += delta;
+                setMessages([...updatedMessages, { role: 'assistant', content: acc }]);
+              }
+            } catch {
+              // Partial JSON chunk — wait for more data.
+            }
+          }
+        }
+
+        const finalText = acc.trim() || '*No response received from the AI engine.*';
+        saveChatHistory([...updatedMessages, { role: 'assistant', content: finalText }]);
+        return;
+      }
 
       const text = await response.text();
       let data: any = null;
@@ -379,7 +419,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({
             >
               <input
                 type="text"
-                placeholder="Ask CivilMath AI... (e.g. concrete slump)"
+                placeholder="Ask CivilMath AI… (English, සිංහල, தமிழ்…)"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 disabled={isLoading}
