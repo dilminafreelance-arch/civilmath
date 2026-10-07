@@ -530,6 +530,14 @@ export async function getArticleBySlug(slug: string): Promise<Article | undefine
   // 3. Try backend API / Supabase
   try {
     const res = await fetch(`/api/articles/${encodeURIComponent(normalizedSlug)}`);
+    if (res.status === 404) {
+      // Definitive "does not exist" — callers use this to decide noindex.
+      // A distinct error (not undefined) so transient failures aren't
+      // mistaken for a missing article.
+      const notFound: any = new Error(`Article not found: ${normalizedSlug}`);
+      notFound.code = 'ARTICLE_NOT_FOUND';
+      throw notFound;
+    }
     if (res.ok) {
       const text = await res.text();
       if (text && text.trim()) {
@@ -556,7 +564,8 @@ export async function getArticleBySlug(slug: string): Promise<Article | undefine
         }
       }
     }
-  } catch {
+  } catch (e: any) {
+    if (e?.code === 'ARTICLE_NOT_FOUND') throw e;
     // server API not available or offline, fine to ignore
   }
 

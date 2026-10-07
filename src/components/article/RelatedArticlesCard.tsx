@@ -33,9 +33,13 @@ export default function RelatedArticlesCard({
       if (articleSlugs && articleSlugs.length > 0) {
         for (const s of articleSlugs) {
           if (s === currentSlug) continue;
-          const art = await getArticleBySlug(s);
-          if (art && !results.some(r => r.slug === art.slug)) {
-            results.push(art);
+          try {
+            const art = await getArticleBySlug(s);
+            if (art && !results.some(r => r.slug === art.slug)) {
+              results.push(art);
+            }
+          } catch {
+            // Missing article (404) or transient failure — skip it.
           }
         }
       }
@@ -46,9 +50,13 @@ export default function RelatedArticlesCard({
           s => s.slug !== currentSlug && !results.some(r => r.slug === s.slug) && (category ? s.category === category : true)
         );
         for (const fb of fallbacks.slice(0, 3 - results.length)) {
-          const art = await getArticleBySlug(fb.slug);
-          if (art && !results.some(r => r.slug === art.slug)) {
-            results.push(art);
+          try {
+            const art = await getArticleBySlug(fb.slug);
+            if (art && !results.some(r => r.slug === art.slug)) {
+              results.push(art);
+            }
+          } catch {
+            // Missing article (404) or transient failure — skip it.
           }
         }
       }

@@ -32,6 +32,12 @@ export default function ArticleDetailPageV2() {
   });
   const [allArticles, setAllArticles] = useState<Article[]>(() => getAllArticleSummaries());
   const [loading, setLoading] = useState<boolean>(() => !cached);
+  // confirmedMissing = API definitively said 404 (or article is a draft hidden
+  // from the public). Only in this case may the page noindex itself.
+  // loadError = the fetch failed transiently (network/timeout/abort). This must
+  // NEVER noindex — a bot with a flaky fetch would otherwise deindex real pages.
+  const [loadError, setLoadError] = useState<boolean>(false);
+  const [confirmedMissing, setConfirmedMissing] = useState<boolean>(false);
 
   // Load article and directory (SWR pattern: instant render + background refresh)
   useEffect(() => {
@@ -41,6 +47,7 @@ export default function ArticleDetailPageV2() {
     if (syncArt) {
       if (syncArt.status === 'draft' && !isAdmin && !isPreviewParam) {
         setArticle(null);
+        setConfirmedMissing(true);
       } else {
         setArticle(syncArt);
       }
@@ -49,20 +56,31 @@ export default function ArticleDetailPageV2() {
       setLoading(true);
     }
 
+    setLoadError(false);
+    setConfirmedMissing(false);
     getArticleBySlug(slug)
       .then(data => {
         if (data) {
           if (data.status === 'draft' && !isAdmin && !isPreviewParam) {
             setArticle(null);
+            setConfirmedMissing(true);
           } else {
             setArticle(data);
           }
         } else if (!syncArt) {
-          setArticle(null);
+          // Fetch failed transiently (network/timeout/abort) — do NOT treat as
+          // "not found". Show a retryable error WITHOUT noindex.
+          setLoadError(true);
         }
       })
-      .catch(() => {
-        if (!syncArt) setArticle(null);
+      .catch((e) => {
+        if (e?.code === 'ARTICLE_NOT_FOUND' && !syncArt) {
+          // API definitively returned 404 — safe to noindex.
+          setArticle(null);
+          setConfirmedMissing(true);
+        } else if (!syncArt) {
+          setLoadError(true);
+        }
       })
       .finally(() => {
         setLoading(false);
@@ -85,7 +103,7 @@ export default function ArticleDetailPageV2() {
     );
   }
 
-  if (!article) {
+  if (!article && confirmedMissing) {
     return (
       <div className="py-20 text-center max-w-lg mx-auto space-y-4">
         <SEOHead
@@ -110,6 +128,45 @@ export default function ArticleDetailPageV2() {
           <ArrowLeft className="w-3.5 h-3.5" />
           Browse All Articles
         </Link>
+      </div>
+    );
+  }
+
+  if (!article && loadError) {
+    // Transient fetch failure — deliberately NO noindex here. A bot (or user)
+    // with a flaky connection must never cause a real article to deindex.
+    return (
+      <div className="py-20 text-center max-w-lg mx-auto space-y-4">
+        <h1 className="text-2xl font-bold text-[#20231F] dark:text-[#EAE7E0]">Couldn't load the article</h1>
+        <p className="text-xs text-[#7B8978] leading-relaxed">
+          Something went wrong while loading this article. Please check your connection and try again.
+        </p>
+        <div className="flex items-center justify-center gap-3">
+          <button
+            onClick={() => window.location.reload()}
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#657565] hover:bg-[#536153] text-white rounded-xl text-xs font-bold transition-all shadow-2xs"
+          >
+            Try Again
+          </button>
+          <Link
+            to="/articles"
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold no-underline transition-all border border-[#657565]/30 text-[#657565]"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Browse All Articles
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!article) {
+    // Shouldn't normally happen (loading covers the fetch window), but never
+    // leave crawlers on a blank page — and never noindex without confirmation.
+    return (
+      <div className="py-24 text-center max-w-lg mx-auto space-y-4">
+        <div className="w-8 h-8 border-2 border-[#657565] border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="text-xs font-mono text-[#7B8978]">Loading technical engineering article...</p>
       </div>
     );
   }
