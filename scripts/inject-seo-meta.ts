@@ -155,33 +155,14 @@ function mapArticleRow(row: any): PageMeta & { slug: string } | null {
 }
 
 async function fetchArticles(): Promise<(PageMeta & { slug: string })[]> {
-  // 1) Direct Supabase read (build env provides these on Vercel).
-  const supaUrl = process.env.SUPABASE_URL;
-  const supaKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (supaUrl && supaKey) {
-    try {
-      const supabase = createClient(supaUrl, supaKey);
-      const { data, error } = await supabase
-        .from('articles')
-        .select('slug,title,summary,image_url,tags,published')
-        .eq('published', true);
-      if (!error && Array.isArray(data)) {
-        console.log(`[inject-seo-meta] Fetched ${data.length} articles from Supabase.`);
-        return data
-          .map(mapArticleRow)
-          .filter((a): a is PageMeta & { slug: string } => a !== null);
-      }
-      console.warn('[inject-seo-meta] Supabase query failed:', error?.message);
-    } catch (e: any) {
-      console.warn('[inject-seo-meta] Supabase fetch failed:', e?.message);
-    }
-  } else {
-    console.warn(
-      '[inject-seo-meta] SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set; trying live API.',
-    );
-  }
-
-  // 2) Live API fallback (previous production deployment).
+  // 1) Live API first (previous production deployment). This is the most
+  //    reliable source at build time: it reads straight from Supabase at
+  //    request time, so newly published articles are included even before
+  //    the new deployment goes live. NOTE: an empty result falls through to
+  //    the next source instead of silently winning (a silent 0-article
+  //    result here once caused every /articles/<slug> page to ship with the
+  //    homepage canonical, which Search Console flagged as
+  //    "Alternate page with proper canonical tag").
   try {
     const res = await fetch(`${SITE_URL}/api/articles?bulk=true`);
     if (res.ok) {
@@ -206,12 +187,43 @@ async function fetchArticles(): Promise<(PageMeta & { slug: string })[]> {
           };
         })
         .filter((a): a is PageMeta & { slug: string } => a !== null);
-      console.log(`[inject-seo-meta] Fetched ${mapped.length} articles from live API.`);
-      return mapped;
+      if (mapped.length > 0) {
+        console.log(`[inject-seo-meta] Fetched ${mapped.length} articles from live API.`);
+        return mapped;
+      }
+      console.warn('[inject-seo-meta] Live API returned 0 articles; trying Supabase direct.');
+    } else {
+      console.warn('[inject-seo-meta] Live API returned status', res.status);
     }
-    console.warn('[inject-seo-meta] Live API returned status', res.status);
   } catch (e: any) {
     console.warn('[inject-seo-meta] Live API fetch failed:', e?.message);
+  }
+
+  // 2) Direct Supabase read (build env provides these on Vercel).
+  const supaUrl = process.env.SUPABASE_URL;
+  const supaKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (supaUrl && supaKey) {
+    try {
+      const supabase = createClient(supaUrl, supaKey);
+      const { data, error } = await supabase
+        .from('articles')
+        .select('slug,title,summary,image_url,tags,published')
+        .eq('published', true);
+      if (!error && Array.isArray(data) && data.length > 0) {
+        console.log(`[inject-seo-meta] Fetched ${data.length} articles from Supabase.`);
+        return data
+          .map(mapArticleRow)
+          .filter((a): a is PageMeta & { slug: string } => a !== null);
+      }
+      console.warn(
+        '[inject-seo-meta] Supabase query failed or returned 0 rows:',
+        error?.message ?? 'empty',
+      );
+    } catch (e: any) {
+      console.warn('[inject-seo-meta] Supabase fetch failed:', e?.message);
+    }
+  } else {
+    console.warn('[inject-seo-meta] SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set.');
   }
 
   console.warn('[inject-seo-meta] No article source available; article pages keep SPA shell meta.');
