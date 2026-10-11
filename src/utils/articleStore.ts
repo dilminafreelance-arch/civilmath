@@ -458,6 +458,33 @@ export async function fetchAndSyncAllArticles(): Promise<Article[]> {
 }
 
 /**
+ * Build-time embedded article data (scripts/prerender-articles.ts writes it as
+ * <script id="ssr-article-data" type="application/json"> into each
+ * /articles/<slug>/index.html). Lets the article page render instantly from the
+ * HTML itself — no API wait, no loading spinner — with a background refresh
+ * still fetching the latest version.
+ */
+function getEmbeddedArticleSync(slug: string): Article | undefined {
+  try {
+    if (typeof document === 'undefined') return undefined;
+    const el = document.getElementById('ssr-article-data');
+    if (!el || !el.textContent) return undefined;
+    const data = JSON.parse(el.textContent);
+    if (
+      data &&
+      typeof data.slug === 'string' &&
+      data.slug.toLowerCase().trim() === slug.toLowerCase().trim() &&
+      (data.content || data.blocks?.length)
+    ) {
+      return normalizeArticleData(data, slug);
+    }
+  } catch {
+    /* malformed embed — fall through to other caches */
+  }
+  return undefined;
+}
+
+/**
  * Synchronously retrieves an article from in-memory cache or localStorage.
  * Enables zero-millisecond instantaneous page rendering.
  */
@@ -473,7 +500,14 @@ export function getCachedArticleSync(slug?: string): Article | undefined {
     }
   }
 
-  // 2. Custom storage (localStorage)
+  // 2. Build-time embedded article data (instant, no fetch)
+  const embedded = getEmbeddedArticleSync(normalizedSlug);
+  if (embedded) {
+    articleCache.set(normalizedSlug, embedded);
+    return embedded;
+  }
+
+  // 3. Custom storage (localStorage)
   const customList = getStoredCustomArticles();
   const foundCustom = customList.find(a => a.slug.toLowerCase() === normalizedSlug);
   if (foundCustom && (foundCustom.content || foundCustom.blocks?.length)) {
