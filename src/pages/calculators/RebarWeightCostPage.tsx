@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import CalculatorPageTemplate from '../../components/CalculatorPageTemplate';
+import { CALCULATOR_FAQS } from '../../data/calculatorFaqs';
 import DownloadResultsPdf from '../../components/DownloadResultsPdf';
 import { NumericInput } from '../../components/NumericInput';
 import { Button, Card } from '../../components/ui';
@@ -173,23 +174,7 @@ export default function RebarWeightCostPage() {
       category="structural"
       path="/rebar/weight-cost"
       breadcrumbLabel="Rebar Weight & Cost"
-      faqs={[
-        {
-          question: 'How is rebar weight calculated?',
-          answer:
-            'Imperial: total weight = number of bars × length per bar × the ASTM A615 standard unit weight for the selected bar size (#3–#11), e.g. #4 bar weighs 0.668 lb/ft. Metric: unit weight (kg/m) = diameter² ÷ 162.2, where diameter is in mm — this comes from the steel density of 7850 kg/m³. Your waste margin is added on top.',
-        },
-        {
-          question: 'What steel price should I enter?',
-          answer:
-            'Enter the price your local supplier quotes per pound (US) or per kilogram. US retail rebar is often roughly $0.50–$0.90/lb depending on region, bar size, and quantity, and prices move with steel markets — confirm with a supplier before budgeting. Delivery, cutting, bending, tax, and lap-splice extras are not included.',
-        },
-        {
-          question: 'Does this include lap splices and hooks?',
-          answer:
-            'No. Lap splice lengths and hooks must be added to your bar lengths before calculating — check the project drawings and specifications for the required lap lengths. The waste margin covers cutting waste only, not splices.',
-        },
-      ]}
+      faqs={CALCULATOR_FAQS['/rebar/weight-cost']}
     >
       <Card elevation="raised" className="p-5 shadow-xs">
         <div className="mb-5 flex items-center justify-between gap-3">

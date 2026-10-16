@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import CalculatorPageTemplate from '../../components/CalculatorPageTemplate';
+import { CALCULATOR_FAQS } from '../../data/calculatorFaqs';
 import DownloadResultsPdf from '../../components/DownloadResultsPdf';
 import { NumericInput } from '../../components/NumericInput';
 import { Button, Card } from '../../components/ui';
@@ -126,23 +127,7 @@ export default function ConcreteCostPage() {
       category="concrete"
       path="/concrete/cost"
       breadcrumbLabel="Slab Cost"
-      faqs={[
-        {
-          question: 'How is the concrete slab cost calculated?',
-          answer:
-            'The calculator finds the slab volume (length × width × thickness), converts it to cubic yards (or cubic metres), adds your waste margin for spillage and over-excavation, then multiplies by the ready-mix price you enter. It also shows the price per square foot (or square metre) so you can compare quotes.',
-        },
-        {
-          question: 'What ready-mix price should I enter?',
-          answer:
-            'Enter the price your local supplier quotes per cubic yard (US typical range is roughly $120–$180/yd³ depending on region, mix strength, and delivery distance). Prices move with fuel and cement costs, so confirm with a supplier before ordering. Delivery, short-load, and weekend fees are not included.',
-        },
-        {
-          question: 'Does this include labor, forms, and rebar?',
-          answer:
-            'No. This is a ready-mix material cost estimate only. Formwork, reinforcement, subgrade preparation, placement labor, and finishing are separate costs — typically they exceed the concrete material cost on residential slabs.',
-        },
-      ]}
+      faqs={CALCULATOR_FAQS['/concrete/cost']}
     >
       <Card elevation="raised" className="p-5 shadow-xs">
         <div className="mb-5 flex items-center justify-between gap-3">

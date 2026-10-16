@@ -1,4 +1,5 @@
 import { CalculatorCategory } from '../types';
+import { CALCULATOR_FAQS, type FaqItem } from '../data/calculatorFaqs';
 
 export const SITE_URL = 'https://civilmath.com';
 export const SITE_NAME = 'CivilMath';
@@ -15,6 +16,7 @@ export interface RouteSEOConfig {
   changefreq: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
   category?: CalculatorCategory;
   isCalculator?: boolean;
+  faqs?: FaqItem[];
 }
 
 /**
@@ -84,6 +86,7 @@ export const ALL_ROUTES_SEO: RouteSEOConfig[] = [
     priority: 0.9,
     changefreq: 'weekly',
     category: 'concrete',
+    faqs: CALCULATOR_FAQS['/concrete/cost'],
     isCalculator: true,
   },
   {
@@ -94,6 +97,7 @@ export const ALL_ROUTES_SEO: RouteSEOConfig[] = [
     priority: 0.9,
     changefreq: 'weekly',
     category: 'concrete',
+    faqs: CALCULATOR_FAQS['/concrete/steps'],
     isCalculator: true,
   },
   {
@@ -104,6 +108,7 @@ export const ALL_ROUTES_SEO: RouteSEOConfig[] = [
     priority: 0.9,
     changefreq: 'weekly',
     category: 'structural',
+    faqs: CALCULATOR_FAQS['/rebar/weight-cost'],
     isCalculator: true,
   },
   {

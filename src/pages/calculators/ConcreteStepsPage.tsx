@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import CalculatorPageTemplate from '../../components/CalculatorPageTemplate';
+import { CALCULATOR_FAQS } from '../../data/calculatorFaqs';
 import DownloadResultsPdf from '../../components/DownloadResultsPdf';
 import { Button } from '../../components/ui';
 import { NumericInput } from '../../components/NumericInput';
@@ -185,28 +186,7 @@ export default function ConcreteStepsPage() {
       category="concrete"
       path="/concrete/steps"
       breadcrumbLabel="Steps"
-      faqs={[
-        {
-          question: 'How is the concrete volume for steps calculated?',
-          answer:
-            'Each step is treated as a rectangular block: riser height × tread depth × stair width, multiplied by the number of steps. If you enter a waist slab thickness, the sloped slab under the steps is added (thickness × slope length × width), and an optional top landing is added as length × width × thickness. A waste margin is then applied and the result is priced at your ready-mix rate.',
-        },
-        {
-          question: 'What is the waist slab and do I need it?',
-          answer:
-            'The waist slab is the sloped concrete slab that the steps sit on, spanning the full incline of the staircase. Freestanding exterior stairs usually need one (typically 4–6 in thick). If your steps are built over solid compacted fill or sit on an existing slab, enter 0 and the calculator estimates the steps alone.',
-        },
-        {
-          question: 'What riser and tread sizes should I use?',
-          answer:
-            'Common residential guidance (e.g., IRC R311.7) limits risers to about 7¾ in (197 mm) and requires treads of at least 10 in (254 mm). Many builders aim for a comfortable 7 in riser with an 11 in tread. Always verify against your local building code before construction — requirements vary by jurisdiction.',
-        },
-        {
-          question: 'Does this include rebar, formwork, and labor?',
-          answer:
-            'No. This is a ready-mix material volume and cost estimate only. Reinforcement, formwork, subgrade preparation, placement labor, finishing, delivery and short-load fees are separate costs — get a written supplier quote before ordering.',
-        },
-      ]}
+      faqs={CALCULATOR_FAQS['/concrete/steps']}
     >
       <Card elevation="raised" className="p-5 shadow-xs">
         <div className="mb-5 flex items-center justify-between gap-3">

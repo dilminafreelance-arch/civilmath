@@ -64,6 +64,21 @@ interface PageMeta {
   ogType: 'website' | 'article';
   ogImage: string;
   noindex?: boolean;
+  faqs?: { question: string; answer: string }[];
+}
+
+/** FAQPage JSON-LD so crawlers see FAQ rich-result eligibility in static HTML. */
+function faqJsonLd(faqs: { question: string; answer: string }[]): string {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  };
+  return `<script type="application/ld+json" data-rh="true">${JSON.stringify(schema)}</script>`;
 }
 
 function headTags(m: PageMeta): string {
@@ -104,13 +119,19 @@ function stripSeoTags(html: string): string {
     '',
   );
   out = out.replace(/<link[^>]+rel=["']canonical["'][^>]*\/?>/gi, '');
+  // Remove only previously injected FAQPage JSON-LD (keep other schema intact).
+  out = out.replace(
+    /<script[^>]+type=["']application\/ld\+json["'][^>]*>\s*\{\s*"@context"\s*:\s*"https:\/\/schema\.org"\s*,\s*"@type"\s*:\s*"FAQPage"[\s\S]*?<\/script>/gi,
+    '',
+  );
   return out;
 }
 
 function injectMeta(html: string, meta: PageMeta): string {
   let out = stripSeoTags(html);
   out = out.replace(/<title><\/title>/i, `<title>${esc(meta.title)}</title>`);
-  out = out.replace(/<\/head>/i, `    ${headTags(meta)}\n  </head>`);
+  const extra = meta.faqs && meta.faqs.length > 0 ? `\n    ${faqJsonLd(meta.faqs)}` : '';
+  out = out.replace(/<\/head>/i, `    ${headTags(meta)}${extra}\n  </head>`);
   return out;
 }
 
@@ -247,6 +268,7 @@ async function main() {
       canonical: r.path === '/' ? `${SITE_URL}/` : `${SITE_URL}${r.path}`,
       ogType: 'website',
       ogImage: DEFAULT_IMAGE,
+      faqs: r.faqs,
     },
   }));
 
