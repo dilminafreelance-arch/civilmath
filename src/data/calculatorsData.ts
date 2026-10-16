@@ -52,6 +52,16 @@ export const CALCULATORS_LIST: CalculatorDef[] = [
     trending: true,
     featured: true,
   },
+  {
+    id: 'rebar-weight-cost',
+    name: 'Rebar Weight & Cost Calculator',
+    category: 'structural',
+    slug: 'weight-cost',
+    description: 'Estimates total rebar weight and material cost from ASTM bar size or metric diameter, bar count, length, and local steel pricing.',
+    iconName: 'DollarSign',
+    trending: true,
+    featured: true,
+  },
   // Structural
   {
     id: 'structural-beam',

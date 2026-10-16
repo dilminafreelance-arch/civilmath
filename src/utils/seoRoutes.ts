@@ -97,6 +97,16 @@ export const ALL_ROUTES_SEO: RouteSEOConfig[] = [
     isCalculator: true,
   },
   {
+    path: '/rebar/weight-cost',
+    title: 'Rebar Weight & Cost Calculator | Steel Price Estimator | CivilMath',
+    description: 'Free rebar weight and cost calculator. Select ASTM bar size or metric diameter, enter bar count, length, and steel price to estimate total rebar weight and material cost.',
+    keywords: ['rebar weight calculator', 'rebar cost calculator', 'steel bar weight calculator', 'rebar price calculator', 'how much does rebar cost', 'rebar weight per foot', 'astm rebar unit weight'],
+    priority: 0.9,
+    changefreq: 'weekly',
+    category: 'structural',
+    isCalculator: true,
+  },
+  {
     path: '/structural',
     title: 'Structural Engineering Design & Analysis Tools | CivilMath',
     description: 'Free structural analysis calculators for simply supported beams, short column axial capacity, slab deflection limits, and steel section weights on CivilMath.',
