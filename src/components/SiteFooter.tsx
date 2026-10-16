@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Mail, CheckCircle2 } from 'lucide-react';
+import NewsletterSignup from './NewsletterSignup';
 
 export default function SiteFooter() {
   return (
@@ -153,6 +154,15 @@ export default function SiteFooter() {
           <p className="m-0 leading-relaxed text-[11px]">
             <strong className="text-[#141A16] dark:text-[#ECF2EE]">Professional Engineering Notice:</strong> All calculators, formulas, diagrams, and material takeoffs provided by CivilMath are intended strictly for educational study, preliminary estimation, and technical planning. Calculations must be verified against project specifications and certified by a licensed Professional Engineer (PE/CEng).
           </p>
+        </div>
+
+        {/* Newsletter */}
+        <div className="my-6 flex flex-col sm:flex-row sm:items-center gap-3 justify-between rounded-xl bg-white dark:bg-[#131715] border border-[#E2E6E2] dark:border-white/8 p-4 shadow-2xs">
+          <div className="flex items-center gap-2 text-xs text-[#526058] dark:text-[#97A69E]">
+            <Mail className="w-4 h-4 text-[#2E6B56] dark:text-[#34D399] shrink-0" />
+            <span className="font-semibold">New calculators & cost guides, monthly. No spam.</span>
+          </div>
+          <NewsletterSignup source="footer" compact />
         </div>
 
         {/* Bottom Credits & Copyright */}

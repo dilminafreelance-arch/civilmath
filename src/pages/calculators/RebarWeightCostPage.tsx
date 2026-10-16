@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import CalculatorPageTemplate from '../../components/CalculatorPageTemplate';
 import { CALCULATOR_FAQS } from '../../data/calculatorFaqs';
 import DownloadResultsPdf from '../../components/DownloadResultsPdf';
+import NewsletterSignup from '../../components/NewsletterSignup';
 import { NumericInput } from '../../components/NumericInput';
 import { Button, Card } from '../../components/ui';
 import { AlertTriangle, Calculator } from 'lucide-react';
@@ -314,6 +315,10 @@ export default function RebarWeightCostPage() {
               : 'Enter your bars and price, then press Calculate to see the estimate.'}
           </p>
         )}
+      </Card>
+
+      <Card elevation="flat" className="mt-4 p-5">
+        <NewsletterSignup source="rebar" />
       </Card>
 
       <section className="mt-8 max-w-4xl" aria-label="Method and assumptions">

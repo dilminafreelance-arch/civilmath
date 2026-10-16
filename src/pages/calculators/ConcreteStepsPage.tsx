@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import CalculatorPageTemplate from '../../components/CalculatorPageTemplate';
 import { CALCULATOR_FAQS } from '../../data/calculatorFaqs';
 import DownloadResultsPdf from '../../components/DownloadResultsPdf';
+import NewsletterSignup from '../../components/NewsletterSignup';
 import { Button } from '../../components/ui';
 import { NumericInput } from '../../components/NumericInput';
 import { Card } from '../../components/ui';
@@ -364,6 +365,10 @@ export default function ConcreteStepsPage() {
               : 'Enter your stair dimensions and price, then press Calculate to see the estimate.'}
           </p>
         )}
+      </Card>
+
+      <Card elevation="flat" className="mt-4 p-5">
+        <NewsletterSignup source="concrete-steps" />
       </Card>
 
       <section className="mt-8 max-w-4xl" aria-label="Method and assumptions">
