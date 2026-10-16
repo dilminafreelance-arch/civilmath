@@ -52,6 +52,7 @@ const TOPICAL_RELATED_MAP: Record<string, RelatedLink[]> = {
     { id: 'bbs-slab', name: 'Slab BBS Calculator', description: 'One-way and two-way reinforced concrete slab rebar schedule and mesh detailing.', path: '/bbs/slab' },
   ],
   'rebar-calculator': [
+    { id: 'rebar-weight-cost', name: 'Rebar Weight & Cost Calculator', description: 'Estimate total rebar weight and material cost from bar size, count, length, and steel price.', path: '/rebar/weight-cost' },
     { id: 'concrete-volume', name: 'Concrete Volume Estimator', description: 'Calculate concrete volume, cement bags, sand, and aggregate requirements.', path: '/concrete/volume' },
     { id: 'bbs-beam', name: 'Beam BBS Calculator', description: 'Top, bottom, and stirrup reinforcement schedules with bend deductions.', path: '/bbs/beam' },
     { id: 'bbs-column', name: 'Column BBS Calculator', description: 'Vertical main rebar and lateral tie reinforcement cutting schedules.', path: '/bbs/column' },

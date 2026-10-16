@@ -4,7 +4,7 @@ import { motion } from 'motion/react';
 import {
   Search, Calculator, Sparkles, Layers, Grid, GitCommit,
   Compass, RefreshCw, Activity, Clipboard, Weight,
-  ChevronRight, ArrowRight, CheckCircle2, Shield
+  ChevronRight, ArrowRight, CheckCircle2, Shield, DollarSign
 } from 'lucide-react';
 import { SEO, SITE_URL, DEFAULT_IMAGE } from '../utils/seo';
 import { CALCULATORS_LIST } from '../data/calculatorsData';
@@ -106,6 +106,18 @@ const ALL_DIRECTORY_CALCULATORS: CalculatorDirectoryItem[] = [
     code: 'AISC / ASTM A6',
     trending: true,
     icon: Weight,
+  },
+  {
+    id: 'rebar-weight-cost',
+    name: 'Rebar Weight & Cost Calculator',
+    category: 'structural',
+    categoryLabel: 'Structural Engineering',
+    path: '/rebar/weight-cost',
+    description: 'Estimate total rebar weight and material cost from ASTM bar size or metric diameter, bar count, length, and steel price.',
+    code: 'ASTM A615',
+    featured: true,
+    trending: true,
+    icon: DollarSign,
   },
 
   // Bar Bending Schedules (BBS)
