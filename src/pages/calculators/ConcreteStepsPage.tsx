@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 import CalculatorPageTemplate from '../../components/CalculatorPageTemplate';
+import DownloadResultsPdf from '../../components/DownloadResultsPdf';
+import { Button } from '../../components/ui';
 import { NumericInput } from '../../components/NumericInput';
 import { Card } from '../../components/ui';
 import { AlertTriangle, Calculator, Info } from 'lucide-react';
@@ -64,8 +66,22 @@ export default function ConcreteStepsPage() {
   const [landingThick, setLandingThick] = useState(4);
   const [price, setPrice] = useState(150);
   const [waste, setWaste] = useState(7);
+  const [submitted, setSubmitted] = useState<{
+    units: UnitSystem; steps: number; riser: number; tread: number; width: number;
+    waist: number; landingLen: number; landingThick: number; price: number; waste: number;
+  } | null>(null);
+  const [popKey, setPopKey] = useState(0);
+
+  const handleCalculate = () => {
+    setSubmitted({ units, steps, riser, tread, width, waist, landingLen, landingThick, price, waste });
+    setPopKey((k) => k + 1);
+  };
 
   const result = useMemo(() => {
+    if (!submitted) return null;
+    const {
+      units, steps, riser, tread, width, waist, landingLen, landingThick, price, waste,
+    } = submitted;
     const n = Math.max(1, Math.round(steps));
     const valid =
       Number.isFinite(n) &&
@@ -110,6 +126,8 @@ export default function ConcreteStepsPage() {
         totalCost,
         hasWaist: waist > 0,
         hasLanding: landingLen > 0,
+        imperial: units === 'imperial',
+        wastePct: waste,
       };
     }
 
@@ -143,7 +161,7 @@ export default function ConcreteStepsPage() {
       hasWaist: waist > 0,
       hasLanding: landingLen > 0,
     };
-  }, [units, steps, riser, tread, width, waist, landingLen, landingThick, price, waste]);
+  }, [submitted]);
 
   const codeWarning = useMemo(() => {
     if (units === 'imperial') {
@@ -285,6 +303,18 @@ export default function ConcreteStepsPage() {
           />
         </div>
 
+        <div className="mt-5">
+          <Button
+            variant="primary"
+            size="lg"
+            icon={Calculator}
+            onClick={handleCalculate}
+            className="w-full sm:w-auto"
+          >
+            Calculate
+          </Button>
+        </div>
+
         {codeWarning && (
           <Card elevation="flat" className="mt-4 flex gap-3 p-4">
             <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
@@ -294,9 +324,37 @@ export default function ConcreteStepsPage() {
       </Card>
 
       <Card elevation="blueprint" className="mt-4 p-5">
-        <h2 className="mb-4 text-sm font-bold text-ink">Estimate</h2>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-sm font-bold text-ink">Estimate</h2>
+          {result && (
+            <DownloadResultsPdf
+              title="Concrete Steps — Estimate"
+              fileName="civilmath-concrete-steps-estimate.pdf"
+              inputs={[
+                { label: 'Steps', value: `${result.n} steps` },
+                { label: 'Riser / tread', value: `${submitted?.riser} × ${submitted?.tread} ${result.imperial ? 'in' : 'cm'}` },
+                { label: 'Stair width', value: `${submitted?.width} ${result.imperial ? 'ft' : 'm'}` },
+                { label: 'Ready-mix price', value: `${usd.format(submitted?.price ?? 0)} / ${result.imperial ? 'yd³' : 'm³'}` },
+                { label: 'Waste margin', value: `${result.wastePct}%` },
+              ]}
+              results={[
+                { label: 'Total rise / run', value: `${result.totalRiseLabel} / ${result.totalRunLabel}` },
+                { label: 'Steps concrete', value: result.stepsLabel },
+                ...(result.hasWaist ? [{ label: 'Waist slab', value: result.waistLabel }] : []),
+                ...(result.hasLanding ? [{ label: 'Landing', value: result.landingLabel }] : []),
+                { label: 'Order with waste', value: result.volumeOrderLabel, sub: `Net volume ${result.volumeLabel}` },
+                { label: 'Estimated material cost', value: usd.format(result.totalCost) },
+              ]}
+              notes={[
+                'Straight-run stairs with identical steps assumed.',
+                'Riser/tread must comply with the local building code.',
+                'Excludes reinforcement, formwork, labor, finishing, delivery fees, and taxes.',
+              ]}
+            />
+          )}
+        </div>
         {result ? (
-          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <dl key={popKey} className="animate-bounce-in grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="rounded-xl bg-surface-1 p-4">
               <dt className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">Stair geometry</dt>
               <dd className="mt-1 text-xl font-bold text-ink">{result.n} steps</dd>
@@ -311,17 +369,19 @@ export default function ConcreteStepsPage() {
             <div className="rounded-xl bg-surface-1 p-4">
               <dt className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">Order with waste</dt>
               <dd className="mt-1 text-xl font-bold text-ink">{result.volumeOrderLabel}</dd>
-              <dd className="text-[10px] text-ink-muted">Net volume {result.volumeLabel} · includes {waste}% waste</dd>
+              <dd className="text-[10px] text-ink-muted">Net volume {result.volumeLabel} · includes {result.wastePct}% waste</dd>
             </div>
             <div className="rounded-xl bg-brand/10 p-4">
               <dt className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">Estimated material cost</dt>
               <dd className="mt-1 text-3xl font-bold text-brand">{usd.format(result.totalCost)}</dd>
-              <dd className="text-[11px] font-semibold text-ink-secondary">At {usd.format(price)} per {units === 'imperial' ? 'yd³' : 'm³'}</dd>
+              <dd className="text-[11px] font-semibold text-ink-secondary">At {usd.format(submitted?.price ?? 0)} per {result.imperial ? 'yd³' : 'm³'}</dd>
             </div>
           </dl>
         ) : (
           <p role="status" className="text-xs text-ink-muted">
-            Enter valid positive dimensions and price to see the estimate.
+            {submitted
+              ? 'Enter valid positive dimensions and price, then press Calculate.'
+              : 'Enter your stair dimensions and price, then press Calculate to see the estimate.'}
           </p>
         )}
       </Card>

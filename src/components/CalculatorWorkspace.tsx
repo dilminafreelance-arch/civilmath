@@ -576,6 +576,8 @@ export default function CalculatorWorkspace({
   // Global inputs state
   const [inputs, setInputs] = useState<Record<string, any>>({});
   const [outputs, setOutputs] = useState<Record<string, any>>({});
+  // Bumps on Calculate press so results visibly pop (key remount + bounce-in)
+  const [resultsPopKey, setResultsPopKey] = useState(0);
   const [paramUnits, setParamUnits] = useState<Record<string, string>>({});
   
   // Custom material output unit selections
@@ -3716,8 +3718,11 @@ export default function CalculatorWorkspace({
                   <button
                     type="button"
                     onClick={() => {
+                      setResultsPopKey((k) => k + 1);
                       if (window.innerWidth < 1024) {
                         document.getElementById('calculator-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      } else {
+                        document.getElementById('calculator-results')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                       }
                     }}
                     className="flex-1 py-2.5 px-4 rounded-xl bg-brand hover:bg-primary-dark text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
@@ -5241,7 +5246,7 @@ export default function CalculatorWorkspace({
           )}
 
           {/* DYNAMIC RESULTS SPECIFICS */}
-          <div className="space-y-3">
+          <div key={resultsPopKey} className={`space-y-3 ${resultsPopKey > 0 ? 'animate-bounce-in' : ''}`}>
             
             {calculatorId === 'concrete-volume' && (
               <div className="space-y-4 font-sans text-left">

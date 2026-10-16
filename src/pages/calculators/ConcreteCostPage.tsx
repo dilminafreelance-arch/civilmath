@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import CalculatorPageTemplate from '../../components/CalculatorPageTemplate';
+import DownloadResultsPdf from '../../components/DownloadResultsPdf';
 import { NumericInput } from '../../components/NumericInput';
-import { Card } from '../../components/ui';
+import { Button, Card } from '../../components/ui';
 import { AlertTriangle, Calculator } from 'lucide-react';
 
 const TITLE = 'Concrete Slab Cost Calculator';
@@ -52,6 +53,15 @@ function Field({ label, value, onChange, unit, min = 0, hint }: FieldProps) {
   );
 }
 
+interface CostInputs {
+  units: UnitSystem;
+  length: number;
+  width: number;
+  thickness: number;
+  price: number;
+  waste: number;
+}
+
 export default function ConcreteCostPage() {
   const [units, setUnits] = useState<UnitSystem>('imperial');
   const [length, setLength] = useState(20);
@@ -59,37 +69,51 @@ export default function ConcreteCostPage() {
   const [thickness, setThickness] = useState(4);
   const [price, setPrice] = useState(150);
   const [waste, setWaste] = useState(7);
+  const [submitted, setSubmitted] = useState<CostInputs | null>(null);
+  const [popKey, setPopKey] = useState(0);
+
+  const handleCalculate = () => {
+    setSubmitted({ units, length, width, thickness, price, waste });
+    setPopKey((k) => k + 1);
+  };
 
   const result = useMemo(() => {
-    if (!(length > 0) || !(width > 0) || !(thickness > 0) || !(price > 0) || waste < 0) {
+    if (!submitted) return null;
+    const { units: u, length: len, width: wid, thickness: th, price: pr, waste: wa } = submitted;
+    if (!(len > 0) || !(wid > 0) || !(th > 0) || !(pr > 0) || wa < 0) {
       return null;
     }
-    if (units === 'imperial') {
-      const volumeFt3 = length * width * (thickness / 12);
+    const imperial = u === 'imperial';
+    if (imperial) {
+      const volumeFt3 = len * wid * (th / 12);
       const volumeYd3 = volumeFt3 / 27;
-      const volumeOrder = volumeYd3 * (1 + waste / 100);
-      const totalCost = volumeOrder * price;
-      const areaFt2 = length * width;
+      const volumeOrder = volumeYd3 * (1 + wa / 100);
+      const totalCost = volumeOrder * pr;
+      const areaFt2 = len * wid;
       return {
+        imperial,
         volumeLabel: `${volumeYd3.toFixed(2)} yd³`,
         volumeOrderLabel: `${volumeOrder.toFixed(2)} yd³`,
         totalCost,
         unitCostLabel: `${usd.format(areaFt2 > 0 ? totalCost / areaFt2 : 0)} / ft²`,
         areaLabel: `${areaFt2.toFixed(0)} ft²`,
+        wasteNote: `Includes ${wa}% waste margin`,
       };
     }
-    const volumeM3 = length * width * (thickness / 100);
-    const volumeOrder = volumeM3 * (1 + waste / 100);
-    const totalCost = volumeOrder * price;
-    const areaM2 = length * width;
+    const volumeM3 = len * wid * (th / 100);
+    const volumeOrder = volumeM3 * (1 + wa / 100);
+    const totalCost = volumeOrder * pr;
+    const areaM2 = len * wid;
     return {
+      imperial,
       volumeLabel: `${volumeM3.toFixed(2)} m³`,
       volumeOrderLabel: `${volumeOrder.toFixed(2)} m³`,
       totalCost,
       unitCostLabel: `${usd.format(areaM2 > 0 ? totalCost / areaM2 : 0)} / m²`,
       areaLabel: `${areaM2.toFixed(1)} m²`,
+      wasteNote: `Includes ${wa}% waste margin`,
     };
-  }, [units, length, width, thickness, price, waste]);
+  }, [submitted]);
 
   const lenUnit = units === 'imperial' ? 'ft' : 'm';
   const thickUnit = units === 'imperial' ? 'in' : 'cm';
@@ -171,12 +195,46 @@ export default function ConcreteCostPage() {
             hint="Spillage & over-excavation allowance (5–10% typical)."
           />
         </div>
+        <div className="mt-5">
+          <Button
+            variant="primary"
+            size="lg"
+            icon={Calculator}
+            onClick={handleCalculate}
+            className="w-full sm:w-auto"
+          >
+            Calculate
+          </Button>
+        </div>
       </Card>
 
       <Card elevation="blueprint" className="mt-4 p-5">
-        <h2 className="mb-4 text-sm font-bold text-ink">Estimate</h2>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-sm font-bold text-ink">Estimate</h2>
+          {result && (
+            <DownloadResultsPdf
+              title="Concrete Slab Cost — Estimate"
+              fileName="civilmath-concrete-cost-estimate.pdf"
+              inputs={[
+                { label: 'Slab size', value: `${submitted?.length} × ${submitted?.width} ${result.imperial ? 'ft' : 'm'}` },
+                { label: 'Thickness', value: `${submitted?.thickness} ${result.imperial ? 'in' : 'cm'}` },
+                { label: 'Ready-mix price', value: `${usd.format(submitted?.price ?? 0)} / ${result.imperial ? 'yd³' : 'm³'}` },
+                { label: 'Waste margin', value: `${submitted?.waste}%` },
+              ]}
+              results={[
+                { label: 'Concrete volume', value: result.volumeLabel, sub: `Slab area ${result.areaLabel}` },
+                { label: 'Order with waste', value: result.volumeOrderLabel, sub: result.wasteNote },
+                { label: 'Estimated material cost', value: usd.format(result.totalCost), sub: result.unitCostLabel },
+              ]}
+              notes={[
+                'Rectangular slab/pad of uniform thickness assumed.',
+                'Excludes reinforcement, formwork, subgrade prep, labor, finishing, delivery fees, and taxes.',
+              ]}
+            />
+          )}
+        </div>
         {result ? (
-          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <dl key={popKey} className="animate-bounce-in grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="rounded-xl bg-surface-1 p-4">
               <dt className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">Concrete volume</dt>
               <dd className="mt-1 text-xl font-bold text-ink">{result.volumeLabel}</dd>
@@ -185,7 +243,7 @@ export default function ConcreteCostPage() {
             <div className="rounded-xl bg-surface-1 p-4">
               <dt className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">Order with waste</dt>
               <dd className="mt-1 text-xl font-bold text-ink">{result.volumeOrderLabel}</dd>
-              <dd className="text-[10px] text-ink-muted">Includes {waste}% waste margin</dd>
+              <dd className="text-[10px] text-ink-muted">{result.wasteNote}</dd>
             </div>
             <div className="rounded-xl bg-brand/10 p-4 sm:col-span-2">
               <dt className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">Estimated material cost</dt>
@@ -195,7 +253,9 @@ export default function ConcreteCostPage() {
           </dl>
         ) : (
           <p role="status" className="text-xs text-ink-muted">
-            Enter valid positive dimensions and price to see the estimate.
+            {submitted
+              ? 'Enter valid positive dimensions and price, then press Calculate.'
+              : 'Enter your slab dimensions and price, then press Calculate to see the estimate.'}
           </p>
         )}
       </Card>
