@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import CalculatorPageTemplate from '../../components/CalculatorPageTemplate';
+import DownloadResultsPdf from '../../components/DownloadResultsPdf';
 import { NumericInput } from '../../components/NumericInput';
-import { Card } from '../../components/ui';
+import { Button, Card } from '../../components/ui';
 import { AlertTriangle, Calculator } from 'lucide-react';
 
 const TITLE = 'Rebar Weight & Cost Calculator';
@@ -107,6 +108,16 @@ function SelectField({ label, value, onChange, options, hint }: SelectFieldProps
   );
 }
 
+interface CalcInputs {
+  units: UnitSystem;
+  barSize: string;
+  diaMm: string;
+  count: number;
+  length: number;
+  price: number;
+  waste: number;
+}
+
 export default function RebarWeightCostPage() {
   const [units, setUnits] = useState<UnitSystem>('imperial');
   const [barSize, setBarSize] = useState('#4');
@@ -115,39 +126,42 @@ export default function RebarWeightCostPage() {
   const [length, setLength] = useState(20);
   const [price, setPrice] = useState(0.65);
   const [waste, setWaste] = useState(5);
+  const [submitted, setSubmitted] = useState<CalcInputs | null>(null);
+  const [popKey, setPopKey] = useState(0);
+
+  const handleCalculate = () => {
+    setSubmitted({ units, barSize, diaMm, count, length, price, waste });
+    setPopKey((k) => k + 1);
+  };
 
   const result = useMemo(() => {
-    if (!(count > 0) || !(length > 0) || !(price > 0) || waste < 0) return null;
-    if (units === 'imperial') {
-      const bar = IMPERIAL_BARS.find((b) => b.size === barSize) ?? IMPERIAL_BARS[1];
-      const totalLengthFt = count * length;
-      const totalWeightLb = totalLengthFt * bar.wtLbFt * (1 + waste / 100);
-      const totalCost = totalWeightLb * price;
-      return {
-        barLabel: `${bar.size} (${bar.diaIn.toFixed(3)} in dia)`,
-        unitWeightLabel: `${bar.wtLbFt.toFixed(3)} lb/ft`,
-        totalLengthLabel: `${totalLengthFt.toFixed(1)} ft`,
-        totalWeightLabel: `${totalWeightLb.toFixed(1)} lb`,
-        totalCost,
-        perBarLabel: `${usd.format(count > 0 ? totalCost / count : 0)} / bar`,
-        wasteNote: `Includes ${waste}% cutting waste`,
-      };
-    }
-    const d = Number(diaMm) || 12;
-    const wtKgM = metricUnitWeight(d);
-    const totalLengthM = count * length;
-    const totalWeightKg = totalLengthM * wtKgM * (1 + waste / 100);
-    const totalCost = totalWeightKg * price;
+    if (!submitted) return null;
+    const { units: u, count: c, length: len, price: p, waste: w } = submitted;
+    if (!(c > 0) || !(len > 0) || !(p > 0) || w < 0) return null;
+    const imperial = u === 'imperial';
+    const barLabel = imperial
+      ? (() => {
+          const bar = IMPERIAL_BARS.find((b) => b.size === submitted.barSize) ?? IMPERIAL_BARS[1];
+          return { text: `${bar.size} (${bar.diaIn.toFixed(3)} in dia)`, unit: `${bar.wtLbFt.toFixed(3)} lb/ft`, wt: bar.wtLbFt };
+        })()
+      : (() => {
+          const d = Number(submitted.diaMm) || 12;
+          return { text: `${d} mm diameter`, unit: `${metricUnitWeight(d).toFixed(3)} kg/m`, wt: metricUnitWeight(d) };
+        })();
+    const totalLength = c * len;
+    const totalWeight = totalLength * barLabel.wt * (1 + w / 100);
+    const totalCost = totalWeight * p;
     return {
-      barLabel: `${d} mm diameter`,
-      unitWeightLabel: `${wtKgM.toFixed(3)} kg/m`,
-      totalLengthLabel: `${totalLengthM.toFixed(1)} m`,
-      totalWeightLabel: `${totalWeightKg.toFixed(1)} kg`,
+      barText: barLabel.text,
+      unitWeightLabel: barLabel.unit,
+      totalLengthLabel: `${totalLength.toFixed(1)} ${imperial ? 'ft' : 'm'}`,
+      totalWeightLabel: `${totalWeight.toFixed(1)} ${imperial ? 'lb' : 'kg'}`,
       totalCost,
-      perBarLabel: `${usd.format(count > 0 ? totalCost / count : 0)} / bar`,
-      wasteNote: `Includes ${waste}% cutting waste`,
+      perBarLabel: `${usd.format(c > 0 ? totalCost / c : 0)} / bar`,
+      wasteNote: `Includes ${w}% cutting waste`,
+      imperial,
     };
-  }, [units, barSize, diaMm, count, length, price, waste]);
+  }, [submitted]);
 
   const lenUnit = units === 'imperial' ? 'ft' : 'm';
   const priceUnit = units === 'imperial' ? '$/lb' : '$/kg';
@@ -250,16 +264,52 @@ export default function RebarWeightCostPage() {
             hint="Cutting waste allowance (3–5% typical)."
           />
         </div>
+
+        <div className="mt-5">
+          <Button
+            variant="primary"
+            size="lg"
+            icon={Calculator}
+            onClick={handleCalculate}
+            className="w-full sm:w-auto"
+          >
+            Calculate
+          </Button>
+        </div>
       </Card>
 
       <Card elevation="blueprint" className="mt-4 p-5">
-        <h2 className="mb-4 text-sm font-bold text-ink">Estimate</h2>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-sm font-bold text-ink">Estimate</h2>
+          {result && (
+            <DownloadResultsPdf
+              title="Rebar Weight & Cost — Estimate"
+              fileName="civilmath-rebar-estimate.pdf"
+              inputs={[
+                { label: 'Bar', value: result.barText, sub: `Unit weight ${result.unitWeightLabel}` },
+                { label: 'Bars × length', value: `${submitted?.count} × ${submitted?.length} ${result.imperial ? 'ft' : 'm'}` },
+                { label: 'Steel price', value: `${usd.format(submitted?.price ?? 0)} / ${result.imperial ? 'lb' : 'kg'}` },
+                { label: 'Waste margin', value: `${submitted?.waste}%` },
+              ]}
+              results={[
+                { label: 'Total bar length', value: result.totalLengthLabel },
+                { label: 'Total steel weight', value: result.totalWeightLabel, sub: result.wasteNote },
+                { label: 'Estimated material cost', value: usd.format(result.totalCost), sub: result.perBarLabel },
+              ]}
+              notes={[
+                'Straight bars of uniform size assumed.',
+                'Add lap splice lengths and hooks to bar lengths per project specifications.',
+                'Excludes cutting/bending labor, delivery, and taxes.',
+              ]}
+            />
+          )}
+        </div>
         {result ? (
-          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <dl key={popKey} className="animate-bounce-in grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="rounded-xl bg-surface-1 p-4">
               <dt className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">Total bar length</dt>
               <dd className="mt-1 text-xl font-bold text-ink">{result.totalLengthLabel}</dd>
-              <dd className="text-[10px] text-ink-muted">{result.barLabel} · {result.unitWeightLabel}</dd>
+              <dd className="text-[10px] text-ink-muted">{result.barText} · {result.unitWeightLabel}</dd>
             </div>
             <div className="rounded-xl bg-surface-1 p-4">
               <dt className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">Total steel weight</dt>
@@ -274,7 +324,9 @@ export default function RebarWeightCostPage() {
           </dl>
         ) : (
           <p role="status" className="text-xs text-ink-muted">
-            Enter valid bar count, length, and price to see the estimate.
+            {submitted
+              ? 'Enter valid bar count, length, and price, then press Calculate.'
+              : 'Enter your bars and price, then press Calculate to see the estimate.'}
           </p>
         )}
       </Card>
