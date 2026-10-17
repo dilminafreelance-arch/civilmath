@@ -4,6 +4,22 @@ import { getSupabase } from "./_lib/supabase.js";
 import { rowToArticle, articleToRow } from "./_lib/articleMapper.js";
 import { notifySearchEngines } from "./_lib/indexnow.js";
 
+// Public article JSON ships the cover image as a base64 data URI (~250KB).
+// rowToArticle() copies that same blob into coverImage, coverImageUrl AND
+// seo.ogImage, so one article balloons to ~750KB and the article list to
+// 20MB+. Keep a single copy for public readers (admin keeps everything).
+function slimPublicArticle(article) {
+  if (!article || typeof article !== "object") return article;
+  const cover = article.coverImage;
+  if (typeof cover === "string" && cover.startsWith("data:")) {
+    article.coverImageUrl = "";
+    if (article.seo && typeof article.seo === "object") {
+      article.seo.ogImage = "";
+    }
+  }
+  return article;
+}
+
 export default async function handler(req, res) {
   setCors(res);
   if (req.method === "OPTIONS") {
@@ -46,7 +62,8 @@ export default async function handler(req, res) {
       if (error || !data) {
         return res.status(404).json({ error: "Article not found", status: "not_found" });
       }
-      return res.status(200).json(rowToArticle(data));
+      const article = rowToArticle(data);
+      return res.status(200).json(isAdmin ? article : slimPublicArticle(article));
     }
 
     // List endpoint: lightweight summaries only. Excluding the full `content`
@@ -66,7 +83,12 @@ export default async function handler(req, res) {
       console.error("Supabase GET error:", error);
       return res.status(500).json({ error: "Failed to fetch articles." });
     }
-    return res.status(200).json((data || []).map(rowToArticle));
+    return res.status(200).json(
+      (data || []).map((row) => {
+        const article = rowToArticle(row);
+        return isAdmin ? article : slimPublicArticle(article);
+      })
+    );
   }
 
   if (req.method === "POST") {
