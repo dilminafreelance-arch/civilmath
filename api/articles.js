@@ -49,7 +49,14 @@ export default async function handler(req, res) {
       return res.status(200).json(rowToArticle(data));
     }
 
-    let query = supabase.from("articles").select("*");
+    // List endpoint: lightweight summaries only. Excluding the full `content`
+    // body keeps this response ~100KB instead of 20MB+ (was 12s+ on mobile).
+    // Detail pages fetch full content via ?slug=. The client article cache
+    // already skips content-less entries (getCachedArticleSync checks
+    // cached.content before returning), so this is safe.
+    let query = supabase
+      .from("articles")
+      .select("slug, title, summary, tags, image_url, published, published_at, updated_at");
     if (!isAdmin) {
       query = query.or("published.eq.true,published.is.null");
     }
