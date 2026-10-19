@@ -4,8 +4,9 @@ import {
   Plus, Trash2, Sliders, CheckCircle2, ChevronRight, AlertTriangle,
   Layers, Hammer, Box, ArrowRight, Download, Info
 } from 'lucide-react';
-import { jsPDF } from 'jspdf';
-import XLSX from 'xlsx-js-style';
+import type { jsPDF as JsPDFType } from 'jspdf';
+// jsPDF + xlsx-js-style are dynamically imported inside export handlers
+// so the 1.2MB export bundle only loads when the user clicks download.
 import { UnitSystem, SavedCalculation } from '../types';
 import { CALCULATORS_LIST } from '../data/calculatorsData';
 import { NumericInput } from './NumericInput';
@@ -1238,7 +1239,8 @@ export default function BBSCalculator({
   };
 
   // PDF Export Engine with beautiful civil engineering style sheet
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
+    const { jsPDF } = await import('jspdf');
     const doc = new jsPDF({
       orientation: 'landscape',
       unit: 'mm',
@@ -1390,7 +1392,8 @@ export default function BBSCalculator({
   };
 
   // Styled Excel Sheet Export using xlsx-js-style
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
+    const XLSX = (await import('xlsx-js-style')).default;
     const wb = XLSX.utils.book_new();
 
     // Data grid preparation

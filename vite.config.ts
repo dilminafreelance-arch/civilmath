@@ -35,7 +35,11 @@ export default defineConfig(() => {
           manualChunks: {
             react: ['react', 'react-dom'],
             motion: ['motion'],
-            export: ['jspdf', 'xlsx', 'xlsx-js-style'],
+            // NOTE: jspdf/xlsx intentionally NOT in manualChunks.
+            // They are dynamically imported inside export handlers, so Vite
+            // creates separate lazy chunks that only download on click.
+            // Forcing them into a manual chunk caused a 1.2MB modulepreload
+            // on the homepage (PageSpeed mobile 55).
           },
         },
       },

@@ -6,8 +6,9 @@ import {
   RefreshCw, CheckCircle2, Info, Layers, Box, Hammer, AlertTriangle, Plus, Trash2,
   BookOpen, Calculator, Ruler, Sigma, FileCode2, ListChecks, X,
 } from 'lucide-react';
-import { jsPDF } from 'jspdf';
-import XLSX from 'xlsx-js-style';
+import type { jsPDF as JsPDFType } from 'jspdf';
+// jsPDF + xlsx-js-style are dynamically imported inside export handlers
+// so the 1.2MB export bundle only loads when the user clicks download.
 import { UnitSystem, SavedCalculation } from '../types';
 import { CALCULATORS_LIST } from '../data/calculatorsData';
 import { StructureType, STRUCTURES, BBSRebarItem } from './types';
@@ -171,7 +172,8 @@ export default function UniversalBBSCalculator({
   const DrawingComponent = getDrawingComponent(structureType);
 
   // Export PDF
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
+    const { jsPDF } = await import('jspdf');
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     doc.setFillColor(15, 23, 42); doc.rect(0, 0, 297, 25, 'F');
     doc.setTextColor(255, 255, 255); doc.setFont("Helvetica", "bold"); doc.setFontSize(14);
@@ -222,7 +224,8 @@ export default function UniversalBBSCalculator({
   };
 
   // Export Excel
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
+    const XLSX = (await import('xlsx-js-style')).default;
     const wb = XLSX.utils.book_new();
     const rows: any[] = [];
     rows.push([`CIVILMATH UNIVERSAL BBS - ${projectName.toUpperCase()}`]);

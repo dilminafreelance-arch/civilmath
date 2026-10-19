@@ -6,8 +6,9 @@ import {
   ArrowRight, FileText, ListOrdered, Code, FileSpreadsheet, Plus, Trash2, Layout,
   ChevronDown, ChevronUp, Copy, BookOpen, Calculator, Box
 } from 'lucide-react';
-import { jsPDF } from 'jspdf';
-import XLSX from 'xlsx-js-style';
+import type { jsPDF as JsPDFType } from 'jspdf';
+// jsPDF + xlsx-js-style are dynamically imported inside export handlers
+// so the 1.2MB export bundle only loads when the user clicks download.
 import { UnitSystem, SavedCalculation, CURRENCY_MAPPING } from '../types';
 import { ExportModal } from './ExportModal';
 import { encodeCalculationToUrl, parseCalculationFromUrl, copyShareLinkToClipboard } from '../utils/shareUrl';
@@ -2441,7 +2442,7 @@ export default function CalculatorWorkspace({
     }
   };
 
-  const handleDownloadPDF = (metadata?: {
+  const handleDownloadPDF = async (metadata?: {
     projectName?: string;
     engineerName?: string;
     companyName?: string;
@@ -2449,10 +2450,11 @@ export default function CalculatorWorkspace({
     notes?: string;
   }) => {
     try {
+      const { jsPDF } = await import('jspdf');
       const doc = new jsPDF();
       const isMetric = unitSystem === 'metric';
       
-      const drawPageDecorations = (docObj: InstanceType<typeof jsPDF>, pageNum: number, totalPages: number) => {
+      const drawPageDecorations = (docObj: InstanceType<typeof JsPDFType>, pageNum: number, totalPages: number) => {
         // Outline Outer Structural Frame
         docObj.setDrawColor(203, 213, 225); // slate-300
         docObj.setLineWidth(0.4);
@@ -2822,7 +2824,8 @@ export default function CalculatorWorkspace({
     }
   };
 
-  const handleDownloadExcel = () => {
+  const handleDownloadExcel = async () => {
+    const XLSX = (await import('xlsx-js-style')).default;
     try {
       const rows: any[][] = [];
       const isMetric = unitSystem === 'metric';

@@ -1,4 +1,3 @@
-import { jsPDF } from 'jspdf';
 import { FileDown } from 'lucide-react';
 import { Button } from './ui';
 
@@ -29,7 +28,10 @@ export default function DownloadResultsPdf({
   results,
   notes = [],
 }: DownloadResultsPdfProps) {
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    // Dynamic import: keeps the 1.2MB jsPDF bundle out of the initial page load.
+    // It only downloads when the user actually clicks the PDF button.
+    const { jsPDF } = await import('jspdf');
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const W = 210;
     const today = new Date().toLocaleDateString('en-US', {
