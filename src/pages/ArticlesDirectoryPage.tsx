@@ -67,7 +67,7 @@ export default function ArticlesDirectoryPage() {
       if (activeCategory === 'all') {
         matchCat = true;
       } else if (activeCategory === 'construction') {
-        matchCat = art.category === 'construction' || art.category === 'general';
+        matchCat = (art.category as string) === 'construction' || art.category === 'general';
       } else {
         matchCat = art.category === activeCategory;
       }

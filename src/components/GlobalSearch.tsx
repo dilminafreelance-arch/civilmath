@@ -97,7 +97,7 @@ export default function GlobalSearch() {
                           {art.title}
                         </span>
                         <span className="block truncate text-[10px] text-[#7A8981] font-mono">
-                          {art.readingTimeMinutes} min read &bull; {art.category}
+                          {art.readTimeMinutes} min read &bull; {art.category}
                         </span>
                       </span>
                     </button>

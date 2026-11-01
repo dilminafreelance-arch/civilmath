@@ -35,7 +35,7 @@ const VARIANTS: Record<Exclude<NumericInputVariant, 'none'>, string> = {
 };
 
 export interface NumericInputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'value' | 'onChange'> {
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'value' | 'onChange' | 'prefix'> {
   variant?: NumericInputVariant;
   value?: string | number | null;
   onChange: (raw: string, num: number) => void;

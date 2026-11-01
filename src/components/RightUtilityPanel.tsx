@@ -134,7 +134,7 @@ export default function RightUtilityPanel({ className = '' }: { className?: stri
         ? '/bbs/footing'
         : `/${CATEGORY_PATH_MAP[calc.category]}/${getCalculatorSlug(calc)}`;
       return { id, name: calc.name, category: calc.category, ts, isFav, colorSet, path };
-    }).filter(Boolean) as NonNullable<ReturnType<typeof recentCalculatorIds.slice>[0]>[],
+    }).filter(Boolean) as unknown as { id: string; name: string; category: any; ts: any; isFav: boolean; colorSet: any; path: string }[],
     [recentCalculatorIds, recentCalcTimestamps, favoriteCalculatorIds]
   );
 
