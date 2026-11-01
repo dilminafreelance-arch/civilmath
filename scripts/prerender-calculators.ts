@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+
 import { ALL_ROUTES_SEO, type RouteSEOConfig } from '../src/utils/seoRoutes';
 import { FORMULA_REFERENCES } from '../src/data/calculatorsData';
 import { CALCULATOR_FAQS } from '../src/data/calculatorFaqs';
@@ -21,27 +22,109 @@ const FORMULA_BY_ROUTE: Record<string, string> = {
 };
 
 const CRITICAL_CSS = `
-.calc-wrap{max-width:48rem;margin:0 auto;padding:1.5rem 1.25rem 4rem;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#20231F;line-height:1.75}
-.calc-topbar{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;margin-bottom:1.5rem;border-bottom:1px solid #e7e5e0}
-.calc-topbar a.brand{font-weight:800;font-size:1.05rem;color:#20231F;text-decoration:none;letter-spacing:-.02em}
-.calc-topbar a.home{font-size:.8rem;color:#657565;text-decoration:none}
-.calc-crumb{font-size:.75rem;color:#7B8978;margin-bottom:1rem}
-.calc-crumb a{color:#657565;text-decoration:none}
-.calc-wrap h1{font-size:1.9rem;line-height:1.25;font-weight:800;letter-spacing:-.02em;margin:0 0 .75rem}
-.calc-wrap h2{font-size:1.4rem;font-weight:700;margin:2.25rem 0 .9rem;letter-spacing:-.01em}
-.calc-wrap p{margin:0 0 1.1rem}
-.calc-wrap ol,.calc-wrap ul{margin:0 0 1.1rem;padding-left:1.5rem}
-.calc-wrap li{margin-bottom:.45rem}
-.calc-wrap code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9rem;background:#f4f3f0;border-radius:.375rem;padding:.15rem .45rem}
-.calc-wrap a{color:#2E6B56}
-.calc-list{list-style:none;padding-left:0}
-.calc-list li{margin-bottom:.9rem}
-.calc-list a{font-weight:700;text-decoration:none}
-.calc-list span{display:block;font-weight:400;color:#3d443c;font-size:.9rem}
-.calc-faq{margin-bottom:1.5rem}
-.calc-faq h2{margin-bottom:.5rem}
-.calc-faq p{margin-left:0}
-.calc-note{margin-top:3rem;padding-top:1.25rem;border-top:1px solid #e7e5e0;font-size:.8rem;color:#7B8978}
+.calc-wrap{
+  max-width:48rem;
+  margin:0 auto;
+  padding:1.5rem 1.25rem 4rem;
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color:#20231F;
+  line-height:1.75;
+}
+.calc-topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:.75rem 0;
+  margin-bottom:1.5rem;
+  border-bottom:1px solid #e7e5e0;
+}
+.calc-topbar a.brand{
+  font-weight:800;
+  font-size:1.05rem;
+  color:#20231F;
+  text-decoration:none;
+  letter-spacing:-.02em;
+}
+.calc-topbar a.home{
+  font-size:.8rem;
+  color:#657565;
+  text-decoration:none;
+}
+.calc-crumb{
+  font-size:.75rem;
+  color:#7B8978;
+  margin-bottom:1rem;
+}
+.calc-crumb a{
+  color:#657565;
+  text-decoration:none;
+}
+.calc-wrap h1{
+  font-size:1.9rem;
+  line-height:1.25;
+  font-weight:800;
+  letter-spacing:-.02em;
+  margin:0 0 .75rem;
+}
+.calc-wrap h2{
+  font-size:1.4rem;
+  font-weight:700;
+  margin:2.25rem 0 .9rem;
+  letter-spacing:-.01em;
+}
+.calc-wrap p{
+  margin:0 0 1.1rem;
+}
+.calc-wrap ol,.calc-wrap ul{
+  margin:0 0 1.1rem;
+  padding-left:1.5rem;
+}
+.calc-wrap li{
+  margin-bottom:.45rem;
+}
+.calc-wrap code{
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:.9rem;
+  background:#f4f3f0;
+  border-radius:.375rem;
+  padding:.15rem .45rem;
+}
+.calc-wrap a{
+  color:#2E6B56;
+}
+.calc-list{
+  list-style:none;
+  padding-left:0;
+}
+.calc-list li{
+  margin-bottom:.9rem;
+}
+.calc-list a{
+  font-weight:700;
+  text-decoration:none;
+}
+.calc-list span{
+  display:block;
+  font-weight:400;
+  color:#3d443c;
+  font-size:.9rem;
+}
+.calc-faq{
+  margin-bottom:1.5rem;
+}
+.calc-faq h2{
+  margin-bottom:.5rem;
+}
+.calc-faq p{
+  margin-left:0;
+}
+.calc-note{
+  margin-top:3rem;
+  padding-top:1.25rem;
+  border-top:1px solid #e7e5e0;
+  font-size:.8rem;
+  color:#7B8978;
+}
 `;
 
 function escHtml(value: string): string {
@@ -70,9 +153,7 @@ function topbar(): string {
 }
 
 function faqContentFor(route: RouteSEOConfig): { question: string; answer: string }[] {
-  const faqMap = CALCULATOR_FAQS[route.path] ?? [];
-  if (faqMap.length > 0) return faqMap;
-  return route.faqs ?? [];
+  return CALCULATOR_FAQS[route.path] ?? route.faqs ?? [];
 }
 
 function relatedLinks(route: RouteSEOConfig, family: RouteSEOConfig[]): string {
@@ -82,7 +163,7 @@ function relatedLinks(route: RouteSEOConfig, family: RouteSEOConfig[]): string {
   const items = pool.slice(0, 4)
     .map(
       (r) =>
-        `<li><a href="${escAttr(r.path)}">${escHtml(h1FromTitle(r.title))}</a><span>${escHtml(r.description)}</span></li>`,
+        `<li><a href="${escAttr(r.path)}">${escHtml(h1FromTitle(r.title))}</a><span>${escHtml(r.description)}</span></li>`
     )
     .join('');
 
@@ -95,7 +176,8 @@ function renderFaqBlock(route: RouteSEOConfig): string {
 
   const faqHtml = faqs
     .map(
-      (faq) => `<div class="calc-faq"><h2>${escHtml(faq.question)}</h2><p>${escHtml(faq.answer)}</p></div>`,
+      (faq) =>
+        `<div class="calc-faq"><h2>${escHtml(faq.question)}</h2><p>${escHtml(faq.answer)}</p></div>`
     )
     .join('');
 
@@ -116,9 +198,9 @@ function renderCalculator(route: RouteSEOConfig, family: RouteSEOConfig[]): stri
       `<p><code>${escHtml(formula.latex)}</code></p>` +
       `<ol>${steps}</ol>`;
   } else {
-    const fallback = faqContentFor(route)[0];
-    if (fallback) {
-      method = `<h2>How it is calculated</h2><p>${escHtml(fallback.answer)}</p>`;
+    const fallbackFaq = faqContentFor(route)[0];
+    if (fallbackFaq) {
+      method = `<h2>How it is calculated</h2><p>${escHtml(fallbackFaq.answer)}</p>`;
     }
   }
 
@@ -131,7 +213,11 @@ function renderCalculator(route: RouteSEOConfig, family: RouteSEOConfig[]): stri
       ${method}
       ${renderFaqBlock(route)}
       ${relatedLinks(route, family)}
-      <p class="calc-note">Calculations are preliminary estimates for planning and education. Verify results against project documents and applicable codes with a licensed Professional Engineer. The interactive calculator loads automatically when JavaScript is available.</p>
+      <p class="calc-note">
+        Calculations are preliminary estimates for planning and education.
+        Verify results against project documents and applicable codes with a licensed Professional Engineer.
+        The interactive calculator loads automatically when JavaScript is available.
+      </p>
     </div>
   `;
 }
@@ -140,7 +226,8 @@ function renderListPage(route: RouteSEOConfig, items: RouteSEOConfig[]): string 
   const h1 = h1FromTitle(route.title);
   const list = items
     .map(
-      (r) => `<li><a href="${escAttr(r.path)}">${escHtml(h1FromTitle(r.title))}</a><span>${escHtml(r.description)}</span></li>`,
+      (r) =>
+        `<li><a href="${escAttr(r.path)}">${escHtml(h1FromTitle(r.title))}</a><span>${escHtml(r.description)}</span></li>`
     )
     .join('');
 
@@ -173,13 +260,21 @@ function injectStaticRoot(html: string, markup: string): string {
     out = out.replace('</head>', `<style>${CRITICAL_CSS}</style></head>`);
   }
 
-  return out.replace(/<div\s+id=["']root["'][^>]*>\s*<\/div>/i, `<div id="root">${markup}</div>`);
+  return out.replace(
+    /<div\s+id=["']root["'][^>]*>\s*<\/div>/i,
+    `<div id="root">${markup}</div>`
+  );
 }
 
 function main() {
-  const calculators = ALL_ROUTES_SEO.filter((r) => r.isCalculator);
-  const categoryRoutes = ALL_ROUTES_SEO.filter((r) => r.category && !r.isCalculator);
+  const shellPath = path.join(DIST_DIR, 'index.html');
 
+  if (!fs.existsSync(shellPath)) {
+    throw new Error(`Missing build shell: ${shellPath}. Run "vite build" first.`);
+  }
+
+  const shellHtml = fs.readFileSync(shellPath, 'utf8');
+  const calculators = ALL_ROUTES_SEO.filter((r) => r.isCalculator);
   let written = 0;
   let skipped = 0;
 
@@ -201,21 +296,23 @@ function main() {
       if (!staticHtml) continue;
 
       const targetFile = targetFor(route.path);
-      if (!fs.existsSync(targetFile)) {
-        console.warn(`[prerender-calculators] No HTML for ${route.path}; skipping.`);
+
+      if (route.path !== '/') {
+        fs.mkdirSync(path.dirname(targetFile), { recursive: true });
+      }
+
+      const baseHtml = fs.existsSync(targetFile)
+        ? fs.readFileSync(targetFile, 'utf8')
+        : shellHtml;
+
+      const updatedHtml = injectStaticRoot(baseHtml, staticHtml);
+
+      if (updatedHtml === baseHtml) {
         skipped++;
         continue;
       }
 
-      const html = fs.readFileSync(targetFile, 'utf8');
-      const next = injectStaticRoot(html, staticHtml);
-
-      if (next === html) {
-        skipped++;
-        continue;
-      }
-
-      fs.writeFileSync(targetFile, next, 'utf8');
+      fs.writeFileSync(targetFile, updatedHtml, 'utf8');
       written++;
     } catch (error: any) {
       console.warn(`[prerender-calculators] Failed for ${route.path}:`, error?.message ?? error);
