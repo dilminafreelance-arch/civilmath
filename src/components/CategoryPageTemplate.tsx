@@ -4,8 +4,8 @@ import { motion } from 'motion/react';
 import {
   Search, ChevronRight, Sparkles, Clipboard, Layers, GitCommit, Anchor, Compass, RefreshCw, Grid, Clock, Star,
 } from 'lucide-react';
-import { SEO, CATEGORY_META, CATEGORY_PATH_MAP, getCalculatorSlug, getRouteSEO, SITE_URL, DEFAULT_IMAGE } from '../utils/seo';
-import { CalculatorCategory, CalculatorDef } from '../types';
+import { SEO, CATEGORY_META, CATEGORY_PATH_MAP, getCalculatorPath, getRouteSEO, SITE_URL, DEFAULT_IMAGE } from '../utils/seo';
+import { CalculatorCategory } from '../types';
 import { CALCULATORS_LIST } from '../data/calculatorsData';
 import { useApp } from '../context/AppContext';
 
@@ -27,18 +27,13 @@ export default function CategoryPageTemplate({ category, subCalculators, heroTit
   const meta = CATEGORY_META[category];
   const categoryPath = CATEGORY_PATH_MAP[category];
 
-  const getSlug = (calcDef: typeof CALCULATORS_LIST[0]) => {
-    if (calcDef.id.startsWith(calcDef.category + '-')) return calcDef.id.substring(calcDef.category.length + 1);
-    return calcDef.id;
-  };
-
   const calculators = subCalculators || CALCULATORS_LIST
     .filter(c => c.category === category)
     .map(c => ({
       id: c.id,
       name: c.name,
       description: c.description,
-      path: `/${categoryPath}/${getSlug(c) || getCalculatorSlug(c)}`,
+      path: getCalculatorPath(c),
     }));
 
   const filtered = calculators.filter(c =>

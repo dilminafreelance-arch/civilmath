@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { CALCULATORS_LIST } from '../data/calculatorsData';
-import { CATEGORY_PATH_MAP, getCalculatorSlug } from '../utils/seo';
+import { getCalculatorPath } from '../utils/seo';
 
 interface RecentCalc {
   id: string;
@@ -63,11 +63,11 @@ const RECENT_CALCS: RecentCalc[] = [
   },
   {
     id: '5',
-    name: 'Earthwork Volume',
-    value: '180.00 m³',
-    detail: 'Area 120 m² × 1.5 m',
+    name: 'Concrete Cost',
+    value: '$450.00',
+    detail: '3.00 m³ @ $150/m³',
     time: '1 day ago',
-    path: '/construction',
+    path: '/concrete/cost',
     iconBg: 'rgba(217, 185, 110, 0.18)',
     iconColor: '#806626',
   },
@@ -130,9 +130,7 @@ export default function RightUtilityPanel({ className = '' }: { className?: stri
       const ts = recentCalcTimestamps[id];
       const isFav = favoriteCalculatorIds.includes(id);
       const colorSet = ICON_COLORS[idx % ICON_COLORS.length];
-      const path = calc.category === 'bbs'
-        ? '/bbs/footing'
-        : `/${CATEGORY_PATH_MAP[calc.category]}/${getCalculatorSlug(calc)}`;
+      const path = getCalculatorPath(calc);
       return { id, name: calc.name, category: calc.category, ts, isFav, colorSet, path };
     }).filter(Boolean) as unknown as { id: string; name: string; category: any; ts: any; isFav: boolean; colorSet: any; path: string }[],
     [recentCalculatorIds, recentCalcTimestamps, favoriteCalculatorIds]

@@ -8,6 +8,7 @@ const PAGES = [
   '/bbs/beam', '/bbs/plinth-beam', '/bbs/tie-beam', '/bbs/lintel-beam', '/bbs/column', '/bbs/pedestal',
   '/bbs/slab', '/bbs/staircase', '/bbs/retaining-wall', '/bbs/foundation-mesh',
   '/concrete/volume', '/concrete/rebar', '/concrete/brick',
+  '/concrete/cost', '/concrete/steps', '/rebar/weight-cost',
   '/structural/beam', '/structural/column', '/structural/slab', '/structural/steel-weight',
   '/surveying/hi', '/surveying/traverse',
   '/geotechnical/bearing-capacity', '/geotechnical/retaining-wall',

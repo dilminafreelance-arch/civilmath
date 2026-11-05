@@ -22,7 +22,7 @@ export interface RouteSEOConfig {
 /**
  * 47 Indexable Public Routes with calibrated 50-60 char titles & 150-160 char descriptions
  */
-export const ALL_ROUTES_SEO: RouteSEOConfig[] = [
+export const ALL_ROUTES_SEO: RouteSEOConfig[] = (([
   {
     path: '/',
     title: 'Civil Engineering Calculators & Design Tools | CivilMath',
@@ -506,7 +506,10 @@ export const ALL_ROUTES_SEO: RouteSEOConfig[] = [
     priority: 0.5,
     changefreq: 'monthly',
   },
-];
+] as RouteSEOConfig[]).map(route => ({
+  ...route,
+  faqs: route.faqs || CALCULATOR_FAQS[route.path],
+})));
 
 export function getRouteSEO(path: string): RouteSEOConfig | undefined {
   const normalized = path.replace(/\/+$/, '') || '/';

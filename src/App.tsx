@@ -182,6 +182,8 @@ export default function App() {
               <Route path="/concrete/rebar-calculator" element={<Navigate to="/concrete/rebar" replace />} />
               <Route path="/concrete/brick-calculator" element={<Navigate to="/concrete/brick" replace />} />
               <Route path="/structural/steel-calculator" element={<Navigate to="/structural/steel-weight" replace />} />
+              <Route path="/structural/rebar-weight-cost" element={<Navigate to="/rebar/weight-cost" replace />} />
+              <Route path="/structural/weight-cost" element={<Navigate to="/rebar/weight-cost" replace />} />
               <Route path="/geotechnical/bearing" element={<Navigate to="/geotechnical/bearing-capacity" replace />} />
               <Route path="/geotechnical/retaining" element={<Navigate to="/geotechnical/retaining-wall" replace />} />
               <Route path="/surveying/coordinate" element={<Navigate to="/surveying/traverse" replace />} />

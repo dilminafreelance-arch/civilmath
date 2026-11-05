@@ -7,7 +7,7 @@ import { useApp } from '../../context/AppContext';
 import { FORMULA_REFERENCES, CALCULATORS_LIST } from '../../data/calculatorsData';
 import { CalculatorCategory } from '../../types';
 import { BookOpen, ThumbsUp, ThumbsDown, ChevronRight } from 'lucide-react';
-import { CATEGORY_PATH_MAP, getCalculatorSlug } from '../../utils/seo';
+import { getCalculatorPath } from '../../utils/seo';
 import { trackEvent } from '../../utils/analytics';
 import { motion } from 'motion/react';
 import { Card } from '../../components/ui';
@@ -86,33 +86,33 @@ const TOPICAL_RELATED_MAP: Record<string, RelatedLink[]> = {
     { id: 'rebar-calculator', name: 'Reinforcing Rebar Quantity Calculator', description: 'Estimate rebar sizes, total segment lengths, and weights.', path: '/concrete/rebar' },
     { id: 'structural-beam', name: 'Beam Uniform/Point Load Analyst', description: 'Analyze bending moments and shear limits on structural steel beams.', path: '/structural/beam' },
     { id: 'unit-converter', name: 'Civil Engineering Unit Converter', description: 'Convert between metric and imperial structural engineering units.', path: '/utilities/unit-converter' },
-    { id: 'boq-builder', name: 'Bill of Quantities Builder', description: 'Estimate total structural steel takeoff and fabrication material costs.', path: '/boq-builder' },
+    { id: 'rebar-weight-cost', name: 'Rebar Weight & Cost Calculator', description: 'Estimate total reinforcement weight and steel material cost.', path: '/rebar/weight-cost' },
   ],
-  'height-of-instrument': [
+  'survey-hi': [
     { id: 'coordinate-traverse', name: 'Coordinate Traverse Adjustment', description: 'Balance closed and link traverse surveys using Bowditch rule.', path: '/surveying/traverse' },
     { id: 'unit-converter', name: 'Civil Engineering Unit Converter', description: 'Convert elevation readings, feet, meters, and slope gradients.', path: '/utilities/unit-converter' },
     { id: 'concrete-volume', name: 'Concrete Volume Estimator', description: 'Calculate concrete quantities for leveled foundation excavations.', path: '/concrete/volume' },
     { id: 'steel-calculator', name: 'Steel Section Weight Estimator', description: 'Calculate structural steel profiles and rebar weights.', path: '/structural/steel-weight' },
   ],
-  'coordinate-traverse': [
+  'survey-coordinate': [
     { id: 'height-of-instrument', name: 'Height of Instrument Leveling', description: 'Differential leveling calculations and benchmark reduced levels.', path: '/surveying/hi' },
     { id: 'unit-converter', name: 'Civil Engineering Unit Converter', description: 'Convert distance and coordinate units between metric and imperial.', path: '/utilities/unit-converter' },
     { id: 'bearing-capacity', name: 'Soil Bearing Capacity Calculator', description: 'Evaluate foundation bearing capacity at surveyed site coordinates.', path: '/geotechnical/bearing-capacity' },
     { id: 'brick-calculator', name: 'Brick Masonry Estimator', description: 'Calculate brick quantities and mortar batch ratios for site masonry.', path: '/concrete/brick' },
   ],
-  'bearing-capacity': [
+  'geotech-bearing': [
     { id: 'retaining-wall', name: 'Retaining Wall Earth Pressure', description: 'Calculate lateral earth pressures and stability against overturning.', path: '/geotechnical/retaining-wall' },
     { id: 'bbs-footing', name: 'Footing BBS Calculator', description: 'Reinforcement bar bending schedule for pad footings designed for soil capacity.', path: '/bbs/footing' },
     { id: 'bbs-raft-foundation', name: 'Raft Foundation BBS Calculator', description: 'Dual-layer mesh and chair bar schedules for mat foundation bearing.', path: '/bbs/raft-foundation' },
     { id: 'concrete-volume', name: 'Concrete Volume Estimator', description: 'Calculate concrete volume and mix requirements for shallow foundations.', path: '/concrete/volume' },
   ],
-  'retaining-wall': [
+  'geotech-retaining': [
     { id: 'bearing-capacity', name: 'Soil Bearing Capacity Calculator', description: 'Check soil bearing capacity beneath the retaining wall footing base.', path: '/geotechnical/bearing-capacity' },
     { id: 'bbs-retaining-wall', name: 'Retaining Wall BBS Calculator', description: 'Complete rebar schedule for cantilever stem and footing base slab.', path: '/bbs/retaining-wall' },
     { id: 'concrete-volume', name: 'Concrete Volume Estimator', description: 'Estimate concrete volume and materials for retaining wall stem and base.', path: '/concrete/volume' },
     { id: 'bbs-footing', name: 'Footing BBS Calculator', description: 'Reinforcement bar bending schedule for retaining wall footings.', path: '/bbs/footing' },
   ],
-  'unit-converter': [
+  'utility-convert': [
     { id: 'concrete-volume', name: 'Concrete Volume Estimator', description: 'Calculate concrete quantities in metric (m³) or imperial (yd³).', path: '/concrete/volume' },
     { id: 'structural-beam', name: 'Beam Uniform/Point Load Analyst', description: 'Convert and calculate beam loads in kN/m or lb/ft.', path: '/structural/beam' },
     { id: 'steel-calculator', name: 'Steel Section Weight Estimator', description: 'Calculate steel section weight in kg/m or lb/ft.', path: '/structural/steel-weight' },
@@ -129,7 +129,7 @@ const TOPICAL_RELATED_MAP: Record<string, RelatedLink[]> = {
       id: c.id,
       name: c.name,
       description: c.description,
-      path: `/${CATEGORY_PATH_MAP[c.category]}/${getCalculatorSlug(c)}`,
+      path: getCalculatorPath(c),
     }));
 
   const handleFeedback = (type: 'up' | 'down') => {
@@ -146,6 +146,7 @@ const TOPICAL_RELATED_MAP: Record<string, RelatedLink[]> = {
         path={path}
         breadcrumbLabel={breadcrumbLabel}
         faqs={faqs}
+        hideRelated={true}
       >
         <CalculatorWorkspace
           calculatorId={calculatorId}
@@ -156,96 +157,96 @@ const TOPICAL_RELATED_MAP: Record<string, RelatedLink[]> = {
           loadedCalculation={loadedCalculation}
           currency={currency}
         />
-      </CalculatorPageTemplate>
 
-      {formulaRef && (
-        <section className="mt-8 max-w-4xl">
-          <div className="flex items-center gap-2 mb-4">
-            <BookOpen className="w-4 h-4 text-brand" />
-            <h2 className="text-sm font-bold text-ink">Engineering Formula &amp; Calculation Steps</h2>
-          </div>
-          <Card elevation="raised" className="p-5 space-y-4 shadow-xs">
-            <p className="text-[11px] font-mono text-ink-secondary leading-relaxed">
-              {formulaRef.explanation}
-            </p>
-            <div className="space-y-2">
-              <h3 className="text-[10px] font-bold font-mono uppercase tracking-widest text-ink-muted">Calculation Steps</h3>
-              <ol className="space-y-1.5 list-decimal list-inside">
-                {formulaRef.steps.map((step, i) => (
-                  <li key={i} className="text-[10px] font-mono text-ink-secondary leading-relaxed">{step}</li>
-                ))}
-              </ol>
+        {formulaRef && (
+          <section className="mt-8 max-w-4xl">
+            <div className="flex items-center gap-2 mb-4">
+              <BookOpen className="w-4 h-4 text-brand" />
+              <h2 className="text-sm font-bold text-ink">Engineering Formula &amp; Calculation Steps</h2>
             </div>
+            <Card elevation="raised" className="p-5 space-y-4 shadow-xs">
+              <p className="text-[11px] font-mono text-ink-secondary leading-relaxed">
+                {formulaRef.explanation}
+              </p>
+              <div className="space-y-2">
+                <h3 className="text-[10px] font-bold font-mono uppercase tracking-widest text-ink-muted">Calculation Steps</h3>
+                <ol className="space-y-1.5 list-decimal list-inside">
+                  {formulaRef.steps.map((step, i) => (
+                    <li key={i} className="text-[10px] font-mono text-ink-secondary leading-relaxed">{step}</li>
+                  ))}
+                </ol>
+              </div>
+            </Card>
+          </section>
+        )}
+
+        {/* Engineering Article */}
+        <ArticleSection calculatorId={calculatorId} />
+
+        {/* Related Calculators */}
+        {relatedCalculators.length > 0 && (
+          <section className="mt-8 max-w-4xl">
+            <div className="flex items-center gap-2 mb-4">
+              <h2 className="text-sm font-bold text-ink">Related Calculators</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {relatedCalculators.map((calc, idx) => (
+                <motion.div key={calc.id} initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ delay: idx * 0.05, duration: 0.3, ease: 'easeOut' }}>
+                  <Link
+                    to={calc.path}
+                    onClick={() => {
+                      trackEvent('related_calculator_click', { from: calculatorId, to: calc.id });
+                    }}
+                    className="block no-underline text-left group">
+                    <Card elevation="interactive" className="p-4">
+                      <h3 className="text-xs font-bold text-ink group-hover:text-brand transition-colors">{calc.name}</h3>
+                      <p className="mt-1 text-[10px] text-ink-muted line-clamp-2 leading-relaxed">{calc.description}</p>
+                      <div className="mt-3 flex items-center text-[9px] font-mono text-brand font-semibold">
+                        <span>Open Calculator</span>
+                        <ChevronRight className="w-3 h-3 ml-0.5 group-hover:translate-x-0.5 transition-transform" />
+                      </div>
+                    </Card>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className="mt-8 max-w-4xl" aria-label="Related learning resources">
+          <h2 className="text-sm font-bold text-ink mb-3">Related Learning Resources</h2>
+          <div className="flex flex-wrap gap-2">
+            <Link to="/guides" className="rounded-xl border border-border-subtle bg-surface-1 px-3 py-2 text-xs font-semibold text-brand hover:bg-brand/10 no-underline transition-colors">Calculation guides</Link>
+            <Link to="/formulas" className="rounded-xl border border-border-subtle bg-surface-1 px-3 py-2 text-xs font-semibold text-brand hover:bg-brand/10 no-underline transition-colors">Formula library</Link>
+            <Link to="/tables" className="rounded-xl border border-border-subtle bg-surface-1 px-3 py-2 text-xs font-semibold text-brand hover:bg-brand/10 no-underline transition-colors">Reference tables</Link>
+          </div>
+        </section>
+
+        {/* Feedback Widget */}
+        <section className="mt-8 max-w-4xl">
+          <Card elevation="raised" className="p-5 shadow-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-ink-secondary">Was this calculator helpful?</span>
+              <div className="flex items-center gap-3">
+                <button onClick={() => handleFeedback('up')}
+                  aria-label="Thumbs up"
+                  className={`p-2 rounded-xl transition-all cursor-pointer ${feedback === 'up' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-surface-2 text-ink-muted hover:text-emerald-600 hover:bg-emerald-500/10'}`}>
+                  <ThumbsUp className="w-4 h-4" />
+                </button>
+                <button onClick={() => handleFeedback('down')}
+                  aria-label="Thumbs down"
+                  className={`p-2 rounded-xl transition-all cursor-pointer ${feedback === 'down' ? 'bg-red-500/15 text-red-600 dark:text-red-400' : 'bg-surface-2 text-ink-muted hover:text-red-600 hover:bg-red-500/10'}`}>
+                  <ThumbsDown className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            {feedback && (
+              <p className="mt-2 text-[10px] font-mono text-ink-muted">Thank you for your feedback!</p>
+            )}
           </Card>
         </section>
-      )}
-
-      {/* Engineering Article */}
-      <ArticleSection calculatorId={calculatorId} />
-
-      <section className="mt-8 max-w-4xl" aria-label="Related learning resources">
-        <h2 className="text-sm font-bold text-ink mb-3">Related Learning Resources</h2>
-        <div className="flex flex-wrap gap-2">
-          <Link to="/guides" className="rounded-xl border border-border-subtle bg-surface-1 px-3 py-2 text-xs font-semibold text-brand hover:bg-brand/10 no-underline transition-colors">Calculation guides</Link>
-          <Link to="/formulas" className="rounded-xl border border-border-subtle bg-surface-1 px-3 py-2 text-xs font-semibold text-brand hover:bg-brand/10 no-underline transition-colors">Formula library</Link>
-          <Link to="/tables" className="rounded-xl border border-border-subtle bg-surface-1 px-3 py-2 text-xs font-semibold text-brand hover:bg-brand/10 no-underline transition-colors">Reference tables</Link>
-        </div>
-      </section>
-
-      {/* Feedback Widget */}
-      <section className="mt-8 max-w-4xl">
-        <Card elevation="raised" className="p-5 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-ink-secondary">Was this calculator helpful?</span>
-            <div className="flex items-center gap-3">
-              <button onClick={() => handleFeedback('up')}
-                aria-label="Thumbs up"
-                className={`p-2 rounded-xl transition-all cursor-pointer ${feedback === 'up' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-surface-2 text-ink-muted hover:text-emerald-600 hover:bg-emerald-500/10'}`}>
-                <ThumbsUp className="w-4 h-4" />
-              </button>
-              <button onClick={() => handleFeedback('down')}
-                aria-label="Thumbs down"
-                className={`p-2 rounded-xl transition-all cursor-pointer ${feedback === 'down' ? 'bg-red-500/15 text-red-600 dark:text-red-400' : 'bg-surface-2 text-ink-muted hover:text-red-600 hover:bg-red-500/10'}`}>
-                <ThumbsDown className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-          {feedback && (
-            <p className="mt-2 text-[10px] font-mono text-ink-muted">Thank you for your feedback!</p>
-          )}
-        </Card>
-      </section>
-
-      {/* Related Calculators */}
-      {relatedCalculators.length > 0 && (
-        <section className="mt-8 max-w-4xl">
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-sm font-bold text-ink">Related Calculators</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {relatedCalculators.map((calc, idx) => (
-              <motion.div key={calc.id} initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }} transition={{ delay: idx * 0.05, duration: 0.3, ease: 'easeOut' }}>
-                <Link
-                  to={calc.path}
-                  onClick={() => {
-                    trackEvent('related_calculator_click', { from: calculatorId, to: calc.id });
-                  }}
-                  className="block no-underline text-left group">
-                  <Card elevation="interactive" className="p-4">
-                    <h3 className="text-xs font-bold text-ink group-hover:text-brand transition-colors">{calc.name}</h3>
-                    <p className="mt-1 text-[10px] text-ink-muted line-clamp-2 leading-relaxed">{calc.description}</p>
-                    <div className="mt-3 flex items-center text-[9px] font-mono text-brand font-semibold">
-                      <span>Open Calculator</span>
-                      <ChevronRight className="w-3 h-3 ml-0.5 group-hover:translate-x-0.5 transition-transform" />
-                    </div>
-                  </Card>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-      )}
+      </CalculatorPageTemplate>
     </>
   );
 }

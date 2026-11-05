@@ -71,7 +71,14 @@ export default function ConcreteCostPage() {
   const [thickness, setThickness] = useState(4);
   const [price, setPrice] = useState(150);
   const [waste, setWaste] = useState(7);
-  const [submitted, setSubmitted] = useState<CostInputs | null>(null);
+  const [submitted, setSubmitted] = useState<CostInputs | null>({
+    units: 'imperial',
+    length: 20,
+    width: 12,
+    thickness: 4,
+    price: 150,
+    waste: 7,
+  });
   const [popKey, setPopKey] = useState(0);
 
   const handleCalculate = () => {

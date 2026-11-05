@@ -3,7 +3,7 @@ import { Command, History, Search, Star, X, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CALCULATORS_LIST } from '../data/calculatorsData';
 import { useApp } from '../context/AppContext';
-import { CATEGORY_PATH_MAP, getCalculatorSlug } from '../utils/seo';
+import { getCalculatorPath } from '../utils/seo';
 import { getAllArticleSummaries } from '../utils/articleStore';
 
 export default function GlobalSearch() {
@@ -53,7 +53,7 @@ export default function GlobalSearch() {
     if (!calc) return;
     setActiveCalcId(id);
     setOpen(false); setQuery('');
-    navigate(calc.category === 'bbs' ? '/bbs/footing' : `/${CATEGORY_PATH_MAP[calc.category]}/${getCalculatorSlug(calc)}`);
+    navigate(getCalculatorPath(calc));
   };
 
   const openArticle = (slug: string) => {

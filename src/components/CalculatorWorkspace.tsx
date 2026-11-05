@@ -5786,6 +5786,55 @@ export default function CalculatorWorkspace({
               </div>
             )}
 
+            {calculatorId === 'survey-coordinate' && (
+              <div className="space-y-3 font-mono text-xs text-left">
+                <div className="bg-emerald-50/90 dark:bg-emerald-950/30 p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800/50 space-y-2 shadow-2xs">
+                  <span className="text-[10px] text-emerald-700 dark:text-emerald-300 block uppercase font-extrabold tracking-wider">
+                    Target Station Coordinates (3D)
+                  </span>
+                  <div className="grid grid-cols-3 gap-2 pt-1">
+                    <div className="bg-white dark:bg-slate-900 p-2 rounded-lg border border-emerald-200/70 dark:border-emerald-800/40">
+                      <span className="text-[9px] text-slate-500 block uppercase">Northing (N₂)</span>
+                      <span className="text-sm font-black text-emerald-700 dark:text-emerald-300">{outputs.endNorthing ?? 0}</span>
+                    </div>
+                    <div className="bg-white dark:bg-slate-900 p-2 rounded-lg border border-emerald-200/70 dark:border-emerald-800/40">
+                      <span className="text-[9px] text-slate-500 block uppercase">Easting (E₂)</span>
+                      <span className="text-sm font-black text-emerald-700 dark:text-emerald-300">{outputs.endEasting ?? 0}</span>
+                    </div>
+                    <div className="bg-white dark:bg-slate-900 p-2 rounded-lg border border-emerald-200/70 dark:border-emerald-800/40">
+                      <span className="text-[9px] text-slate-500 block uppercase">Elev. (Z₂)</span>
+                      <span className="text-sm font-black text-emerald-700 dark:text-emerald-300">{outputs.endElevation ?? 0}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-white dark:bg-surface-2 p-3 rounded-xl border border-slate-100 dark:border-border-subtle shadow-2xs">
+                    <span className="text-[10px] text-slate-500 block uppercase font-bold">Horiz. Distance (HD)</span>
+                    <span className="text-base font-bold text-slate-800 dark:text-slate-100">{outputs.horizontalDistance ?? 0}</span>
+                    <span className="text-[10px] text-slate-400 ml-1">{unitSystem === 'metric' ? 'm' : 'ft'}</span>
+                  </div>
+                  <div className="bg-white dark:bg-surface-2 p-3 rounded-xl border border-slate-100 dark:border-border-subtle shadow-2xs">
+                    <span className="text-[10px] text-slate-500 block uppercase font-bold">Vert. Delta (VD)</span>
+                    <span className="text-base font-bold text-slate-800 dark:text-slate-100">{outputs.verticalDistance ?? 0}</span>
+                    <span className="text-[10px] text-slate-400 ml-1">{unitSystem === 'metric' ? 'm' : 'ft'}</span>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-surface-2 p-3 rounded-xl border border-slate-100 dark:border-border-subtle shadow-2xs space-y-1.5 text-[11px]">
+                  <span className="text-[10px] text-slate-500 block uppercase font-bold">Latitude &amp; Departure Components</span>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-sans">Latitude (ΔN = HD·cos θ):</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100">{outputs.deltaNorthing ?? 0} {unitSystem === 'metric' ? 'm' : 'ft'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-sans">Departure (ΔE = HD·sin θ):</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100">{outputs.deltaEasting ?? 0} {unitSystem === 'metric' ? 'm' : 'ft'}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {calculatorId === 'utility-convert' && (
               <div className="space-y-3 font-mono">
                 <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-110 text-center py-6 shadow-2xs">
@@ -6139,29 +6188,130 @@ export default function CalculatorWorkspace({
                 {calculatorId === 'survey-hi' && (
                   <>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500">HI Line of Sight:</span>
+                      <span className="text-slate-500">Σ Backsights (BS):</span>
                       <span className="text-[#0F172A] font-bold">
                         {unitSystem === 'metric' 
-                          ? `${((outputs.heightOfInstrument || 0) * 3.28084).toFixed(3)} ft` 
-                          : `${((outputs.heightOfInstrument || 0) / 3.28084).toFixed(3)} m`
+                          ? `${((outputs.sumBS || 0) * 3.28084).toFixed(3)} ft` 
+                          : `${((outputs.sumBS || 0) / 3.28084).toFixed(3)} m`
                         }
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Foresight RL_FS:</span>
+                      <span className="text-slate-500">Σ Foresights (FS):</span>
                       <span className="text-[#0F172A] font-bold">
                         {unitSystem === 'metric' 
-                          ? `${((outputs.foresightRL || 0) * 3.28084).toFixed(3)} ft` 
-                          : `${((outputs.foresightRL || 0) / 3.28084).toFixed(3)} m`
+                          ? `${((outputs.sumFS || 0) * 3.28084).toFixed(3)} ft` 
+                          : `${((outputs.sumFS || 0) / 3.28084).toFixed(3)} m`
                         }
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Elevation Change:</span>
+                      <span className="text-slate-500">Net Elevation ΔRL:</span>
                       <span className="text-[#0F172A] font-bold">
                         {unitSystem === 'metric' 
-                          ? `${((outputs.elevationDelta || 0) * 3.28084).toFixed(3)} ft` 
-                          : `${((outputs.elevationDelta || 0) / 3.28084).toFixed(3)} m`
+                          ? `${((outputs.firstLastRlDifference || 0) * 3.28084).toFixed(3)} ft` 
+                          : `${((outputs.firstLastRlDifference || 0) / 3.28084).toFixed(3)} m`
+                        }
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                {calculatorId === 'survey-coordinate' && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Horiz. Distance:</span>
+                      <span className="text-[#0F172A] font-bold">
+                        {unitSystem === 'metric'
+                          ? `${((outputs.horizontalDistance || 0) * 3.28084).toFixed(3)} ft`
+                          : `${((outputs.horizontalDistance || 0) / 3.28084).toFixed(3)} m`
+                        }
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Latitude ΔN:</span>
+                      <span className="text-[#0F172A] font-bold">
+                        {unitSystem === 'metric'
+                          ? `${((outputs.deltaNorthing || 0) * 3.28084).toFixed(3)} ft`
+                          : `${((outputs.deltaNorthing || 0) / 3.28084).toFixed(3)} m`
+                        }
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Departure ΔE:</span>
+                      <span className="text-[#0F172A] font-bold">
+                        {unitSystem === 'metric'
+                          ? `${((outputs.deltaEasting || 0) * 3.28084).toFixed(3)} ft`
+                          : `${((outputs.deltaEasting || 0) / 3.28084).toFixed(3)} m`
+                        }
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                {calculatorId === 'steel-calculator' && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Single Member:</span>
+                      <span className="text-[#0F172A] font-bold">
+                        {unitSystem === 'metric'
+                          ? `${((outputs.weightPerUnit || 0) * 2.20462).toFixed(2)} lbs`
+                          : `${((outputs.weightPerUnit || 0) / 2.20462).toFixed(2)} kg`
+                        }
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Total Weight:</span>
+                      <span className="text-[#0F172A] font-bold">
+                        {unitSystem === 'metric'
+                          ? `${((outputs.totalWeight || 0) * 2.20462).toFixed(1)} lbs`
+                          : `${((outputs.totalWeight || 0) / 2.20462).toFixed(1)} kg`
+                        }
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                {calculatorId === 'rebar-calculator' && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Total Length:</span>
+                      <span className="text-[#0F172A] font-bold">
+                        {unitSystem === 'metric'
+                          ? `${((outputs.totalLength || 0) * 3.28084).toFixed(1)} ft`
+                          : `${((outputs.totalLength || 0) / 3.28084).toFixed(1)} m`
+                        }
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Total Rebar Weight:</span>
+                      <span className="text-[#0F172A] font-bold">
+                        {unitSystem === 'metric'
+                          ? `${((outputs.totalWeight || 0) * 2.20462).toFixed(1)} lbs`
+                          : `${((outputs.totalWeight || 0) / 2.20462).toFixed(1)} kg`
+                        }
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                {calculatorId === 'brick-calculator' && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Net Wall Area:</span>
+                      <span className="text-[#0F172A] font-bold">
+                        {unitSystem === 'metric'
+                          ? `${((outputs.netWallArea || 0) * 10.7639).toFixed(1)} ft²`
+                          : `${((outputs.netWallArea || 0) / 10.7639).toFixed(1)} m²`
+                        }
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Dry Mortar Vol:</span>
+                      <span className="text-[#0F172A] font-bold">
+                        {unitSystem === 'metric'
+                          ? `${((outputs.dryMortarVolume || 0) * 35.3147).toFixed(1)} ft³`
+                          : `${((outputs.dryMortarVolume || 0) / 35.3147).toFixed(2)} m³`
                         }
                       </span>
                     </div>

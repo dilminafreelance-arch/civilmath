@@ -130,6 +130,12 @@ export function getCalculatorSlug(calc: typeof CALCULATORS_LIST[0]): string {
   return calc.id;
 }
 
+export function getCalculatorPath(calc: typeof CALCULATORS_LIST[0]): string {
+  if (calc.id === 'rebar-weight-cost') return '/rebar/weight-cost';
+  if (calc.category === 'bbs') return `/bbs/${calc.slug || 'footing'}`;
+  return `/${CATEGORY_PATH_MAP[calc.category]}/${getCalculatorSlug(calc)}`;
+}
+
 /**
  * Reusable SEO Component - sets per-route metadata inside react-helmet-async
  */

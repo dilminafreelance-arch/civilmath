@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import {
   ChevronRight, Share2, Printer, BookOpen, Bookmark,
 } from 'lucide-react';
-import { SEO, generateCalculatorSchema, CATEGORY_PATH_MAP, getRouteSEO, SITE_URL, DEFAULT_IMAGE } from '../utils/seo';
+import { SEO, generateCalculatorSchema, CATEGORY_PATH_MAP, getCalculatorPath, getRouteSEO, SITE_URL, DEFAULT_IMAGE } from '../utils/seo';
 import { CalculatorCategory } from '../types';
 import { CALCULATORS_LIST } from '../data/calculatorsData';
 import StepWizard from './StepWizard';
@@ -24,6 +24,7 @@ interface CalculatorPageProps {
   onBeginnerModeChange?: (v: boolean) => void;
   currentStep?: number;
   onStepChange?: (step: number) => void;
+  hideRelated?: boolean;
 }
 
 const categoryPathNames: Record<string, string> = {
@@ -33,7 +34,7 @@ const categoryPathNames: Record<string, string> = {
 
 export default function CalculatorPageTemplate({
   title, description, category, path, image, faqs, children, breadcrumbLabel,
-  beginnerMode, onBeginnerModeChange, currentStep, onStepChange,
+  beginnerMode, onBeginnerModeChange, currentStep, onStepChange, hideRelated,
 }: CalculatorPageProps) {
   const navigate = useNavigate();
   const categoryPath = CATEGORY_PATH_MAP[category];
@@ -156,7 +157,7 @@ export default function CalculatorPageTemplate({
         {children}
       </div>
 
-      {relatedCalculators.length > 0 && (
+      {!hideRelated && relatedCalculators.length > 0 && (
         <section className="mt-10 max-w-5xl">
           <div className="flex items-center gap-2 mb-3">
             <SparklesIcon />
@@ -166,7 +167,7 @@ export default function CalculatorPageTemplate({
             {relatedCalculators.map(calc => (
               <Link
                 key={calc.id}
-                to={calc.category === 'bbs' ? '/bbs/footing' : `/${CATEGORY_PATH_MAP[calc.category]}/${calc.slug || calc.id.replace(`${calc.category}-`, '')}`}
+                to={getCalculatorPath(calc)}
                 className="block no-underline"
               >
                 <Card elevation="interactive" className="p-3.5">

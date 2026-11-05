@@ -128,7 +128,15 @@ export default function RebarWeightCostPage() {
   const [length, setLength] = useState(20);
   const [price, setPrice] = useState(0.65);
   const [waste, setWaste] = useState(5);
-  const [submitted, setSubmitted] = useState<CalcInputs | null>(null);
+  const [submitted, setSubmitted] = useState<CalcInputs | null>({
+    units: 'imperial',
+    barSize: '#4',
+    diaMm: '12',
+    count: 20,
+    length: 20,
+    price: 0.65,
+    waste: 5,
+  });
   const [popKey, setPopKey] = useState(0);
 
   const handleCalculate = () => {

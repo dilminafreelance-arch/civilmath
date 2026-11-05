@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import MainDashboard from '../components/MainDashboard';
 import { PopularCalculatorsGrid, ProgressDonut, QuickStatsBar, CalendarWidget, LatestArticlesWidget, RecentCalculationsWidget } from '../components/DashboardWidgets';
-import { SEOHead, CATEGORY_PATH_MAP, getCalculatorSlug } from '../utils/seo';
+import { SEOHead, getCalculatorPath } from '../utils/seo';
 import { CALCULATORS_LIST } from '../data/calculatorsData';
 import { useApp } from '../context/AppContext';
 
@@ -29,16 +29,14 @@ export default function DashboardPage() {
     handleLoadSavedCalculation(calc);
     const def = CALCULATORS_LIST.find((c: any) => c.id === calc.calculatorId);
     if (def) {
-      const path = CATEGORY_PATH_MAP[def.category];
-      navigate(`/${path}/${getCalculatorSlug(def)}`);
+      navigate(getCalculatorPath(def));
     }
   };
   const openCalculator = (id: string) => {
     const def = CALCULATORS_LIST.find(calc => calc.id === id);
     if (!def) return;
     setActiveCalcId(id);
-    const path = CATEGORY_PATH_MAP[def.category];
-    navigate(def.category === 'bbs' ? '/bbs/footing' : `/${path}/${getCalculatorSlug(def)}`);
+    navigate(getCalculatorPath(def));
   };
 
   // Category breakdown for the progress donut

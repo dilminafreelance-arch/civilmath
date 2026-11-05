@@ -71,7 +71,18 @@ export default function ConcreteStepsPage() {
   const [submitted, setSubmitted] = useState<{
     units: UnitSystem; steps: number; riser: number; tread: number; width: number;
     waist: number; landingLen: number; landingThick: number; price: number; waste: number;
-  } | null>(null);
+  } | null>({
+    units: 'imperial',
+    steps: 4,
+    riser: 7,
+    tread: 11,
+    width: 4,
+    waist: 0,
+    landingLen: 0,
+    landingThick: 4,
+    price: 150,
+    waste: 7,
+  });
   const [popKey, setPopKey] = useState(0);
 
   const handleCalculate = () => {

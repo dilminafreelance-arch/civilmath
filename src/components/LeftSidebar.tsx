@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   Home, Box, Grid, Compass,
   Layers, ArrowLeftRight, ClipboardList,
-  FileText, Bookmark, BookOpen, ChevronRight, Settings2
+  FileText, Bookmark, BookOpen, ChevronRight, Settings2, GitCommit, ShieldCheck
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -16,13 +16,14 @@ interface CategoryItem {
 }
 
 const CATEGORIES: CategoryItem[] = [
-  { id: 'concrete', name: 'Concrete', count: 6, path: '/concrete', icon: Box, color: '#8CA0F0' },
-  { id: 'reinforcement', name: 'Reinforcement', count: 6, path: '/concrete/rebar', icon: Grid, color: '#C9A876' },
-  { id: 'masonry', name: 'Masonry', count: 4, path: '/concrete/brick', icon: Layers, color: '#E0977B' },
-  { id: 'surveying', name: 'Surveying', count: 4, path: '/surveying', icon: Compass, color: '#7DD3E0' },
-  { id: 'area-volume', name: 'Area & Volume', count: 6, path: '/calculators', icon: Layers, color: '#A5B4F5' },
-  { id: 'quantity', name: 'Quantity Estimation', count: 5, path: '/bbs', icon: ClipboardList, color: '#C7A8E5' },
-  { id: 'conversions', name: 'Conversions', count: 8, path: '/utilities/unit-converter', icon: ArrowLeftRight, color: '#9CA3C9' },
+  { id: 'concrete', name: 'Concrete & Mixes', count: 5, path: '/concrete', icon: Box, color: '#8CA0F0' },
+  { id: 'structural', name: 'Structural Design', count: 5, path: '/structural', icon: GitCommit, color: '#34D399' },
+  { id: 'bbs', name: 'Reinforcement (BBS)', count: 14, path: '/bbs', icon: ClipboardList, color: '#C7A8E5' },
+  { id: 'geotech', name: 'Geotechnical', count: 2, path: '/geotechnical', icon: ShieldCheck, color: '#C9A876' },
+  { id: 'surveying', name: 'Surveying', count: 2, path: '/surveying', icon: Compass, color: '#7DD3E0' },
+  { id: 'masonry', name: 'Masonry & Brick', count: 2, path: '/concrete/brick', icon: Layers, color: '#E0977B' },
+  { id: 'conversions', name: 'Unit Converter', count: 8, path: '/utilities/unit-converter', icon: ArrowLeftRight, color: '#9CA3C9' },
+  { id: 'all-tools', name: 'All Calculators', count: 29, path: '/calculators', icon: Grid, color: '#A5B4F5' },
 ];
 
 const TOOLS = [
@@ -44,24 +45,27 @@ export default function LeftSidebar({ onItemClick, className = '' }: LeftSidebar
 
   const isCategoryActive = (item: CategoryItem) => {
     if (item.id === 'concrete') {
-      return location.pathname.startsWith('/concrete') && !location.pathname.includes('/rebar') && !location.pathname.includes('/brick');
+      return location.pathname.startsWith('/concrete') && !location.pathname.includes('/brick');
     }
-    if (item.id === 'reinforcement') {
-      return location.pathname.includes('/rebar') || location.pathname.includes('/steel');
+    if (item.id === 'structural') {
+      return location.pathname.startsWith('/structural') || location.pathname.startsWith('/rebar');
     }
-    if (item.id === 'masonry') {
-      return location.pathname.includes('/brick');
+    if (item.id === 'bbs') {
+      return location.pathname.startsWith('/bbs');
+    }
+    if (item.id === 'geotech') {
+      return location.pathname.startsWith('/geotechnical');
     }
     if (item.id === 'surveying') {
       return location.pathname.startsWith('/surveying');
     }
-    if (item.id === 'quantity') {
-      return location.pathname.startsWith('/bbs');
+    if (item.id === 'masonry') {
+      return location.pathname.includes('/brick');
     }
     if (item.id === 'conversions') {
-      return location.pathname.includes('/unit-converter');
+      return location.pathname.startsWith('/utilities');
     }
-    if (item.id === 'area-volume') {
+    if (item.id === 'all-tools') {
       return location.pathname === '/calculators';
     }
     return location.pathname === item.path;
