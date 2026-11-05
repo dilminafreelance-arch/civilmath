@@ -3,22 +3,13 @@ import { requireAdminAuth, verifySessionToken } from "./_lib/auth.js";
 import { getSupabase } from "./_lib/supabase.js";
 import { rowToArticle, articleToRow } from "./_lib/articleMapper.js";
 import { notifySearchEngines } from "./_lib/indexnow.js";
-
-// Public article JSON ships the cover image as a base64 data URI (~250KB).
-// rowToArticle() copies that same blob into coverImage, coverImageUrl AND
-// seo.ogImage, so one article balloons to ~750KB and the article list to
-// 20MB+. Keep a single copy for public readers (admin keeps everything).
-function slimPublicArticle(article) {
-  if (!article || typeof article !== "object") return article;
-  const cover = article.coverImage;
-  if (typeof cover === "string" && cover.startsWith("data:")) {
-    article.coverImageUrl = "";
-    if (article.seo && typeof article.seo === "object") {
-      article.seo.ogImage = "";
-    }
-  }
-  return article;
-}
+import {
+  loadHtmlShell,
+  renderArticlePageHtml,
+  renderArticleNotFoundHtml,
+  renderArticlesDirectoryHtml,
+  slimArticleForEmbed,
+} from "./_lib/articleSsr.js";
 
 export default async function handler(req, res) {
   setCors(res);
@@ -32,9 +23,10 @@ export default async function handler(req, res) {
   const isBulk = req.query.bulk === "true" || lastPart === "bulk" || Array.isArray(req.body);
   const pathSlug =
     pathParts.length > 2 && lastPart !== "bulk" && lastPart !== "articles"
-      ? lastPart
+      ? decodeURIComponent(lastPart)
       : null;
-  const slug = req.query.slug || pathSlug;
+  const slug = req.query.slug ? String(req.query.slug) : pathSlug;
+  const renderMode = req.query.render ? String(req.query.render) : "";
 
   const supabase = getSupabase();
 
@@ -42,6 +34,97 @@ export default async function handler(req, res) {
     const authHeader = req.headers.authorization;
     const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
     const isAdmin = Boolean(token && verifySessionToken(token));
+
+    // Dynamic cover image binary endpoint for /article-covers/:slug.webp
+    if (renderMode === "cover" && slug) {
+      const cleanSlug = slug.replace(/\.(webp|png|jpe?g|svg)$/i, "");
+      try {
+        const { data, error } = await supabase
+          .from("articles")
+          .select("slug, image_url, summary")
+          .eq("slug", cleanSlug)
+          .maybeSingle();
+
+        if (!error && data) {
+          const article = rowToArticle(data);
+          const rawCover = String(article?.coverImage || "").trim();
+          const m = rawCover.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,([\s\S]+)$/);
+          if (m) {
+            const buf = Buffer.from(m[2], "base64");
+            res.setHeader("Content-Type", m[1] || "image/webp");
+            res.setHeader("Cache-Control", "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400");
+            return res.status(200).send(buf);
+          }
+          if (rawCover.startsWith("http://") || rawCover.startsWith("https://")) {
+            res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=86400");
+            return res.redirect(302, rawCover);
+          }
+        }
+      } catch (err) {
+        console.warn("Cover endpoint error:", err?.message || err);
+      }
+      return res.redirect(302, "/og-image.png");
+    }
+
+    // Dynamic SSR HTML rendering for /articles (directory)
+    if (renderMode === "directory") {
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.setHeader("Cache-Control", "public, max-age=60, s-maxage=600, stale-while-revalidate=86400");
+      const shell = loadHtmlShell();
+      try {
+        const { data } = await supabase
+          .from("articles")
+          .select("slug, title, summary, tags, image_url, published, published_at, updated_at")
+          .or("published.eq.true,published.is.null")
+          .order("published_at", { ascending: false });
+        const list = (data || []).map((r) => slimArticleForEmbed(rowToArticle(r)));
+        return res.status(200).send(renderArticlesDirectoryHtml(shell, list));
+      } catch (err) {
+        console.warn("SSR directory Supabase error:", err?.message || err);
+        return res.status(200).send(renderArticlesDirectoryHtml(shell, []));
+      }
+    }
+
+    // Dynamic SSR HTML rendering for /articles/:slug
+    if (renderMode === "html" && slug) {
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      const shell = loadHtmlShell();
+      try {
+        const { data, error } = await supabase
+          .from("articles")
+          .select("*")
+          .eq("slug", slug)
+          .or("published.eq.true,published.is.null")
+          .maybeSingle();
+
+        if (error || !data) {
+          res.setHeader("Cache-Control", "public, max-age=30, s-maxage=120");
+          return res.status(404).send(renderArticleNotFoundHtml(shell));
+        }
+
+        const article = rowToArticle(data);
+        if (article.status === "draft") {
+          res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+          return res.status(404).send(renderArticleNotFoundHtml(shell));
+        }
+
+        const { data: relRows } = await supabase
+          .from("articles")
+          .select("slug, title, summary, published, published_at")
+          .or("published.eq.true,published.is.null")
+          .neq("slug", slug)
+          .order("published_at", { ascending: false })
+          .limit(6);
+
+        const related = (relRows || []).map((r) => rowToArticle(r));
+        res.setHeader("Cache-Control", "public, max-age=60, s-maxage=600, stale-while-revalidate=86400");
+        return res.status(200).send(renderArticlePageHtml(shell, article, related));
+      } catch (err) {
+        console.warn("SSR article Supabase error:", err?.message || err);
+        res.setHeader("Cache-Control", "no-cache");
+        return res.status(500).send(shell);
+      }
+    }
 
     if (!isAdmin) {
       res.setHeader("Cache-Control", "public, max-age=60, s-maxage=600, stale-while-revalidate=86400");
@@ -63,17 +146,15 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: "Article not found", status: "not_found" });
       }
       const article = rowToArticle(data);
-      return res.status(200).json(isAdmin ? article : slimPublicArticle(article));
+      const keepRawCover = isAdmin || req.query.rawCover === "true";
+      return res.status(200).json(keepRawCover ? article : slimArticleForEmbed(article));
     }
 
-    // List endpoint: lightweight summaries only. Excluding the full `content`
-    // body keeps this response ~100KB instead of 20MB+ (was 12s+ on mobile).
-    // Detail pages fetch full content via ?slug=. The client article cache
-    // already skips content-less entries (getCachedArticleSync checks
-    // cached.content before returning), so this is safe.
-    let query = supabase
-      .from("articles")
-      .select("slug, title, summary, tags, image_url, published, published_at, updated_at");
+    // List endpoint: lightweight summaries by default; full rows when ?bulk=true (used by build-time prerender).
+    const selectCols = isBulk
+      ? "*"
+      : "slug, title, summary, tags, published, published_at, updated_at";
+    let query = supabase.from("articles").select(selectCols);
     if (!isAdmin) {
       query = query.or("published.eq.true,published.is.null");
     }
@@ -86,7 +167,7 @@ export default async function handler(req, res) {
     return res.status(200).json(
       (data || []).map((row) => {
         const article = rowToArticle(row);
-        return isAdmin ? article : slimPublicArticle(article);
+        return slimArticleForEmbed(article);
       })
     );
   }
@@ -103,7 +184,7 @@ export default async function handler(req, res) {
 
       const rows = items
         .filter((item) => item && item.slug && item.title)
-        .map(articleToRow);
+        .map((item) => articleToRow(item));
 
       if (rows.length === 0) {
         return res.status(400).json({ error: "No valid articles provided." });
@@ -119,7 +200,6 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Failed to save articles." });
       }
 
-      // Asynchronously notify search engines (IndexNow & Google ping) without blocking
       notifySearchEngines(rows.map((r) => r.slug)).catch((err) =>
         console.warn("Auto-index ping error:", err?.message || err)
       );
@@ -135,6 +215,26 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Slug and title are required." });
     }
 
+    const incomingCover = String(article.coverImage || article.coverImageUrl || "").trim();
+    if (incomingCover.startsWith("/article-covers/")) {
+      try {
+        const { data: existing } = await supabase
+          .from("articles")
+          .select("image_url, summary")
+          .eq("slug", article.slug)
+          .maybeSingle();
+        if (existing) {
+          const prev = rowToArticle(existing);
+          if (prev?.coverImage && String(prev.coverImage).startsWith("data:")) {
+            article.coverImage = prev.coverImage;
+            article.coverImageUrl = prev.coverImage;
+          }
+        }
+      } catch {
+        // ignore and proceed
+      }
+    }
+
     const row = articleToRow(article);
 
     const { data, error } = await supabase
@@ -148,7 +248,6 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: `Failed to save article to Supabase: ${error.message || error}` });
     }
 
-    // Asynchronously notify search engines (IndexNow & Google ping) without blocking
     notifySearchEngines(data.slug || article.slug).catch((err) =>
       console.warn("Auto-index ping error:", err?.message || err)
     );

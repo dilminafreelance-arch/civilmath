@@ -12,6 +12,8 @@ export function rowToArticle(row) {
     } else {
       meta = { excerpt: row.summary };
     }
+  } else if (row.seo && typeof row.seo === 'object') {
+    meta = row;
   }
 
   const title = row.title || 'Untitled Article';
@@ -20,43 +22,43 @@ export function rowToArticle(row) {
   const category = row.category || meta.category || 'general';
   const excerpt = row.excerpt || meta.excerpt || row.summary || (content.length > 20 ? content.slice(0, 160) : title);
   const status = row.status || (row.published === false ? 'draft' : (meta.status || 'published'));
-  const contentFormat = row.content_format || meta.content_format || (content.includes('<p') || content.includes('<h2') ? 'html' : 'legacy');
-  const coverImage = row.cover_image_url || row.image_url || meta.coverImage || '';
+  const contentFormat = row.content_format || row.contentFormat || meta.content_format || meta.contentFormat || (content.includes('<p') || content.includes('<h2') ? 'html' : 'legacy');
+  const coverImage = row.cover_image_url || row.image_url || row.coverImage || row.coverImageUrl || meta.coverImage || '';
   const tags = Array.isArray(row.tags) && row.tags.length ? row.tags : (Array.isArray(meta.tags) && meta.tags.length ? meta.tags : [category]);
-  const publishedAt = row.published_at || row.created_at || new Date().toISOString();
-  const createdAt = row.created_at || row.published_at || publishedAt;
-  const updatedAt = row.updated_at || undefined;
+  const publishedAt = row.published_at || row.publishedAt || row.created_at || row.createdAt || new Date().toISOString();
+  const createdAt = row.created_at || row.createdAt || row.published_at || row.publishedAt || publishedAt;
+  const updatedAt = row.updated_at || row.updatedAt || undefined;
 
   return {
     id: row.id,
     slug,
     title,
-    h1: meta.h1 || title,
+    h1: row.h1 || meta.h1 || title,
     excerpt,
     category,
-    author: meta.author || 'CivilMath Engineering Editorial Team',
+    author: row.author || meta.author || 'CivilMath Engineering Editorial Team',
     publishedAt,
     createdAt,
     updatedAt,
-    readTimeMinutes: meta.readTimeMinutes || Math.max(2, Math.ceil((content.split(/\s+/).length || 500) / 200)),
+    readTimeMinutes: row.readTimeMinutes || meta.readTimeMinutes || Math.max(2, Math.ceil((content.split(/\s+/).length || 500) / 200)),
     status,
     tags,
     coverImage,
     coverImageUrl: coverImage,
     content,
     contentFormat,
-    introduction: meta.introduction || '',
-    theory: meta.theory || '',
-    realWorldApplications: meta.realWorldApplications || [],
-    formulas: meta.formulas || [],
-    stepByStepExample: meta.stepByStepExample || undefined,
-    commonErrors: meta.commonErrors || [],
-    bestPractices: meta.bestPractices || [],
-    designCodes: meta.designCodes || [],
-    faqs: meta.faqs || [],
-    relatedCalculators: meta.relatedCalculators || [],
-    references: meta.references || [],
-    blocks: Array.isArray(meta.blocks) ? meta.blocks : [],
+    introduction: row.introduction || meta.introduction || '',
+    theory: row.theory || meta.theory || '',
+    realWorldApplications: row.realWorldApplications || meta.realWorldApplications || [],
+    formulas: row.formulas || meta.formulas || [],
+    stepByStepExample: row.stepByStepExample || meta.stepByStepExample || undefined,
+    commonErrors: row.commonErrors || meta.commonErrors || [],
+    bestPractices: row.bestPractices || meta.bestPractices || [],
+    designCodes: row.designCodes || meta.designCodes || [],
+    faqs: row.faqs || meta.faqs || [],
+    relatedCalculators: row.relatedCalculators || meta.relatedCalculators || [],
+    references: row.references || meta.references || [],
+    blocks: Array.isArray(row.blocks) ? row.blocks : (Array.isArray(meta.blocks) ? meta.blocks : []),
     seo: {
       seoTitle: meta.seo?.seoTitle || (title + ' | CivilMath'),
       metaDescription: meta.seo?.metaDescription || excerpt,
@@ -135,4 +137,3 @@ export function articleToRow(article, extraColumns = {}) {
 
   return row;
 }
-

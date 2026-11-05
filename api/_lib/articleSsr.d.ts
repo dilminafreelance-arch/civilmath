@@ -1,0 +1,11 @@
+export const ARTICLE_CRITICAL_CSS: string;
+export function escHtml(s: unknown): string;
+export function escAttr(s: unknown): string;
+export function stripHtml(s: unknown): string;
+export function resolveOgImage(raw: unknown): string;
+export function slimArticleForEmbed(article: any): any;
+export function extractArticleFaqs(article: any): { question: string; answer: string }[];
+export function renderArticlePageHtml(shellHtml: string, article: any, relatedArticles?: any[]): string;
+export function renderArticleNotFoundHtml(shellHtml: string): string;
+export function renderArticlesDirectoryHtml(shellHtml: string, articles?: any[]): string;
+export function loadHtmlShell(): string;

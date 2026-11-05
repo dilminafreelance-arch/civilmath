@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 
 import { CalculatorCategory } from '../types';
 import { CALCULATORS_LIST } from '../data/calculatorsData';
@@ -175,6 +175,16 @@ export function SEO({
 
   const keywordStr = Array.isArray(keywords) ? keywords.join(', ') : keywords;
 
+  // Ensure server-injected static canonical & meta description tags never remain stale
+  // or duplicated across client-side SPA route transitions.
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    // Remove static prerendered tags (marked with data-rh="true") once React 19's
+    // Helmet mounts its own live <title>, <meta>, <link>, and <script> nodes.
+    // Never remove nodes without data-rh="true", as those belong to React 19's fiber tree.
+    document.head.querySelectorAll('[data-rh="true"]').forEach(el => el.remove());
+  }, [url, description, title, noindex]);
+
   return (
     <Helmet>
       {/* Primary Page Tags */}
@@ -288,4 +298,3 @@ export function calcIdToPath(id: string): string {
 export function pathToCalcId(path: string): string {
   return path.replace(/\//g, '-');
 }
-

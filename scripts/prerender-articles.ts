@@ -1,194 +1,201 @@
 /**
- * prerender-articles.ts — instant-loading article pages (no browser needed).
+ * prerender-articles.ts — full SEO + instant-loading article & directory pages.
  *
- * Problem: /articles/<slug> shipped the empty SPA shell (<div id="root"></div>).
- * The article body only appeared after JS boot + an /api round-trip, so direct
- * visits (and crawlers) saw a spinner instead of content.
- *
- * Fix: at build time (after inject-seo-meta.ts has written per-article HTML
- * files with SEO meta), this script embeds for every published article:
- *   1. The full article JSON in <script id="ssr-article-data" type="application/json">
- *      -> ArticleDetailPageV2 renders instantly from it via getCachedArticleSync,
- *         no API wait, no loading spinner. Background refresh still fetches fresh data.
- *   2. Server-rendered article HTML inside #root with critical inline CSS
- *      -> content is visible even before JS executes; crawlers see full text.
- *
- * Data source mirrors inject-seo-meta.ts: live API bulk first, Supabase direct
- * as fallback. Never fails the build.
- *
- * Build order: vite build && ... && tsx scripts/inject-seo-meta.ts && tsx scripts/prerender-articles.ts
+ * Runs at the end of `npm run build`:
+ *   1. Saves the clean Vite HTML shell into `dist/_shell.html` and `api/_lib/htmlShell.js`
+ *      so dynamic serverless rendering (`/api/articles?slug=...&render=html`) always has
+ *      the exact Vite asset bundles for newly published Supabase articles.
+ *   2. Fetches all published articles (with full content) from Supabase or live API
+ *      (hydrating any content-less summaries via `/api/articles?slug=<slug>`).
+ *   3. Writes `dist/articles/<slug>/index.html` for every published article with:
+ *      - Full <head> SEO metadata (title, description, canonical, OG, Twitter)
+ *      - TechArticle + BreadcrumbList + FAQPage JSON-LD structured data
+ *      - Full semantic HTML (<article>, <h1>, body, FAQs, related links) inside #root
+ *      - Embedded <script id="ssr-article-data" type="application/json"> for 0ms hydration
+ *   4. Writes `dist/articles/index.html` with all published article links (<a href="/articles/<slug>">)
+ *      and CollectionPage + ItemList JSON-LD so crawlers discover every article immediately.
  */
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import { rowToArticle } from '../api/_lib/articleMapper.js';
+import {
+  renderArticlePageHtml,
+  renderArticlesDirectoryHtml,
+} from '../api/_lib/articleSsr.js';
+
+dotenv.config();
+dotenv.config({ path: '.env.local', override: true });
 
 const DIST_DIR = path.resolve(process.cwd(), 'dist');
 const SITE_URL = 'https://civilmath.com';
-const JSON_ID = 'ssr-article-data';
 
-const CRITICAL_CSS = `
-.ssr-wrap{max-width:48rem;margin:0 auto;padding:1.5rem 1.25rem 4rem;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#20231F;line-height:1.75}
-.ssr-topbar{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;margin-bottom:1.5rem;border-bottom:1px solid #e7e5e0}
-.ssr-topbar a.brand{font-weight:800;font-size:1.05rem;color:#20231F;text-decoration:none;letter-spacing:-.02em}
-.ssr-topbar a.home{font-size:.8rem;color:#657565;text-decoration:none}
-.ssr-crumb{font-size:.75rem;color:#7B8978;margin-bottom:1rem}
-.ssr-crumb a{color:#657565;text-decoration:none}
-.ssr-wrap h1{font-size:1.9rem;line-height:1.25;font-weight:800;letter-spacing:-.02em;margin:0 0 .75rem}
-.ssr-meta{font-size:.8rem;color:#7B8978;margin-bottom:1.25rem}
-.ssr-cover{width:100%;border-radius:1rem;margin:0 0 1.75rem;display:block}
-.ssr-excerpt{font-size:1.05rem;color:#3d443c;border-left:3px solid #657565;padding-left:1rem;margin:0 0 1.75rem}
-.ssr-body{font-size:1rem}
-.ssr-body h2{font-size:1.4rem;font-weight:700;margin:2.25rem 0 .9rem;letter-spacing:-.01em}
-.ssr-body h3{font-size:1.15rem;font-weight:700;margin:1.75rem 0 .7rem}
-.ssr-body p{margin:0 0 1.1rem}
-.ssr-body ul,.ssr-body ol{margin:0 0 1.1rem;padding-left:1.5rem}
-.ssr-body li{margin-bottom:.45rem}
-.ssr-body strong{font-weight:700}
-.ssr-body table{width:100%;border-collapse:collapse;font-size:.9rem;margin:0}
-.ssr-body th,.ssr-body td{border:1px solid #e7e5e0;padding:.55rem .75rem;text-align:left}
-.ssr-body th{background:#f4f3f0;font-weight:700}
-.ssr-table-wrap{margin:1.5rem 0;overflow-x:auto;border:1px solid #e7e5e0;border-radius:.75rem}
-.ssr-body img{max-width:100%;border-radius:.75rem}
-.ssr-body blockquote{border-left:3px solid #657565;padding-left:1rem;color:#3d443c;margin:0 0 1.1rem}
-.ssr-tags{margin-top:2.5rem;display:flex;flex-wrap:wrap;gap:.5rem}
-.ssr-tags span{font-size:.75rem;background:#f4f3f0;border-radius:9999px;padding:.3rem .8rem;color:#536153}
-.ssr-note{margin-top:3rem;padding-top:1.25rem;border-top:1px solid #e7e5e0;font-size:.8rem;color:#7B8978}
-`;
-
-function escHtml(s: string): string {
-  return String(s ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+function extractCleanViteShell(distIndexHtml: string): string {
+  let shell = distIndexHtml;
+  shell = shell.replace(/<div id="cm-splash"[\s\S]*?(?=<div id="root">)/i, '');
+  shell = shell.replace(/<div\s+id=["']root["'][^>]*>[\s\S]*?<\/div>/i, '<div id="root"></div>');
+  return shell;
 }
 
-function escAttr(s: string): string {
-  return escHtml(s).replace(/'/g, '&#39;');
+function persistHtmlShell(shellHtml: string) {
+  try {
+    fs.writeFileSync(path.join(DIST_DIR, '_shell.html'), shellHtml, 'utf8');
+  } catch (e: any) {
+    console.warn('[prerender-articles] Could not write dist/_shell.html:', e?.message);
+  }
+  try {
+    const jsModulePath = path.resolve(process.cwd(), 'api', '_lib', 'htmlShell.js');
+    const jsContent =
+      `// Auto-updated during \`npm run build\` by scripts/prerender-articles.ts\n` +
+      `export const SHELL_HTML = ${JSON.stringify(shellHtml)};\n` +
+      `export default SHELL_HTML;\n`;
+    fs.writeFileSync(jsModulePath, jsContent, 'utf8');
+  } catch (e: any) {
+    console.warn('[prerender-articles] Could not update api/_lib/htmlShell.js:', e?.message);
+  }
 }
 
-/** Mirror of HtmlArticleRenderer's table handling so static HTML matches. */
-function prepareStaticHtml(rawHtml: string): string {
-  if (!rawHtml) return '';
-  let html = rawHtml;
-  html = html.replace(/(<table[\s\S]*?<\/table>)/gi, (m) => {
-    if (/ssr-table-wrap/.test(m)) return m;
-    return `<div class="ssr-table-wrap">${m}</div>`;
+async function hydrateMissingContent(articles: any[]): Promise<any[]> {
+  const needsContent = articles.filter(
+    (a) =>
+      a &&
+      a.slug &&
+      (!a.content ||
+        !(a.blocks && a.blocks.length) && !a.content ||
+        !String(a.coverImage || '').startsWith('data:'))
+  );
+  if (needsContent.length === 0) return articles;
+
+  console.log(`[prerender-articles] Hydrating full content for ${needsContent.length} articles via ?slug=...`);
+  const concurrency = 8;
+  const bySlug = new Map<string, any>();
+
+  for (let i = 0; i < needsContent.length; i += concurrency) {
+    const batch = needsContent.slice(i, i + concurrency);
+    await Promise.all(
+      batch.map(async (item) => {
+        try {
+          const res = await fetch(`${SITE_URL}/api/articles?slug=${encodeURIComponent(item.slug)}&rawCover=true`);
+          if (res.ok) {
+            const full = await res.json();
+            if (full && full.slug) {
+              bySlug.set(String(item.slug).toLowerCase(), rowToArticle(full));
+            }
+          }
+        } catch {
+          // ignore individual failure
+        }
+      })
+    );
+  }
+
+  return articles.map((a) => {
+    const key = String(a?.slug || '').toLowerCase();
+    return bySlug.get(key) || a;
   });
-  return html;
 }
 
-function renderStaticArticle(a: any): string {
-  const title = escHtml(a.title || 'Untitled Article');
-  const excerpt = escHtml(a.excerpt || '');
-  const author = escHtml(a.author || 'CivilMath Engineering Editorial Team');
-  const date = a.publishedAt ? new Date(a.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
-  const readTime = a.readTimeMinutes ? `${a.readTimeMinutes} min read` : '';
-  const cover = a.coverImage || a.coverImageUrl || '';
-  const tags: string[] = Array.isArray(a.tags) ? a.tags : [];
-  const body = prepareStaticHtml(a.content || '');
-
-  return `<div class="ssr-wrap">`
-    + `<header class="ssr-topbar"><a class="brand" href="/">CivilMath</a><a class="home" href="/articles">All articles</a></header>`
-    + `<nav class="ssr-crumb"><a href="/">Home</a> / <a href="/articles">Articles</a> / ${title}</nav>`
-    + `<h1>${title}</h1>`
-    + `<p class="ssr-meta">By ${author}${date ? ` &middot; ${escHtml(date)}` : ''}${readTime ? ` &middot; ${escHtml(readTime)}` : ''}</p>`
-    + (cover ? `<img class="ssr-cover" src="${escAttr(cover)}" alt="${escAttr(a.title || 'Article cover')}" loading="eager" />` : '')
-    + (excerpt ? `<p class="ssr-excerpt">${excerpt}</p>` : '')
-    + `<div class="ssr-body">${body}</div>`
-    + (tags.length ? `<div class="ssr-tags">${tags.map((t) => `<span>#${escHtml(t)}</span>`).join('')}</div>` : '')
-    + `<p class="ssr-note">This is a static preview. The interactive version with calculators loads automatically.</p>`
-    + `</div>`;
+function writeArticleCoverFiles(articles: any[]): number {
+  const coversDir = path.join(DIST_DIR, 'article-covers');
+  fs.mkdirSync(coversDir, { recursive: true });
+  let count = 0;
+  for (const article of articles) {
+    if (!article || !article.slug) continue;
+    const rawCover = String(article.coverImage || article.coverImageUrl || '').trim();
+    const m = rawCover.match(/^data:image\/[a-zA-Z0-9.+-]+;base64,([\s\S]+)$/);
+    if (!m) continue;
+    try {
+      const buf = Buffer.from(m[1], 'base64');
+      const target = path.join(coversDir, `${article.slug}.webp`);
+      fs.writeFileSync(target, buf);
+      count++;
+    } catch (e: any) {
+      console.warn(`[prerender-articles] Failed writing cover for ${article.slug}:`, e?.message);
+    }
+  }
+  return count;
 }
 
-function injectIntoHtml(html: string, article: any): string {
-  // 1. Embed article JSON for instant client render (escape </script>).
-  const json = JSON.stringify(article).replace(/<\//g, '<\\/');
-  const jsonTag = `<script id="${JSON_ID}" type="application/json">${json}</script>`;
-
-  // 2. Static article HTML inside #root + critical CSS in head.
-  const staticHtml = renderStaticArticle(article);
-  const styleTag = `<style>${CRITICAL_CSS}</style>`;
-
-  let out = html;
-  if (out.includes('</head>')) {
-    out = out.replace('</head>', `${styleTag}</head>`);
+async function fetchFullArticles(): Promise<any[]> {
+  // 1) Direct Supabase read when credentials are available (fastest & complete)
+  const supaUrl = process.env.SUPABASE_URL;
+  const supaKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (supaUrl && supaKey) {
+    try {
+      const supabase = createClient(supaUrl, supaKey);
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*')
+        .or('published.eq.true,published.is.null')
+        .order('published_at', { ascending: false });
+      if (!error && Array.isArray(data) && data.length > 0) {
+        console.log(`[prerender-articles] Fetched ${data.length} full articles from Supabase.`);
+        return data.map((r) => rowToArticle(r)).filter(Boolean);
+      }
+      console.warn('[prerender-articles] Supabase query returned 0 or error:', error?.message ?? 'empty');
+    } catch (e: any) {
+      console.warn('[prerender-articles] Supabase fetch failed:', e?.message);
+    }
   }
-  const rootRe = /<div id="root"><\/div>/;
-  if (rootRe.test(out)) {
-    out = out.replace(rootRe, `<div id="root">${staticHtml}</div>`);
-  } else {
-    // Fallback: prepend static content before scripts if root isn't empty-shell shaped.
-    out = out.replace('<div id="root">', `<div id="root">${staticHtml}`);
-  }
-  if (out.includes('</body>')) {
-    out = out.replace('</body>', `${jsonTag}</body>`);
-  } else {
-    out += jsonTag;
-  }
-  return out;
-}
 
-async function fetchArticleRows(): Promise<any[]> {
-  // 1) Live API (previous production deployment) — most reliable at build time.
+  // 2) Live API fallback (hydrating full content per slug if bulk returns summaries)
   try {
     const res = await fetch(`${SITE_URL}/api/articles?bulk=true`);
     if (res.ok) {
       const json: any = await res.json();
       const list: any[] = Array.isArray(json) ? json : json.articles ?? json.data ?? [];
       if (list.length > 0) {
-        console.log(`[prerender-articles] Fetched ${list.length} rows from live API.`);
-        return list;
+        console.log(`[prerender-articles] Fetched ${list.length} articles from live API.`);
+        const mapped = list.map((r) => rowToArticle(r)).filter(Boolean);
+        return await hydrateMissingContent(mapped);
       }
     }
   } catch (e: any) {
     console.warn('[prerender-articles] Live API fetch failed:', e?.message);
   }
-  // 2) Direct Supabase.
-  const supaUrl = process.env.SUPABASE_URL;
-  const supaKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (supaUrl && supaKey) {
-    try {
-      const supabase = createClient(supaUrl, supaKey);
-      const { data, error } = await supabase.from('articles').select('*');
-      if (!error && Array.isArray(data) && data.length > 0) {
-        console.log(`[prerender-articles] Fetched ${data.length} rows from Supabase.`);
-        return data;
-      }
-      console.warn('[prerender-articles] Supabase query failed or empty:', error?.message ?? 'empty');
-    } catch (e: any) {
-      console.warn('[prerender-articles] Supabase fetch failed:', e?.message);
-    }
-  }
+
   return [];
 }
 
 async function main() {
+  const indexPath = path.join(DIST_DIR, 'index.html');
+  if (!fs.existsSync(indexPath)) {
+    console.error('[prerender-articles] dist/index.html not found. Run `vite build` first.');
+    process.exit(1);
+  }
+
+  const rawIndex = fs.readFileSync(indexPath, 'utf8');
+  const shellHtml = extractCleanViteShell(rawIndex);
+  persistHtmlShell(shellHtml);
+
+  const allArticles = await fetchFullArticles();
+  const publishedArticles = allArticles.filter(
+    (a) => a && a.slug && a.status !== 'draft' && !a.seo?.noindex
+  );
+
+  const coversWritten = writeArticleCoverFiles(publishedArticles);
+  console.log(`[prerender-articles] Extracted ${coversWritten} static article cover images into dist/article-covers/.`);
+
+  // 1. Prerender /articles directory page with all internal article links + embedded list JSON
+  try {
+    const dirTarget = path.join(DIST_DIR, 'articles', 'index.html');
+    fs.mkdirSync(path.dirname(dirTarget), { recursive: true });
+    const dirHtml = renderArticlesDirectoryHtml(shellHtml, publishedArticles);
+    fs.writeFileSync(dirTarget, dirHtml, 'utf8');
+    console.log(`[prerender-articles] Prerendered /articles directory with ${publishedArticles.length} article links.`);
+  } catch (e: any) {
+    console.warn('[prerender-articles] Failed to prerender /articles directory:', e?.message);
+  }
+
+  // 2. Prerender each /articles/<slug>/index.html with full SEO head, JSON-LD, body & embedded JSON
   let written = 0;
   let skipped = 0;
-  const rows = await fetchArticleRows();
-  for (const row of rows) {
-    let article: any;
+  for (const article of publishedArticles) {
     try {
-      article = rowToArticle(row);
-    } catch {
-      continue;
-    }
-    if (!article || !article.slug) continue;
-    if (article.status === 'draft' || article.seo?.noindex) {
-      skipped++;
-      continue;
-    }
-    const targetFile = path.join(DIST_DIR, 'articles', article.slug, 'index.html');
-    if (!fs.existsSync(targetFile)) {
-      console.warn(`[prerender-articles] No HTML for slug ${article.slug}; skipping.`);
-      skipped++;
-      continue;
-    }
-    try {
-      const html = fs.readFileSync(targetFile, 'utf8');
-      const out = injectIntoHtml(html, article);
+      const targetFile = path.join(DIST_DIR, 'articles', article.slug, 'index.html');
+      fs.mkdirSync(path.dirname(targetFile), { recursive: true });
+      const out = renderArticlePageHtml(shellHtml, article, publishedArticles);
       fs.writeFileSync(targetFile, out, 'utf8');
       written++;
     } catch (e: any) {
@@ -196,11 +203,10 @@ async function main() {
       skipped++;
     }
   }
-  console.log(`[prerender-articles] Embedded instant-load content for ${written} articles (${skipped} skipped).`);
+  console.log(`[prerender-articles] Prerendered ${written} full article pages (${skipped} skipped).`);
 }
 
 main().catch((e) => {
-  // Never fail the deployment over prerendering.
   console.error('[prerender-articles] Fatal:', e?.message);
   process.exit(0);
 });

@@ -12,6 +12,8 @@ import BBSCategoryPage from './pages/BBSCategoryPage';
 import DashboardPage from './pages/DashboardPage';
 import StaticPage from './pages/StaticPage';
 import { FormulasPage, GuidePage, GuidesPage, TablesPage } from './pages/KnowledgePages';
+import ArticlesDirectoryPage from './pages/ArticlesDirectoryPage';
+import ArticleDetailPageV2 from './pages/ArticleDetailPageV2';
 import { trackPageView } from './utils/analytics';
 import { SEOHead } from './utils/seo';
 
@@ -33,9 +35,6 @@ const RetainingWallPage = lazy(() => import('./pages/calculators/RetainingWallPa
 const UnitConverterPage = lazy(() => import('./pages/calculators/UnitConverterPage'));
 const BBSCalculatorPage = lazy(() => import('./pages/BBSCalculatorPage'));
 const BOQBuilderPage = lazy(() => import('./boq/BOQBuilderPage'));
-const ArticlesDirectoryPage = lazy(() => import('./pages/ArticlesDirectoryPage'));
-const ArticleDetailPage = lazy(() => import('./pages/ArticleDetailPage'));
-const ArticleDetailPageV2 = lazy(() => import('./pages/ArticleDetailPageV2'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminArticleEditor = lazy(() => import('./pages/admin/AdminArticleEditor'));
 const AdminArticleEditorV2 = lazy(() => import('./pages/admin/AdminArticleEditorV2'));
@@ -144,8 +143,8 @@ export default function App() {
               <Route path="/utilities" element={<CategoryPageTemplate category="utility" />} />
               <Route path="/guides" element={<GuidesPage />} />
               <Route path="/guides/:slug" element={<GuidePageRouteWrapper />} />
-              <Route path="/articles" element={<Suspense fallback={<SuspenseFallback />}><ArticlesDirectoryPage /></Suspense>} />
-              <Route path="/articles/:slug" element={<Suspense fallback={<SuspenseFallback />}><ArticleDetailRouteWrapper /></Suspense>} />
+              <Route path="/articles" element={<ArticlesDirectoryPage />} />
+              <Route path="/articles/:slug" element={<ArticleDetailRouteWrapper />} />
               <Route path="/formulas" element={<FormulasPage />} />
               <Route path="/tables" element={<TablesPage />} />
 

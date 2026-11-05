@@ -1,7 +1,8 @@
 import { Article, ArticleCategory } from '../types/article';
 import { autoGenerateSeo } from './autoSeo';
 
-const LOCAL_STORAGE_KEY = 'civilmath_custom_articles_v1';
+const LOCAL_STORAGE_KEY = 'civilmath_custom_articles_v2';
+const LEGACY_STORAGE_KEY = 'civilmath_custom_articles_v1';
 
 // In-memory cache for full loaded articles
 const articleCache: Map<string, Article> = new Map();
@@ -162,7 +163,7 @@ export async function checkSlugExists(slug: string, currentSlug?: string): Promi
   if (existsLocally) return true;
 
   try {
-    const res = await fetch(`/api/articles/${encodeURIComponent(normSlug)}`);
+    const res = await fetch(`/api/articles?slug=${encodeURIComponent(normSlug)}`);
     if (res.ok) {
       const data = await res.json();
       return Boolean(data && data.slug);
@@ -290,7 +291,11 @@ export function normalizeArticleData(raw: any, fallbackSlug?: string): Article {
           ? 'legacy'
           : (content && (content.includes('<p') || content.includes('<h2')) ? 'html' : 'legacy'));
 
-  const coverImage = raw.coverImage || raw.coverImageUrl || raw.cover_image_url || raw.image_url || raw.imageUrl || undefined;
+  const rawCover = raw.coverImage || raw.coverImageUrl || raw.cover_image_url || raw.image_url || raw.imageUrl || undefined;
+  const coverImage =
+    typeof rawCover === 'string' && rawCover.startsWith('data:') && slug
+      ? `/article-covers/${encodeURIComponent(slug)}.webp`
+      : rawCover;
   const createdAt = raw.createdAt || raw.created_at || publishedAt;
 
   return {
@@ -330,6 +335,10 @@ export function normalizeArticleData(raw: any, fallbackSlug?: string): Article {
 
 // Helper to strip heavy content before saving to localStorage to prevent QuotaExceededError
 export function toArticleSummary(art: Article): Article {
+  const safeCover =
+    typeof art.coverImage === 'string' && art.coverImage.startsWith('data:') && art.slug
+      ? `/article-covers/${encodeURIComponent(art.slug)}.webp`
+      : art.coverImage;
   return {
     id: art.id,
     slug: art.slug,
@@ -343,8 +352,8 @@ export function toArticleSummary(art: Article): Article {
     updatedAt: art.updatedAt,
     readTimeMinutes: art.readTimeMinutes,
     status: art.status,
-    coverImage: art.coverImage,
-    coverImageUrl: art.coverImageUrl,
+    coverImage: safeCover,
+    coverImageUrl: safeCover,
     tags: art.tags,
     seo: art.seo ? {
       seoTitle: art.seo.seoTitle,
@@ -363,6 +372,7 @@ export function toArticleSummary(art: Article): Article {
 export function getStoredCustomArticles(): Article[] {
   if (typeof window === 'undefined') return [];
   try {
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
@@ -380,6 +390,7 @@ export function getStoredCustomArticles(): Article[] {
 export function setStoredCustomArticles(articles: Article[]) {
   if (typeof window === 'undefined') return;
   try {
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
     const summaries = articles.map(toArticleSummary);
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(summaries));
   } catch (err) {
@@ -393,6 +404,11 @@ export function setStoredCustomArticles(articles: Article[]) {
         publishedAt: a.publishedAt,
         readTimeMinutes: a.readTimeMinutes,
         status: a.status,
+        tags: a.tags,
+        coverImage:
+          typeof a.coverImage === 'string' && a.coverImage.startsWith('data:') && a.slug
+            ? `/article-covers/${encodeURIComponent(a.slug)}.webp`
+            : a.coverImage,
       }));
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(minimal));
     } catch (fallbackErr) {
@@ -402,14 +418,13 @@ export function setStoredCustomArticles(articles: Article[]) {
 }
 
 /**
- * Returns list of all article summaries (Built-in + Custom), sorted by date or title.
-/**
  * Wipes local article storage and in-memory cache completely.
  */
 export function clearLocalArticleCache(): void {
   if (typeof window !== 'undefined') {
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
     } catch {
       // ignore
     }
@@ -417,12 +432,38 @@ export function clearLocalArticleCache(): void {
   articleCache.clear();
 }
 
+function getEmbeddedArticleListSync(): Article[] {
+  try {
+    if (typeof document === 'undefined') return [];
+    const el = document.getElementById('ssr-articles-list');
+    if (!el || !el.textContent) return [];
+    const data = JSON.parse(el.textContent);
+    if (Array.isArray(data) && data.length > 0) {
+      return data
+        .filter((item: any) => item && item.slug && item.title)
+        .map((item: any) => normalizeArticleData(item, item.slug));
+    }
+  } catch {
+    /* ignore malformed embed */
+  }
+  return [];
+}
+
 /**
  * Returns list of all article summaries, sorted by date or title.
  * Exclusively loads articles synchronized from Supabase.
  */
 export function getAllArticleSummaries(): Article[] {
-  return getStoredCustomArticles();
+  const stored = getStoredCustomArticles();
+  const embedded = getEmbeddedArticleListSync();
+  if (stored.length > 0 && stored.some(a => Boolean(a.coverImage))) {
+    return stored;
+  }
+  if (embedded.length > 0) {
+    setStoredCustomArticles(embedded);
+    return embedded;
+  }
+  return stored;
 }
 
 /**
@@ -441,10 +482,16 @@ export async function fetchAndSyncAllArticles(): Promise<Article[]> {
         // Supabase is the sole source of truth:
         // Overwrite local storage strictly with Supabase articles
         setStoredCustomArticles(normalizedRemote);
-        articleCache.clear();
         for (const art of normalizedRemote) {
           if (art && art.slug) {
-            articleCache.set(art.slug.toLowerCase(), art);
+            const key = art.slug.toLowerCase();
+            const existing = articleCache.get(key);
+            // Preserve already-cached full content if summary doesn't include content
+            if (existing && (existing.content || existing.blocks?.length) && !art.content) {
+              articleCache.set(key, { ...art, content: existing.content, blocks: existing.blocks });
+            } else {
+              articleCache.set(key, art);
+            }
           }
         }
         return normalizedRemote;
@@ -525,9 +572,10 @@ export function getCachedArticleSync(slug?: string): Article | undefined {
 export async function prefetchArticle(slug: string): Promise<void> {
   if (!slug) return;
   const normalizedSlug = slug.toLowerCase().trim();
-  if (articleCache.has(normalizedSlug)) return;
+  const existing = articleCache.get(normalizedSlug);
+  if (existing && (existing.content || existing.blocks?.length)) return;
   try {
-    const res = await fetch(`/api/articles/${encodeURIComponent(normalizedSlug)}`);
+    const res = await fetch(`/api/articles?slug=${encodeURIComponent(normalizedSlug)}`);
     if (res.ok) {
       const data = await res.json();
       if (data && (data.slug || data.title)) {
@@ -547,23 +595,33 @@ export async function getArticleBySlug(slug: string): Promise<Article | undefine
   if (!slug) return undefined;
   const normalizedSlug = slug.toLowerCase().trim();
 
-  // 1. Check in-memory cache
+  // 1. Check in-memory cache (must have full content or blocks)
   if (articleCache.has(normalizedSlug)) {
-    return normalizeArticleData(articleCache.get(normalizedSlug)!, normalizedSlug);
+    const cached = articleCache.get(normalizedSlug)!;
+    if (cached.content || cached.blocks?.length) {
+      return normalizeArticleData(cached, normalizedSlug);
+    }
   }
 
-  // 2. Check custom storage
+  // 2. Check SSR-embedded article JSON in DOM
+  const embedded = getEmbeddedArticleSync(normalizedSlug);
+  if (embedded) {
+    articleCache.set(normalizedSlug, embedded);
+    return embedded;
+  }
+
+  // 3. Check custom storage (must have full content or blocks)
   const customList = getStoredCustomArticles();
   const foundCustom = customList.find(a => a.slug.toLowerCase() === normalizedSlug);
-  if (foundCustom) {
+  if (foundCustom && (foundCustom.content || foundCustom.blocks?.length)) {
     const normalized = normalizeArticleData(foundCustom, normalizedSlug);
     articleCache.set(normalizedSlug, normalized);
     return normalized;
   }
 
-  // 3. Try backend API / Supabase
+  // 4. Try backend API / Supabase
   try {
-    const res = await fetch(`/api/articles/${encodeURIComponent(normalizedSlug)}`);
+    const res = await fetch(`/api/articles?slug=${encodeURIComponent(normalizedSlug)}`);
     if (res.status === 404) {
       // Definitive "does not exist" — callers use this to decide noindex.
       // A distinct error (not undefined) so transient failures aren't
@@ -687,7 +745,7 @@ export async function bulkUploadArticles(articles: Article[]): Promise<{ added: 
 
   // Sync to backend API if available
   try {
-    await fetch('/api/articles/bulk', {
+    await fetch('/api/articles?bulk=true', {
       method: 'POST',
       headers: getAdminAuthHeaders(),
       body: JSON.stringify(normalizedList),
@@ -708,7 +766,7 @@ export async function deleteArticle(slug: string): Promise<boolean> {
 
   // 1. Send DELETE request to backend API (Supabase)
   try {
-    const res = await fetch(`/api/articles/${encodeURIComponent(normSlug)}`, {
+    const res = await fetch(`/api/articles?slug=${encodeURIComponent(normSlug)}`, {
       method: 'DELETE',
       headers: getAdminAuthHeaders(),
     });

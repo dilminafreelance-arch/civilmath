@@ -21,6 +21,24 @@ const PAGES = [
 ];
 
 test.describe('Smoke tests', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.route('**/*', (route) => {
+      const reqUrl = route.request().url();
+      if (
+        reqUrl.includes('googletagmanager.com') ||
+        reqUrl.includes('google-analytics.com') ||
+        reqUrl.includes('googlesyndication.com') ||
+        reqUrl.includes('doubleclick.net') ||
+        reqUrl.includes('fonts.googleapis.com') ||
+        reqUrl.includes('fonts.gstatic.com') ||
+        reqUrl.includes('images.unsplash.com')
+      ) {
+        return route.abort();
+      }
+      return route.continue();
+    });
+  });
+
   for (const page of PAGES) {
     test(`${page} loads successfully`, async ({ page: p }) => {
       const response = await p.goto(`${BASE}${page}`);
@@ -55,7 +73,6 @@ test.describe('Smoke tests', () => {
     const indexablePages = PAGES.filter(path => !nonIndexable.includes(path));
     const titles = new Set<string>();
     for (const path of indexablePages) {
-      console.log('TEST50: Visiting', path);
       await p.goto(`${BASE}${path}`);
       await expect(p.locator('h1')).toHaveCount(1);
       const title = await p.title();
@@ -81,19 +98,32 @@ test.describe('Smoke tests', () => {
     await expect(p.locator('body')).toContainText('Articles & Content Administration');
   });
 
-  test('articles directory, detail load, and browser back navigation', async ({ page: p }) => {
+  test('articles directory, detail load, SEO metadata, and browser back navigation', async ({ page: p }) => {
     await p.goto(`${BASE}/articles`);
     await expect(p.locator('h1')).toContainText('Civil Engineering Calculation Articles');
     const firstArticleLink = p.locator('a[href^="/articles/"]').first();
-    if (await firstArticleLink.count() > 0) {
-      await firstArticleLink.click();
-      await expect(p.locator('h1')).toBeVisible();
-      await expect(p.locator('h1')).not.toHaveText('Civil Engineering Calculation Articles');
-      // Test browser back navigation restores directory
-      await p.goBack();
-      await expect(p.locator('h1')).toContainText('Civil Engineering Calculation Articles');
-    }
+    await expect(firstArticleLink).toBeVisible();
+    const linkCount = await p.locator('a[href^="/articles/"]').count();
+    expect(linkCount).toBeGreaterThan(1);
+
+    // Ensure article cards in directory display distinct article-specific cover images
+    const firstImgSrc = await p.locator('a[href^="/articles/"] img').nth(0).getAttribute('src');
+    const secondImgSrc = await p.locator('a[href^="/articles/"] img').nth(1).getAttribute('src');
+    expect(firstImgSrc).toBeTruthy();
+    expect(secondImgSrc).toBeTruthy();
+    expect(firstImgSrc).not.toBe(secondImgSrc);
+
+    const href = await firstArticleLink.getAttribute('href');
+    expect(href).toBeTruthy();
+    await firstArticleLink.click();
+    await expect(p.locator('h1')).toBeVisible();
+    await expect(p.locator('h1')).not.toHaveText('Civil Engineering Calculation Articles');
+
+    const canonical = p.locator('link[rel="canonical"]').first();
+    await expect(canonical).toHaveAttribute('href', `https://civilmath.com${href}`);
+
+    // Test browser back navigation restores directory
+    await p.goBack();
+    await expect(p.locator('h1')).toContainText('Civil Engineering Calculation Articles');
   });
-
 });
-

@@ -7,6 +7,22 @@
       "destination": "/api/sitemap"
     },
     {
+      "source": "/api/articles/bulk",
+      "destination": "/api/articles?bulk=true"
+    },
+    {
+      "source": "/api/articles/:slug",
+      "destination": "/api/articles?slug=:slug"
+    },
+    {
+      "source": "/article-covers/:slug",
+      "destination": "/api/articles?slug=:slug&render=cover"
+    },
+    {
+      "source": "/articles/:slug",
+      "destination": "/api/articles?slug=:slug&render=html"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },

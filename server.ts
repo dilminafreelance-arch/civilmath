@@ -299,11 +299,51 @@ function getSupabaseServer(): SupabaseClient | null {
   }
 }
 
+function readPrerenderedArticleBySlug(slug: string): any | null {
+  try {
+    const clean = String(slug || "").replace(/[^a-zA-Z0-9_-]/g, "");
+    if (!clean) return null;
+    const htmlPath = path.join(process.cwd(), "dist", "articles", clean, "index.html");
+    if (!fs.existsSync(htmlPath)) return null;
+    const html = fs.readFileSync(htmlPath, "utf-8");
+    const m = html.match(/<script id="ssr-article-data" type="application\/json">([\s\S]*?)<\/script>/);
+    if (m && m[1]) {
+      return JSON.parse(m[1]);
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
 function readStoredArticles(): any[] {
   try {
-    if (!fs.existsSync(ARTICLES_FILE)) return [];
-    const content = fs.readFileSync(ARTICLES_FILE, "utf-8");
-    return JSON.parse(content) || [];
+    const bySlug = new Map<string, any>();
+    const distListHtml = path.join(process.cwd(), "dist", "articles", "index.html");
+    if (fs.existsSync(distListHtml)) {
+      const html = fs.readFileSync(distListHtml, "utf-8");
+      const m = html.match(/<script id="ssr-articles-list" type="application\/json">([\s\S]*?)<\/script>/);
+      if (m && m[1]) {
+        const list = JSON.parse(m[1]);
+        if (Array.isArray(list)) {
+          for (const item of list) {
+            if (item && item.slug) bySlug.set(String(item.slug).toLowerCase(), item);
+          }
+        }
+      }
+    }
+    if (fs.existsSync(ARTICLES_FILE)) {
+      const content = fs.readFileSync(ARTICLES_FILE, "utf-8");
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed)) {
+        for (const item of parsed) {
+          if (item && item.slug && String(item.slug).length > 2) {
+            bySlug.set(String(item.slug).toLowerCase(), item);
+          }
+        }
+      }
+    }
+    return Array.from(bySlug.values());
   } catch (err) {
     console.error("Error reading custom articles:", err);
     return [];
@@ -405,6 +445,36 @@ app.get("/api/articles", async (req, res) => {
   const authHeader = req.headers.authorization;
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
   const isAdmin = Boolean(token && verifySessionToken(token));
+  const slugParam = typeof req.query.slug === "string" ? req.query.slug.trim() : "";
+
+  if (slugParam) {
+    if (!isAdmin) {
+      res.setHeader("Cache-Control", "public, max-age=120, s-maxage=1800, stale-while-revalidate=86400");
+    } else {
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    }
+    const supabase = getSupabaseServer();
+    if (supabase) {
+      try {
+        let query = supabase.from("articles").select("*").eq("slug", slugParam);
+        if (!isAdmin) {
+          query = query.or("published.eq.true,published.is.null");
+        }
+        const { data, error } = await query.maybeSingle();
+        if (!error && data) {
+          return res.json(rowToArticle(data));
+        }
+      } catch (err) {
+        console.warn("Supabase single fetch exception:", err);
+      }
+    }
+    const articles = readStoredArticles();
+    const article = readPrerenderedArticleBySlug(slugParam) || articles.find((a: any) => a.slug?.toLowerCase() === slugParam.toLowerCase());
+    if (!article || (!isAdmin && article.status === "draft")) {
+      return res.status(404).json({ error: "Article not found", status: "not_found" });
+    }
+    return res.json(article);
+  }
 
   if (!isAdmin) {
     res.setHeader("Cache-Control", "public, max-age=60, s-maxage=600, stale-while-revalidate=86400");
@@ -470,7 +540,7 @@ app.get("/api/articles/:slug", async (req, res) => {
     }
   }
   const articles = readStoredArticles();
-  const article = articles.find((a: any) => a.slug?.toLowerCase() === slug.toLowerCase());
+  const article = readPrerenderedArticleBySlug(slug) || articles.find((a: any) => a.slug?.toLowerCase() === slug.toLowerCase());
   if (!article || (!isAdmin && article.status === "draft")) {
     return res.status(404).json({ error: "Article not found", status: "not_found" });
   }
@@ -579,8 +649,11 @@ app.post("/api/articles/bulk", requireAdminAuth, async (req, res) => {
 });
 
 // Articles API - Delete article
-app.delete("/api/articles/:slug", requireAdminAuth, async (req, res) => {
-  const { slug } = req.params;
+app.delete(["/api/articles/:slug", "/api/articles"], requireAdminAuth, async (req, res) => {
+  const slug = req.params.slug || (typeof req.query.slug === "string" ? req.query.slug.trim() : "");
+  if (!slug) {
+    return res.status(400).json({ error: "Article slug is required." });
+  }
   const articles = readStoredArticles();
   const filtered = articles.filter((a: any) => a.slug?.toLowerCase() !== slug.toLowerCase());
   writeStoredArticles(filtered);
